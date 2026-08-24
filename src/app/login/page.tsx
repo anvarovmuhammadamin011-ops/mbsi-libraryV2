@@ -52,14 +52,16 @@ const ROLES: {
 export default function LoginPage() {
   const router = useRouter();
   const login = useAuthStore((s) => s.login);
+  const user = useAuthStore((s) => s.user);
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const [loading, setLoading] = useState<UserRole | null>(null);
 
   useEffect(() => {
     if (isAuthenticated) {
-      router.replace("/home");
+      const role = user?.role;
+      router.replace(role === "ADMIN" ? "/admin" : "/home");
     }
-  }, [isAuthenticated, router]);
+  }, [isAuthenticated, router, user]);
 
   async function handle(role: UserRole) {
     setLoading(role);
