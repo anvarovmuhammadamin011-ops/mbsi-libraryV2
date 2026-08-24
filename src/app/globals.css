@@ -194,3 +194,22 @@
   from { opacity: 0; transform: scale(0.96); }
   to { opacity: 1; transform: scale(1); }
 }
+
+/* ─── Telegram Mini App Styles ──────────────────────────────── */
+html.telegram-webapp .desktop-sidebar,
+html.telegram-webapp [data-sidebar] {
+  display: none !important;
+}
+
+html.telegram-webapp main {
+  padding-bottom: 80px !important;
+}
+
+/* Telegram WebApp safe area insets */
+html.telegram-webapp {
+  --tg-safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+html.telegram-webapp .mobile-nav {
+  padding-bottom: calc(8px + var(--tg-safe-area-inset-bottom)) !important;
+}

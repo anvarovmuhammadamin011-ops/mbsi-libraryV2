@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import { StudentSidebar } from "@/components/layout/sidebar";
 import { Header } from "@/components/layout/header";
 import { MobileNav } from "@/components/layout/mobile-nav";
+import { TelegramWebAppProvider } from "@/components/telegram-webapp-provider";
 
 interface AppLayoutProps {
   children: ReactNode;
@@ -11,6 +12,7 @@ interface AppLayoutProps {
 
 export function AppLayout({ children }: AppLayoutProps) {
   return (
+    <TelegramWebAppProvider>
     <div className="flex h-screen overflow-hidden">
       {/* Desktop Sidebar */}
       <StudentSidebar />
@@ -29,5 +31,6 @@ export function AppLayout({ children }: AppLayoutProps) {
       {/* Mobile Bottom Nav */}
       <MobileNav />
     </div>
+    </TelegramWebAppProvider>
   );
 }
