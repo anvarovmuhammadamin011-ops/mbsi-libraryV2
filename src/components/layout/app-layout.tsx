@@ -1,7 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { Sidebar } from "@/components/layout/sidebar";
+import { StudentSidebar } from "@/components/layout/sidebar";
 import { Header } from "@/components/layout/header";
 import { MobileNav } from "@/components/layout/mobile-nav";
 
@@ -13,7 +13,7 @@ export function AppLayout({ children }: AppLayoutProps) {
   return (
     <div className="flex h-screen overflow-hidden">
       {/* Desktop Sidebar */}
-      <Sidebar />
+      <StudentSidebar />
 
       {/* Main Content */}
       <div className="flex flex-1 flex-col overflow-hidden">

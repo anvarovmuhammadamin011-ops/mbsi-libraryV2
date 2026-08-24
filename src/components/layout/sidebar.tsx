@@ -4,58 +4,66 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   Home,
-  BookOpen,
+  BookMarked,
+  Headphones,
+  Target,
   Trophy,
+  Coins,
+  BarChart3,
   Heart,
-  Bookmark,
   Clock,
+  Bell,
   User,
-  LayoutDashboard,
-  Library,
-  Users,
-  Tag,
-  Star,
   Settings,
-  Shield,
-  FileText,
-  TrendingUp,
   LogOut,
+  BookOpen,
   ChevronLeft,
   ChevronRight,
+  Shield,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Separator } from "@/components/ui/separator";
 import { useAuthStore } from "@/lib/auth-store";
 import { useState } from "react";
 
-const studentNav = [
-  { label: "Bosh sahifa", href: "/home", icon: Home },
-  { label: "Kitoblar", href: "/books", icon: Library },
-  { label: "Reyting", href: "/ranking", icon: Trophy },
-  { label: "Sevimlilar", href: "/favorites", icon: Heart },
-  { label: "Xatcho'plar", href: "/bookmarks", icon: Bookmark },
-  { label: "Davom ettirish", href: "/continue-reading", icon: Clock },
-  { label: "Profil", href: "/profile", icon: User },
-  { label: "Sozlamalar", href: "/settings", icon: Settings },
+interface NavItem {
+  label: string;
+  href: string;
+  icon: React.ComponentType<{ size?: number; className?: string }>;
+  badge?: number;
+}
+
+interface NavGroup {
+  title?: string;
+  items: NavItem[];
+}
+
+const NAV_GROUPS: NavGroup[] = [
+  {
+    items: [
+      { label: "Bosh sahifa", href: "/home", icon: Home },
+      { label: "Kitoblar", href: "/books", icon: BookMarked },
+      { label: "Audio kitoblar", href: "/audio", icon: Headphones },
+      { label: "Missiyalar", href: "/missions", icon: Target },
+      { label: "Reyting", href: "/ranking", icon: Trophy },
+      { label: "Coin & Market", href: "/coins", icon: Coins },
+      { label: "Statistika", href: "/statistics", icon: BarChart3 },
+      { label: "Saqlanganlar", href: "/favorites", icon: Heart },
+      { label: "Tarix", href: "/history", icon: Clock },
+    ],
+  },
+  {
+    title: "Shaxsiy",
+    items: [
+      { label: "Bildirishnomalar", href: "/notifications", icon: Bell, badge: 3 },
+      { label: "Profil", href: "/profile", icon: User },
+      { label: "Sozlamalar", href: "/settings", icon: Settings },
+    ],
+  },
 ];
 
-const adminNav = [
-  { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
-  { label: "Kitoblar", href: "/admin/books", icon: Library },
-  { label: "Mualliflar", href: "/admin/authors", icon: Users },
-  { label: "Kategoriyalar", href: "/admin/categories", icon: Tag },
-  { label: "Foydalanuvchilar", href: "/admin/users", icon: Users },
-  { label: "Reytinglar", href: "/admin/ratings", icon: Star },
-  { label: "Tavsiyalar", href: "/admin/recommendations", icon: TrendingUp },
-  { label: "Bannerlar", href: "/admin/banners", icon: FileText },
-  { label: "Statistika", href: "/admin/statistics", icon: TrendingUp },
-  { label: "Audit Log", href: "/admin/audit-log", icon: Shield },
-  { label: "Sozlamalar", href: "/admin/settings", icon: Settings },
-];
-
-export function Sidebar() {
+export function StudentSidebar() {
   const pathname = usePathname();
   const { user, logout } = useAuthStore();
   const [collapsed, setCollapsed] = useState(false);
@@ -63,14 +71,6 @@ export function Sidebar() {
   if (!user) return null;
 
   const isAdmin = user.role === "ADMIN";
-  const navItems = isAdmin ? adminNav : studentNav;
-
-  const roleLabel =
-    user.role === "ADMIN"
-      ? "Admin"
-      : user.role === "TEACHER"
-        ? "O'qituvchi"
-        : "O'quvchi";
 
   return (
     <aside
@@ -80,15 +80,20 @@ export function Sidebar() {
       )}
     >
       {/* Logo */}
-      <div className="flex h-16 items-center justify-between px-4">
+      <div className="flex h-16 items-center justify-between px-4 border-b border-border">
         {!collapsed && (
           <Link href="/home" className="flex items-center gap-2.5">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
               <BookOpen className="h-4 w-4 text-white" />
             </div>
-            <span className="text-base font-bold tracking-tight text-foreground">
-              MBSI
-            </span>
+            <div className="flex flex-col">
+              <span className="text-sm font-bold tracking-tight text-foreground leading-none">
+                ANVAROV
+              </span>
+              <span className="text-[10px] font-medium text-primary leading-none mt-0.5">
+                LIBRARY
+              </span>
+            </div>
           </Link>
         )}
         <Button
@@ -103,36 +108,65 @@ export function Sidebar() {
 
       {/* Navigation */}
       <ScrollArea className="flex-1 py-3 px-2">
-        <nav className="flex flex-col gap-0.5">
-          {navItems.map((item) => {
-            const isActive =
-              pathname === item.href ||
-              (item.href !== "/home" && item.href !== "/" && pathname.startsWith(item.href));
+        {NAV_GROUPS.map((group, gi) => (
+          <div key={gi} className="mb-4">
+            {group.title && !collapsed && (
+              <p className="mb-1.5 px-3 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
+                {group.title}
+              </p>
+            )}
+            <nav className="flex flex-col gap-0.5">
+              {group.items.map((item) => {
+                const isActive =
+                  pathname === item.href ||
+                  (item.href !== "/home" && pathname.startsWith(item.href));
+                const Icon = item.icon;
 
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={cn(
-                  "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-150",
-                  isActive
-                    ? "bg-accent text-accent-foreground"
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                )}
-              >
-                <item.icon
-                  size={18}
-                  className={cn(
-                    "shrink-0",
-                    isActive ? "text-primary" : ""
-                  )}
-                />
-                {!collapsed && <span>{item.label}</span>}
-              </Link>
-            );
-          })}
-        </nav>
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={cn(
+                      "flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition-all duration-150",
+                      isActive
+                        ? "bg-accent text-accent-foreground"
+                        : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                    )}
+                  >
+                    <Icon
+                      size={18}
+                      className={cn("shrink-0", isActive ? "text-primary" : "")}
+                    />
+                    {!collapsed && (
+                      <>
+                        <span className="flex-1">{item.label}</span>
+                        {item.badge && item.badge > 0 && (
+                          <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-[10px] font-bold text-white">
+                            {item.badge}
+                          </span>
+                        )}
+                      </>
+                    )}
+                  </Link>
+                );
+              })}
+            </nav>
+          </div>
+        ))}
       </ScrollArea>
+
+      {/* Admin link (if admin) */}
+      {isAdmin && !collapsed && (
+        <div className="px-2 pb-2">
+          <Link
+            href="/admin"
+            className="flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-all"
+          >
+            <Shield size={18} className="shrink-0" />
+            <span>Admin Panel</span>
+          </Link>
+        </div>
+      )}
 
       {/* User */}
       <div className="border-t border-border p-3">
@@ -146,8 +180,8 @@ export function Sidebar() {
                 <p className="truncate text-sm font-medium text-foreground">
                   {user.name}
                 </p>
-                <p className="truncate text-xs text-muted-foreground">
-                  {roleLabel}
+                <p className="truncate text-xs text-muted-foreground capitalize">
+                  {user.role === "STUDENT" ? "O'quvchi" : user.role === "TEACHER" ? "O'qituvchi" : "Admin"}
                 </p>
               </div>
               <Button

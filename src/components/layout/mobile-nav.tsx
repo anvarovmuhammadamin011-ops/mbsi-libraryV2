@@ -2,39 +2,41 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Library, Trophy, User } from "lucide-react";
+import { Home, BookMarked, Target, Trophy, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const mobileNavItems = [
-  { label: "Bosh sahifa", href: "/home", icon: Home },
-  { label: "Kitoblar", href: "/books", icon: Library },
-  { label: "Reyting", href: "/ranking", icon: Trophy },
-  { label: "Profil", href: "/profile", icon: User },
+const NAV_ITEMS = [
+  { label: "Home", href: "/home", icon: Home },
+  { label: "Books", href: "/books", icon: BookMarked },
+  { label: "Mission", href: "/missions", icon: Target },
+  { label: "Rank", href: "/ranking", icon: Trophy },
+  { label: "Profile", href: "/profile", icon: User },
 ];
 
 export function MobileNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-50 border-t border-border bg-background/95 backdrop-blur-md lg:hidden safe-area-bottom">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-card/95 backdrop-blur-lg lg:hidden safe-area-bottom">
       <div className="flex items-center justify-around px-2 py-1.5">
-        {mobileNavItems.map((item) => {
+        {NAV_ITEMS.map((item) => {
           const isActive =
             pathname === item.href ||
-            (item.href !== "/home" && item.href !== "/" && pathname.startsWith(item.href));
+            (item.href !== "/home" && pathname.startsWith(item.href));
+          const Icon = item.icon;
 
           return (
             <Link
               key={item.href}
               href={item.href}
               className={cn(
-                "flex flex-col items-center gap-0.5 rounded-xl px-4 py-1.5 text-[11px] font-medium transition-all duration-150",
+                "flex flex-col items-center gap-0.5 rounded-xl px-3 py-1.5 text-[10px] font-medium transition-colors min-w-[52px]",
                 isActive
                   ? "text-primary"
-                  : "text-muted-foreground active:text-foreground"
+                  : "text-muted-foreground"
               )}
             >
-              <item.icon size={20} strokeWidth={isActive ? 2.2 : 1.8} />
+              <Icon size={20} strokeWidth={isActive ? 2.5 : 2} />
               <span>{item.label}</span>
             </Link>
           );
