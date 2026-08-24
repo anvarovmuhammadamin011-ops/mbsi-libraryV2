@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Bookmark, BookOpen } from "lucide-react";
 
+export const dynamic = "force-dynamic";
+
 export default async function BookmarksPage() {
   const user = await getSessionUser();
   if (!user) return null;

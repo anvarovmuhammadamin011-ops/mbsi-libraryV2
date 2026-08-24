@@ -4,6 +4,8 @@ import { Card } from "@/components/ui/card";
 import { Stat } from "@/components/ui/stat";
 import { BookMarked, Users, BookOpen, Activity } from "lucide-react";
 
+export const dynamic = "force-dynamic";
+
 export default async function AdminDashboard() {
   const [books, users, sessions, pagesAgg] = await Promise.all([
     prisma.book.count(),

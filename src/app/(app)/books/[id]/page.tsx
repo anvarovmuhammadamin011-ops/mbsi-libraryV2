@@ -5,8 +5,9 @@ import { getBookBySlug } from "@/lib/server/books";
 import { isFavorite } from "@/lib/server/reading";
 import { BookCardView } from "@/components/book-card-view";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Star, BookOpen, ArrowLeft } from "lucide-react";
+import { Button } from "@/components/ui/button";import { Star, BookOpen, ArrowLeft } from "lucide-react";
+
+export const dynamic = "force-dynamic";
 
 export default async function BookDetailPage({
   params,

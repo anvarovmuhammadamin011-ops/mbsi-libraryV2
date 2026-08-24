@@ -2,6 +2,8 @@ import { getSessionUser } from "@/lib/server/auth";
 import { getRanking } from "@/lib/server/reading";
 import { RankingView } from "@/components/ranking-view";
 
+export const dynamic = "force-dynamic";
+
 export default async function RankingPage() {
   const user = await getSessionUser();
   if (!user) return null;

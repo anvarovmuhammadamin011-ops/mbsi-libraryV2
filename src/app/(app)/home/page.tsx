@@ -6,6 +6,8 @@ import { BookCardView } from "@/components/book-card-view";
 import { Button } from "@/components/ui/button";
 import { BookOpen, Sparkles } from "lucide-react";
 
+export const dynamic = "force-dynamic";
+
 export default async function HomePage() {
   const user = await getSessionUser();
   if (!user) return null;

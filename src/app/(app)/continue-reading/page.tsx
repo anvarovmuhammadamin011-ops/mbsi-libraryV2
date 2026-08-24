@@ -5,6 +5,8 @@ import { BookCardView } from "@/components/book-card-view";
 import { EmptyState } from "@/components/ui/empty-state";
 import { BookOpen } from "lucide-react";
 
+export const dynamic = "force-dynamic";
+
 export default async function ContinueReadingPage() {
   const user = await getSessionUser();
   if (!user) return null;

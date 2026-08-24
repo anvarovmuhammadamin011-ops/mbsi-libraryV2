@@ -2,6 +2,8 @@ import { requireRole } from "@/lib/server/auth";
 import { prisma } from "@/lib/db";
 import { AdminUsers } from "@/components/admin-users";
 
+export const dynamic = "force-dynamic";
+
 export default async function AdminUsersPage() {
   const user = await requireRole("TEACHER");
   if (!user) return null;

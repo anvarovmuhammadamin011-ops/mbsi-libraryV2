@@ -1,6 +1,8 @@
 import { prisma } from "@/lib/db";
 import { BooksBrowser } from "@/components/books-browser";
 
+export const dynamic = "force-dynamic";
+
 export default async function SearchPage({
   searchParams,
 }: {

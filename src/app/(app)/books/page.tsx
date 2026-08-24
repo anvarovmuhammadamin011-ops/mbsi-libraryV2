@@ -1,6 +1,8 @@
 import { prisma } from "@/lib/db";
 import { BooksBrowser } from "@/components/books-browser";
 
+export const dynamic = "force-dynamic";
+
 export default async function BooksPage() {
   const [categories, authors] = await Promise.all([
     prisma.category.findMany({ orderBy: { name: "asc" }, select: { id: true, name: true } }),

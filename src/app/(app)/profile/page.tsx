@@ -4,6 +4,8 @@ import { Card } from "@/components/ui/card";
 import { Stat } from "@/components/ui/stat";
 import { Flame, Clock, BookOpen, Trophy, CalendarDays } from "lucide-react";
 
+export const dynamic = "force-dynamic";
+
 export default async function ProfilePage() {
   const user = await getSessionUser();
   if (!user) return null;
