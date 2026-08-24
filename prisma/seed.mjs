@@ -141,6 +141,22 @@ const BOOKS = [
     id: "book-20", title: "Biologiya 7-sinf", description: "O'zbekiston maktablari uchun biologiya darslik.",
     coverUrl: "/covers/biologiya-7.svg", pdfUrl: "pdfs/book-20.pdf", language: "UZ", totalPages: 18, authorId: "author-10", categoryId: "cat-1", isPublished: true,
   },
+  {
+    id: "book-21", title: "8-sinf O'zbekiston tarixi", description: "O'zbekiston Respublikasi maktablari uchun 8-sinf tarix darsligi. 2019-yil nashri.",
+    coverUrl: "/covers/ozbek-tarixi.svg", pdfUrl: "pdfs/book-21.pdf", language: "UZ", totalPages: 160, authorId: "author-10", categoryId: "cat-8", isPublished: true,
+  },
+  {
+    id: "book-22", title: "9-sinf O'zbekiston tarixi", description: "O'zbekiston Respublikasi maktablari uchun 9-sinf tarix darsligi. 2019-yil nashri.",
+    coverUrl: "/covers/ozbek-tarixi.svg", pdfUrl: "pdfs/book-22.pdf", language: "UZ", totalPages: 120, authorId: "author-10", categoryId: "cat-8", isPublished: true,
+  },
+  {
+    id: "book-23", title: "8-sinf Jahon tarixi", description: "O'zbekiston Respublikasi maktablari uchun 8-sinf jahon tarixi darsligi. 2019-yil nashri.",
+    coverUrl: "/covers/ozbek-tarixi.svg", pdfUrl: "pdfs/book-23.pdf", language: "UZ", totalPages: 160, authorId: "author-10", categoryId: "cat-8", isPublished: true,
+  },
+  {
+    id: "book-24", title: "5-sinf Tarixdan hikoyalar", description: "Maktabgacha va boshlang'ich ta'lim uchun tarixdan hikoyalar.",
+    coverUrl: "/covers/ozbek-tarixi.svg", pdfUrl: "pdfs/book-24.pdf", language: "UZ", totalPages: 90, authorId: "author-10", categoryId: "cat-8", isPublished: true,
+  },
 ];
 
 const READING_PROGRESS = [
