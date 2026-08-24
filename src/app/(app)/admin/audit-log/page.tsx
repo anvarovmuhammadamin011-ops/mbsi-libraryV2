@@ -1,177 +1,91 @@
-"use client";
-
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
-import { Shield, Plus, Edit, Trash2, ToggleLeft, UserCheck } from "lucide-react";
-import { useAuthStore } from "@/lib/auth-store";
-import { AppLayout } from "@/components/layout/app-layout";
-import { Card, CardContent } from "@/components/ui/card";
+import { requireRole } from "@/lib/server/auth";
+import { prisma } from "@/lib/db";
 import { Badge } from "@/components/ui/badge";
-import { DEMO_USERS } from "@/lib/demo-data";
-import { cn } from "@/lib/utils";
+import { FileText, Plus, Edit, Trash2, Shield } from "lucide-react";
 
-// Demo audit log entries
-const DEMO_AUDIT_LOG = [
-  {
-    id: "log-1",
-    userId: "user-8",
-    action: "CREATE",
-    entity: "Book",
-    entityId: "book-1",
-    metadata: { title: "Atomic Habits" },
-    createdAt: "2025-09-20T14:30:00Z",
-  },
-  {
-    id: "log-2",
-    userId: "user-8",
-    action: "UPDATE",
-    entity: "Book",
-    entityId: "book-2",
-    metadata: { title: "O'tkan Kunlar" },
-    createdAt: "2025-09-19T10:15:00Z",
-  },
-  {
-    id: "log-3",
-    userId: "user-8",
-    action: "PUBLISH",
-    entity: "Book",
-    entityId: "book-3",
-    metadata: { title: "Fizika 9-sinf" },
-    createdAt: "2025-09-18T09:00:00Z",
-  },
-  {
-    id: "log-4",
-    userId: "user-8",
-    action: "CREATE",
-    entity: "Category",
-    entityId: "cat-8",
-    metadata: { name: "Tarix" },
-    createdAt: "2025-09-17T16:45:00Z",
-  },
-  {
-    id: "log-5",
-    userId: "user-8",
-    action: "UPDATE",
-    entity: "User",
-    entityId: "user-4",
-    metadata: { name: "Nodira Abdullayeva" },
-    createdAt: "2025-09-16T11:20:00Z",
-  },
-  {
-    id: "log-6",
-    userId: "user-8",
-    action: "CREATE",
-    entity: "Banner",
-    entityId: "banner-1",
-    metadata: { title: "Yangi kitoblar" },
-    createdAt: "2025-09-15T08:30:00Z",
-  },
-  {
-    id: "log-7",
-    userId: "user-8",
-    action: "DELETE",
-    entity: "Book",
-    entityId: "book-old-1",
-    metadata: { title: "Eski kitob" },
-    createdAt: "2025-09-14T15:00:00Z",
-  },
-  {
-    id: "log-8",
-    userId: "user-8",
-    action: "ACTIVATE",
-    entity: "User",
-    entityId: "user-5",
-    metadata: { name: "Jasur Toshmatov" },
-    createdAt: "2025-09-13T12:00:00Z",
-  },
-];
+export const dynamic = "force-dynamic";
 
-const actionIcons: Record<string, React.ReactNode> = {
-  CREATE: <Plus size={14} />,
-  UPDATE: <Edit size={14} />,
-  DELETE: <Trash2 size={14} />,
-  PUBLISH: <ToggleLeft size={14} />,
-  UNPUBLISH: <ToggleLeft size={14} />,
-  ACTIVATE: <UserCheck size={14} />,
-};
+export default async function AdminAuditLogPage() {
+  const user = await requireRole("ADMIN");
+  if (!user) return null;
 
-const actionColors: Record<string, string> = {
-  CREATE: "bg-emerald-500/10 text-emerald-500",
-  UPDATE: "bg-blue-500/10 text-blue-500",
-  DELETE: "bg-red-500/10 text-red-500",
-  PUBLISH: "bg-primary/10 text-primary",
-  UNPUBLISH: "bg-amber-500/10 text-amber-500",
-  ACTIVATE: "bg-violet-500/10 text-violet-500",
-};
+  const logs = await prisma.auditLog.findMany({
+    orderBy: { createdAt: "desc" },
+    take: 100,
+    include: {
+      user: { select: { name: true } },
+    },
+  });
 
-export default function AuditLogPage() {
-  const router = useRouter();
-  const { isAuthenticated, user } = useAuthStore();
-
-  useEffect(() => {
-    if (!isAuthenticated || user?.role !== "ADMIN") {
-      router.push("/");
-    }
-  }, [isAuthenticated, user, router]);
-
-  if (!isAuthenticated || user?.role !== "ADMIN") return null;
+  const actionIcons: Record<string, { icon: React.ReactNode; color: string }> = {
+    CREATE: { icon: <Plus size={14} />, color: "bg-green-500/10 text-green-600" },
+    UPDATE: { icon: <Edit size={14} />, color: "bg-blue-500/10 text-blue-600" },
+    DELETE: { icon: <Trash2 size={14} />, color: "bg-red-500/10 text-red-600" },
+    PUBLISH: { icon: <Shield size={14} />, color: "bg-primary/10 text-primary" },
+  };
 
   return (
-    <AppLayout>
-      <div className="space-y-6">
-        <div className="animate-slide-up">
-          <h1 className="text-2xl font-bold tracking-tight">📋 Audit Log</h1>
-          <p className="mt-1 text-muted-foreground">
-            Tizimda amalga oshirilgan barcha muhim harakatlar
-          </p>
+    <div className="space-y-6 animate-fade-in">
+      <div>
+        <h1 className="text-2xl font-bold text-foreground">Audit Logs</h1>
+        <p className="text-sm text-muted-foreground mt-1">
+          System activity history
+        </p>
+      </div>
+
+      {logs.length === 0 ? (
+        <div className="rounded-2xl border border-border bg-card p-12 text-center">
+          <FileText className="size-8 text-muted-foreground mx-auto mb-3" />
+          <p className="text-sm text-muted-foreground">No audit logs yet. Activity will appear here as actions are performed.</p>
         </div>
+      ) : (
+        <div className="rounded-2xl border border-border bg-card overflow-hidden">
+          <table className="w-full text-sm">
+            <thead className="border-b border-border bg-muted/30">
+              <tr>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground">Time</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground">User</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground">Action</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground hidden md:table-cell">Entity</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground hidden lg:table-cell">Details</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border">
+              {logs.map((log) => {
+                const actionInfo = actionIcons[log.action] ?? { icon: <Shield size={14} />, color: "bg-muted" };
+                const meta = log.metadata as Record<string, unknown> | null;
+                const detail = meta?.title ?? meta?.name ?? log.entityId;
 
-        <div className="space-y-3 animate-slide-up">
-          {DEMO_AUDIT_LOG.map((log) => {
-            const logUser = DEMO_USERS.find((u) => u.id === log.userId);
-
-            return (
-              <Card key={log.id}>
-                <CardContent className="flex items-center gap-4 p-4">
-                  <div
-                    className={cn(
-                      "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg",
-                      actionColors[log.action] ?? "bg-muted"
-                    )}
-                  >
-                    {actionIcons[log.action] ?? <Shield size={14} />}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm">
-                      <span className="font-semibold">{logUser?.name}</span>
-                      {" "}
-                      <span className="text-muted-foreground">
-                        {log.action.toLowerCase()} — {log.entity}
-                      </span>
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {log.metadata?.title ?? log.metadata?.name ?? log.entityId}
-                    </p>
-                  </div>
-                  <div className="text-right shrink-0">
-                    <Badge variant="outline" className="text-xs">
-                      {log.action}
-                    </Badge>
-                    <p className="mt-1 text-xs text-muted-foreground">
-                      {new Date(log.createdAt).toLocaleDateString("uz", {
-                        day: "numeric",
+                return (
+                  <tr key={log.id} className="hover:bg-muted/30 transition-colors">
+                    <td className="px-4 py-3 text-xs text-muted-foreground whitespace-nowrap">
+                      {new Date(log.createdAt).toLocaleString("en-US", {
                         month: "short",
+                        day: "numeric",
                         hour: "2-digit",
                         minute: "2-digit",
                       })}
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
+                    </td>
+                    <td className="px-4 py-3 text-sm font-medium">{log.user?.name ?? "System"}</td>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-2">
+                        <div className={`flex h-6 w-6 items-center justify-center rounded-md ${actionInfo.color}`}>
+                          {actionInfo.icon}
+                        </div>
+                        <Badge variant="outline" className="text-[10px]">{log.action}</Badge>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 text-xs text-muted-foreground hidden md:table-cell">{log.entity}</td>
+                    <td className="px-4 py-3 text-xs text-muted-foreground hidden lg:table-cell truncate max-w-[200px]">
+                      {String(detail)}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
-      </div>
-    </AppLayout>
+      )}
+    </div>
   );
 }

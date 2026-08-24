@@ -1,236 +1,123 @@
-"use client";
+import { requireRole } from "@/lib/server/auth";
+import { prisma } from "@/lib/db";
+import { Stat } from "@/components/ui/stat";
+import { BarChart3, Users, BookOpen, Clock, TrendingUp, CheckCircle } from "lucide-react";
 
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import {
-  Users,
-  BookOpen,
-  FileText,
-  BookMarked,
-  TrendingUp,
-  Clock,
-} from "lucide-react";
-import { useAuthStore } from "@/lib/auth-store";
-import { AppLayout } from "@/components/layout/app-layout";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  DEMO_USERS,
-  DEMO_BOOKS,
-  DEMO_READING_PROGRESS,
-  DEMO_RANKINGS,
-} from "@/lib/demo-data";
+export const dynamic = "force-dynamic";
 
-export default function AdminStatisticsPage() {
-  const router = useRouter();
-  const { isAuthenticated, user } = useAuthStore();
+export default async function AdminStatisticsPage() {
+  const user = await requireRole("ADMIN");
+  if (!user) return null;
 
-  useEffect(() => {
-    if (!isAuthenticated || user?.role !== "ADMIN") {
-      router.push("/");
-    }
-  }, [isAuthenticated, user, router]);
+  const [
+    totalPages,
+    totalSessions,
+    completedBooks,
+    avgSessionDuration,
+    activeUsersThisWeek,
+    newUsersThisMonth,
+  ] = await Promise.all([
+    prisma.readingProgress.aggregate({ _sum: { currentPage: true } }),
+    prisma.readingSession.count(),
+    prisma.readingProgress.count({ where: { completedAt: { not: null } } }),
+    prisma.readingSession.aggregate({ _avg: { duration: true } }),
+    prisma.user.count({
+      where: {
+        sessions: { some: { startedAt: { gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) } } },
+      },
+    }),
+    prisma.user.count({
+      where: {
+        createdAt: { gte: new Date(new Date().getFullYear(), new Date().getMonth(), 1) },
+      },
+    }),
+  ]);
 
-  if (!isAuthenticated || user?.role !== "ADMIN") return null;
+  const totalHours = Math.round((avgSessionDuration._avg.duration ?? 0) / 3600);
+  const totalPagesRead = totalPages._sum.currentPage ?? 0;
 
-  const totalPagesRead = DEMO_READING_PROGRESS.reduce(
-    (acc, rp) => acc + rp.currentPage,
-    0
-  );
+  // Most read books
+  const topBooks = await prisma.readingProgress.groupBy({
+    by: ["bookId"],
+    _count: { id: true },
+    orderBy: { _count: { id: "desc" } },
+    take: 10,
+  });
 
-  const statistics = [
-    {
-      title: "Jami foydalanuvchilar",
-      value: DEMO_USERS.length,
-      icon: <Users className="h-5 w-5" />,
-      color: "text-primary",
-      bg: "bg-primary/10",
-      change: "+12%",
+  const bookIds = topBooks.map((b) => b.bookId);
+  const bookDetails = await prisma.book.findMany({
+    where: { id: { in: bookIds } },
+    select: { id: true, title: true, totalPages: true },
+  });
+  const bookMap = new Map(bookDetails.map((b) => [b.id, b]));
+
+  // Least read books (published but 0 readers)
+  const leastRead = await prisma.book.findMany({
+    where: {
+      isPublished: true,
+      progress: { none: {} },
     },
-    {
-      title: "Jami kitoblar",
-      value: DEMO_BOOKS.length,
-      icon: <BookOpen className="h-5 w-5" />,
-      color: "text-blue-500",
-      bg: "bg-blue-500/10",
-      change: "+5%",
-    },
-    {
-      title: "O'qilgan betlar",
-      value: totalPagesRead.toLocaleString(),
-      icon: <FileText className="h-5 w-5" />,
-      color: "text-emerald-500",
-      bg: "bg-emerald-500/10",
-      change: "+23%",
-    },
-    {
-      title: "O'qish sessiyalari",
-      value: 156,
-      icon: <BookMarked className="h-5 w-5" />,
-      color: "text-amber-500",
-      bg: "bg-amber-500/10",
-      change: "+18%",
-    },
-    {
-      title: "O'rtacha o'qish vaqti",
-      value: "45 daqiqa",
-      icon: <Clock className="h-5 w-5" />,
-      color: "text-violet-500",
-      bg: "bg-violet-500/10",
-      change: "+8%",
-    },
-    {
-      title: "O'rtacha betlar/foydalanuvchi",
-      value: Math.round(totalPagesRead / DEMO_USERS.length),
-      icon: <TrendingUp className="h-5 w-5" />,
-      color: "text-pink-500",
-      bg: "bg-pink-500/10",
-      change: "+15%",
-    },
-  ];
+    select: { id: true, title: true },
+    take: 5,
+  });
 
   return (
-    <AppLayout>
-      <div className="space-y-6">
-        <div className="animate-slide-up">
-          <h1 className="text-2xl font-bold tracking-tight">📊 Statistika</h1>
-          <p className="mt-1 text-muted-foreground">
-            Platforma analitikasi
-          </p>
-        </div>
-
-        <Tabs defaultValue="overview" className="animate-slide-up">
-          <TabsList>
-            <TabsTrigger value="overview">Umumiy</TabsTrigger>
-            <TabsTrigger value="1day">1 Kun</TabsTrigger>
-            <TabsTrigger value="1week">1 Hafta</TabsTrigger>
-            <TabsTrigger value="1month">1 Oy</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="overview" className="space-y-6">
-            {/* Stats Grid */}
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {statistics.map((stat) => (
-                <Card key={stat.title}>
-                  <CardContent className="flex items-center gap-4 p-5">
-                    <div className={`rounded-xl ${stat.bg} p-3`}>
-                      <div className={stat.color}>{stat.icon}</div>
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-2xl font-bold">{stat.value}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {stat.title}
-                      </p>
-                    </div>
-                    <Badge variant="secondary" className="text-emerald-500">
-                      {stat.change}
-                    </Badge>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-
-            {/* Top Students */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">
-                  🔥 Eng faol o'quvchilar
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {DEMO_RANKINGS.slice(0, 5).map((entry, index) => {
-                    const entryUser = DEMO_USERS.find(
-                      (u) => u.id === entry.userId
-                    );
-                    return (
-                      <div
-                        key={entry.userId}
-                        className="flex items-center gap-4 rounded-lg p-3 hover:bg-muted/50"
-                      >
-                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-sm font-bold">
-                          {index === 0
-                            ? "🥇"
-                            : index === 1
-                              ? "🥈"
-                              : index === 2
-                                ? "🥉"
-                                : entry.rank}
-                        </div>
-                        <div className="flex-1">
-                          <p className="text-sm font-medium">
-                            {entryUser?.name}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            {entry.totalPages.toLocaleString()} bet ·{" "}
-                            {entry.totalBooks} kitob
-                          </p>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Monthly Summary Placeholder */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">
-                  📈 Oylik xulosa
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-3 gap-4 text-center">
-                  <div>
-                    <p className="text-2xl font-bold text-primary">1,240</p>
-                    <p className="text-xs text-muted-foreground">bet (oylik)</p>
-                  </div>
-                  <div>
-                    <p className="text-2xl font-bold text-blue-500">28</p>
-                    <p className="text-xs text-muted-foreground">kitob (oylik)</p>
-                  </div>
-                  <div>
-                    <p className="text-2xl font-bold text-emerald-500">120</p>
-                    <p className="text-xs text-muted-foreground">soat (oylik)</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="1day">
-            <Card>
-              <CardContent className="flex items-center justify-center py-12">
-                <p className="text-muted-foreground">
-                  Kunlik statistika haqiqiy ma&apos;lumotlar bilan to&apos;ldiriladi
-                </p>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="1week">
-            <Card>
-              <CardContent className="flex items-center justify-center py-12">
-                <p className="text-muted-foreground">
-                  Haftalik statistika haqiqiy ma&apos;lumotlar bilan to&apos;ldiriladi
-                </p>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="1month">
-            <Card>
-              <CardContent className="flex items-center justify-center py-12">
-                <p className="text-muted-foreground">
-                  Oylik statistika haqiqiy ma&apos;lumotlar bilan to&apos;ldiriladi
-                </p>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+    <div className="space-y-8 animate-fade-in">
+      <div>
+        <h1 className="text-2xl font-bold text-foreground">Statistics</h1>
+        <p className="text-sm text-muted-foreground mt-1">Detailed MBSI Library analytics</p>
       </div>
-    </AppLayout>
+
+      {/* Stats Grid */}
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
+        <Stat label="Total Pages Read" value={totalPagesRead.toLocaleString()} icon={<BookOpen className="size-5" />} />
+        <Stat label="Reading Sessions" value={totalSessions.toLocaleString()} icon={<BarChart3 className="size-5" />} />
+        <Stat label="Completed Books" value={completedBooks.toLocaleString()} icon={<CheckCircle className="size-5" />} />
+        <Stat label="Active Users (7d)" value={activeUsersThisWeek.toLocaleString()} icon={<Users className="size-5" />} />
+        <Stat label="New Users (this month)" value={newUsersThisMonth.toLocaleString()} icon={<TrendingUp className="size-5" />} />
+        <Stat label="Avg Session" value={`${totalHours}h`} icon={<Clock className="size-5" />} />
+      </div>
+
+      {/* Most Read Books */}
+      <div className="rounded-2xl border border-border bg-card p-5">
+        <h2 className="text-base font-semibold text-foreground mb-4">Most Read Books</h2>
+        <div className="space-y-2">
+          {topBooks.map((b, i) => {
+            const book = bookMap.get(b.bookId);
+            return (
+              <div key={b.bookId} className="flex items-center gap-3 rounded-xl p-2.5 hover:bg-muted/50 transition-colors">
+                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-bold text-muted-foreground">
+                  {i + 1}
+                </span>
+                <div className="flex-1 min-w-0">
+                  <p className="truncate text-sm font-medium">{book?.title ?? "Unknown"}</p>
+                  <p className="text-xs text-muted-foreground">{book?.totalPages ?? 0} pages</p>
+                </div>
+                <p className="text-sm font-semibold text-primary">{b._count.id} readers</p>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Least Read */}
+      <div className="rounded-2xl border border-border bg-card p-5">
+        <h2 className="text-base font-semibold text-foreground mb-4">Least Read (0 readers)</h2>
+        {leastRead.length === 0 ? (
+          <p className="text-sm text-muted-foreground py-4 text-center">All published books have readers!</p>
+        ) : (
+          <div className="space-y-2">
+            {leastRead.map((b) => (
+              <div key={b.id} className="flex items-center gap-3 rounded-xl p-2.5 hover:bg-muted/50 transition-colors">
+                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-red-500/10 text-xs font-bold text-red-500">
+                  !
+                </div>
+                <p className="text-sm font-medium">{b.title}</p>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
   );
 }

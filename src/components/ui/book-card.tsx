@@ -28,8 +28,8 @@ export function BookCard({
   return (
     <div
       className={cn(
-        "group relative flex flex-col overflow-hidden rounded-2xl border bg-card transition-all duration-300",
-        "hover:shadow-lg hover:shadow-primary/5 hover:-translate-y-1",
+        "group relative flex flex-col overflow-hidden rounded-2xl border border-border bg-card transition-all duration-200",
+        "hover:shadow-md hover:shadow-primary/5 hover:-translate-y-0.5",
         className
       )}
     >
@@ -39,12 +39,12 @@ export function BookCard({
           src={book.coverUrl}
           alt={book.title}
           fill
-          className="object-cover transition-transform duration-300 group-hover:scale-105"
-          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+          className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
         />
 
-        {/* Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+        {/* Gradient overlay on hover */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
 
         {/* Favorite button */}
         {onFavorite && (
@@ -53,78 +53,76 @@ export function BookCard({
               e.stopPropagation();
               onFavorite();
             }}
-            className="absolute right-3 top-3 rounded-full bg-white/90 p-2 shadow-sm transition-all hover:bg-white hover:scale-110 dark:bg-black/50 dark:hover:bg-black/70"
-            aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
+            className={cn(
+              "absolute right-2.5 top-2.5 rounded-full p-1.5 shadow-sm transition-all duration-200",
+              "bg-white/90 hover:bg-white hover:scale-105",
+              "dark:bg-black/50 dark:hover:bg-black/70"
+            )}
+            aria-label={isFavorite ? "Sevimlilardan o'chirish" : "Sevimlilarga qo'shish"}
           >
             <Heart
-              size={16}
+              size={14}
               className={cn(
                 "transition-colors",
-                isFavorite
-                  ? "fill-red-500 text-red-500"
-                  : "text-gray-600 dark:text-gray-300"
+                isFavorite ? "fill-red-500 text-red-500" : "text-gray-500 dark:text-gray-400"
               )}
             />
           </button>
         )}
 
         {/* Language badge */}
-        <div className="absolute left-3 top-3">
-          <Badge variant="secondary" className="bg-white/90 text-xs dark:bg-black/50">
+        <div className="absolute left-2.5 top-2.5">
+          <Badge variant="secondary" className="bg-white/90 text-[10px] font-medium dark:bg-black/50">
             {book.language}
           </Badge>
         </div>
 
         {/* Read button overlay */}
-        <div className="absolute inset-x-0 bottom-0 flex justify-center pb-4 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+        <div className="absolute inset-x-0 bottom-0 flex justify-center pb-3 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
           <Button
             size="sm"
             onClick={(e) => {
               e.stopPropagation();
               onRead?.();
             }}
-            className="gap-2 shadow-lg"
+            className="gap-1.5 shadow-lg h-8 text-xs"
           >
-            <BookOpen size={14} />
-            {progress ? "Davom ettirish" : "O'qishni boshlash"}
+            <BookOpen size={13} />
+            {progress ? "Davom ettirish" : "O'qish"}
           </Button>
         </div>
       </div>
 
       {/* Info */}
-      <div className="flex flex-1 flex-col gap-2 p-4">
-        <h3 className="line-clamp-2 text-sm font-semibold leading-tight">
+      <div className="flex flex-1 flex-col gap-1 p-3">
+        <h3 className="line-clamp-2 text-[13px] font-semibold leading-tight text-foreground">
           {book.title}
         </h3>
-        <p className="text-xs text-muted-foreground">
+        <p className="text-xs text-muted-foreground truncate">
           {book.author?.name}
         </p>
 
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1">
-            <Star size={12} className="fill-yellow-400 text-yellow-400" />
-            <span className="text-xs font-medium">{book.averageRating ?? 0}</span>
-          </div>
-          <span className="text-xs text-muted-foreground">·</span>
-          <span className="text-xs text-muted-foreground">{book.totalPages} bet</span>
+        <div className="flex items-center gap-1.5 mt-0.5">
+          {book.averageRating ? (
+            <div className="flex items-center gap-0.5">
+              <Star size={11} className="fill-yellow-400 text-yellow-400" />
+              <span className="text-[11px] font-medium">{book.averageRating}</span>
+            </div>
+          ) : null}
+          <span className="text-[11px] text-muted-foreground">·</span>
+          <span className="text-[11px] text-muted-foreground">{book.totalPages} bet</span>
         </div>
-
-        {book.category && (
-          <Badge variant="outline" className="w-fit text-[10px]">
-            {book.category.name}
-          </Badge>
-        )}
 
         {/* Progress */}
         {progress && (
-          <div className="mt-auto space-y-1.5">
-            <div className="flex items-center justify-between text-xs">
+          <div className="mt-auto pt-2 space-y-1">
+            <div className="flex items-center justify-between text-[11px]">
               <span className="text-muted-foreground">
-                {progress.currentPage} / {progress.totalPages}
+                {progress.currentPage}/{progress.totalPages}
               </span>
               <span className="font-medium text-primary">{progress.progress}%</span>
             </div>
-            <Progress value={progress.progress} className="h-1.5" />
+            <Progress value={progress.progress} className="h-1" />
           </div>
         )}
       </div>

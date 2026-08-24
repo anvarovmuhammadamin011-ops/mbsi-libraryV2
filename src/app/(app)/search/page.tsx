@@ -22,10 +22,10 @@ export default async function SearchPage({
   ]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Qidiruv</h1>
-        <p className="mt-1 text-muted-foreground">
+        <h1 className="text-2xl font-bold text-foreground">Qidiruv</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
           Kitoblar, mualliflar va kategoriyalar bo&apos;yicha qidiruv
         </p>
       </div>

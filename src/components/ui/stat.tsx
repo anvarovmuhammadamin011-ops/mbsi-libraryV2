@@ -1,5 +1,4 @@
 import type { ReactNode } from "react";
-import { Card } from "@/components/ui/card";
 
 interface StatProps {
   label: string;
@@ -9,16 +8,16 @@ interface StatProps {
 
 export function Stat({ label, value, icon }: StatProps) {
   return (
-    <Card className="flex items-center gap-3 p-4">
+    <div className="flex items-center gap-4 rounded-2xl border border-border bg-card p-5">
       {icon && (
-        <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
           {icon}
         </div>
       )}
       <div className="min-w-0">
         <p className="text-sm text-muted-foreground">{label}</p>
-        <p className="truncate text-lg font-semibold">{value}</p>
+        <p className="truncate text-xl font-bold text-foreground">{value}</p>
       </div>
-    </Card>
+    </div>
   );
 }

@@ -4,7 +4,7 @@ import { listContinueReading } from "@/lib/server/reading";
 import { listBooks, listActiveBanners, listActiveRecommendations } from "@/lib/server/books";
 import { BookCardView } from "@/components/book-card-view";
 import { Button } from "@/components/ui/button";
-import { BookOpen, Sparkles } from "lucide-react";
+import { BookOpen, Sparkles, ArrowRight, Library } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -32,66 +32,53 @@ export default async function HomePage() {
     listActiveRecommendations(),
   ]);
 
+  const greeting = new Date().getHours() < 12
+    ? "Xayrli ertalab"
+    : new Date().getHours() < 18
+      ? "Xush kun"
+      : "Xush kech";
+
   return (
-    <div className="space-y-10">
-      {/* Hero */}
-      <section className="relative overflow-hidden rounded-3xl border bg-gradient-to-br from-primary/10 via-card to-card p-8">
+    <div className="space-y-8 animate-fade-in">
+      {/* Greeting + Hero */}
+      <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary/10 via-accent to-background p-6 sm:p-8">
         <div className="max-w-xl">
-          <h1 className="text-3xl font-bold tracking-tight">
-            MBSI Raqamli Kutubxonasi
-          </h1>
-          <p className="mt-2 text-muted-foreground">
-            Kitoblaringizni online o'qing, o'qish jarayonini kuzating va
-            reytingda yuqoriga chiqing.
+          <p className="text-sm font-medium text-primary mb-1">
+            {greeting} 👋
           </p>
-          <div className="mt-4 flex gap-2">
-            <Button render={<Link href="/books" />} className="gap-2">
-              <BookOpen size={16} /> Kutubxonaga o'tish
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
+            {user.name}
+          </h1>
+          <p className="mt-2 text-sm sm:text-base text-muted-foreground leading-relaxed">
+            Bugun nimani o'qishni xohlaysiz? Kutubxonada 24+ kitob sizni kutmoqda.
+          </p>
+          <div className="mt-5 flex flex-wrap gap-2">
+            <Button render={<Link href="/books" />} className="gap-2 h-10">
+              <Library size={16} /> Kutubxonaga o'tish
             </Button>
-            <Button variant="outline" render={<Link href="/ranking" />} className="gap-2">
+            <Button variant="outline" render={<Link href="/ranking" />} className="gap-2 h-10">
               <Sparkles size={16} /> Reyting
             </Button>
           </div>
         </div>
+        {/* Decorative circles */}
+        <div className="absolute -right-8 -top-8 h-40 w-40 rounded-full bg-primary/5" />
+        <div className="absolute -right-4 bottom-0 h-24 w-24 rounded-full bg-primary/8" />
       </section>
-
-      {/* Banners */}
-      {banners.length > 0 && (
-        <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {banners.map((b) => (
-            <Link
-              key={b.id}
-              href={b.link || "#"}
-              className="group relative overflow-hidden rounded-2xl border bg-gradient-to-br from-primary/15 via-card to-card p-5 transition hover:shadow-md"
-            >
-              {b.imageUrl && (
-                <img
-                  src={b.imageUrl}
-                  alt={b.title}
-                  className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-20 transition group-hover:opacity-30"
-                />
-              )}
-              <div className="relative">
-                <h3 className="text-lg font-semibold">{b.title}</h3>
-                {b.description && (
-                  <p className="mt-1 text-sm text-muted-foreground">{b.description}</p>
-                )}
-              </div>
-            </Link>
-          ))}
-        </section>
-      )}
 
       {/* Continue reading */}
       {continueReading.length > 0 && (
         <section className="space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-semibold">O'qishni davom ettirish</h2>
-            <Link href="/continue-reading" className="text-sm text-primary hover:underline">
-              Barchasi
+            <h2 className="text-lg font-semibold text-foreground">O'qishni davom ettirish</h2>
+            <Link
+              href="/continue-reading"
+              className="flex items-center gap-1 text-sm font-medium text-primary hover:text-primary/80 transition-colors"
+            >
+              Barchasi <ArrowRight size={14} />
             </Link>
           </div>
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
             {continueReading.map((p) => (
               <BookCardView key={p.bookId} book={p.book!} progress={p} />
             ))}
@@ -103,13 +90,13 @@ export default async function HomePage() {
       {recommendations.length > 0 && (
         <section className="space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-semibold">Tavsiyalar</h2>
+            <h2 className="text-lg font-semibold text-foreground">Tavsiyalar</h2>
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {recommendations.map((r) => (
               <div key={r.id} className="space-y-3">
                 <div>
-                  <h3 className="font-medium">{r.title}</h3>
+                  <h3 className="font-medium text-foreground">{r.title}</h3>
                   {r.description && (
                     <p className="text-sm text-muted-foreground">{r.description}</p>
                   )}
@@ -121,15 +108,18 @@ export default async function HomePage() {
         </section>
       )}
 
-      {/* Recommended / newest */}
+      {/* New books */}
       <section className="space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-xl font-semibold">Yangi kitoblar</h2>
-          <Link href="/books" className="text-sm text-primary hover:underline">
-            Barchasi
+          <h2 className="text-lg font-semibold text-foreground">Yangi kitoblar</h2>
+          <Link
+            href="/books"
+            className="flex items-center gap-1 text-sm font-medium text-primary hover:text-primary/80 transition-colors"
+          >
+            Barchasi <ArrowRight size={14} />
           </Link>
         </div>
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
           {recommended.data.map((b) => (
             <BookCardView key={b.id} book={b} />
           ))}

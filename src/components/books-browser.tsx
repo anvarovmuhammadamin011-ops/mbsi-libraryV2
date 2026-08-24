@@ -1,11 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { api } from "@/lib/api-client";
 import { BookCardView } from "@/components/book-card-view";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
 import {
@@ -15,7 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Search, BookX } from "lucide-react";
+import { Search, BookX, ChevronLeft, ChevronRight } from "lucide-react";
 import type { Book } from "@/types";
 
 interface Category {
@@ -75,24 +73,30 @@ export function BooksBrowser({ categories, authors, initial }: Props) {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
+      {/* Header */}
       <div>
-        <h1 className="text-2xl font-semibold">Kitoblar</h1>
-        <p className="text-sm text-muted-foreground">Kutubxonadagi barcha kitoblar</p>
+        <h1 className="text-2xl font-bold text-foreground">Kitoblar</h1>
+        <p className="text-sm text-muted-foreground mt-1">
+          Kutubxonadagi barcha kitoblar
+        </p>
       </div>
 
-      <Card className="flex flex-wrap items-center gap-3 p-4">
-        <div className="relative min-w-[200px] flex-1">
-          <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            value={q}
-            onChange={(e) => resetPage(setQ)(e.target.value)}
-            placeholder="Qidirish…"
-            className="pl-9"
-          />
-        </div>
+      {/* Search bar */}
+      <div className="relative">
+        <Search className="absolute left-4 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+        <Input
+          value={q}
+          onChange={(e) => resetPage(setQ)(e.target.value)}
+          placeholder="Kitob, muallif yoki mavzu qidiring…"
+          className="h-12 pl-11 text-sm border-transparent bg-muted/50 focus:border-primary/20 focus:bg-card"
+        />
+      </div>
+
+      {/* Filters */}
+      <div className="flex flex-wrap items-center gap-2">
         <Select value={language || "all"} onValueChange={resetPage(setLanguage)}>
-          <SelectTrigger className="w-36"><SelectValue placeholder="Til" /></SelectTrigger>
+          <SelectTrigger className="h-9 w-auto px-3 text-xs"><SelectValue placeholder="Til" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Barcha tillar</SelectItem>
             <SelectItem value="UZ">O'zbek</SelectItem>
@@ -101,7 +105,7 @@ export function BooksBrowser({ categories, authors, initial }: Props) {
           </SelectContent>
         </Select>
         <Select value={categoryId || "all"} onValueChange={resetPage(setCategoryId)}>
-          <SelectTrigger className="w-44"><SelectValue placeholder="Kategoriya" /></SelectTrigger>
+          <SelectTrigger className="h-9 w-auto px-3 text-xs"><SelectValue placeholder="Kategoriya" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Barcha kategoriyalar</SelectItem>
             {categories.map((c) => (
@@ -110,7 +114,7 @@ export function BooksBrowser({ categories, authors, initial }: Props) {
           </SelectContent>
         </Select>
         <Select value={authorId || "all"} onValueChange={resetPage(setAuthorId)}>
-          <SelectTrigger className="w-44"><SelectValue placeholder="Muallif" /></SelectTrigger>
+          <SelectTrigger className="h-9 w-auto px-3 text-xs"><SelectValue placeholder="Muallif" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Barcha mualliflar</SelectItem>
             {authors.map((a) => (
@@ -119,7 +123,7 @@ export function BooksBrowser({ categories, authors, initial }: Props) {
           </SelectContent>
         </Select>
         <Select value={sort} onValueChange={resetPage(setSort)}>
-          <SelectTrigger className="w-40"><SelectValue placeholder="Saralash" /></SelectTrigger>
+          <SelectTrigger className="h-9 w-auto px-3 text-xs"><SelectValue placeholder="Saralash" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="newest">Yangi</SelectItem>
             <SelectItem value="rating">Reyting</SelectItem>
@@ -127,12 +131,17 @@ export function BooksBrowser({ categories, authors, initial }: Props) {
             <SelectItem value="pages">Sahifalar</SelectItem>
           </SelectContent>
         </Select>
-      </Card>
+      </div>
 
+      {/* Results */}
       {loading ? (
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
           {Array.from({ length: 10 }).map((_, i) => (
-            <Skeleton key={i} className="aspect-[3/4] w-full rounded-2xl" />
+            <div key={i} className="space-y-2">
+              <Skeleton className="aspect-[3/4] w-full rounded-2xl" />
+              <Skeleton className="h-3 w-3/4 rounded" />
+              <Skeleton className="h-3 w-1/2 rounded" />
+            </div>
           ))}
         </div>
       ) : data.length === 0 ? (
@@ -142,21 +151,39 @@ export function BooksBrowser({ categories, authors, initial }: Props) {
           description="Boshqa filtrlarni sinab ko'ring."
         />
       ) : (
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-          {data.map((b) => (
-            <BookCardView key={b.id} book={b} />
-          ))}
-        </div>
+        <>
+          <p className="text-sm text-muted-foreground">{data.length} ta kitob topildi</p>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+            {data.map((b) => (
+              <BookCardView key={b.id} book={b} />
+            ))}
+          </div>
+        </>
       )}
 
+      {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-center gap-2">
-          <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage((p) => Math.max(1, p - 1))}>
-            Oldingi
+        <div className="flex items-center justify-center gap-3 pt-2">
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={page <= 1}
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            className="gap-1"
+          >
+            <ChevronLeft size={14} /> Oldingi
           </Button>
-          <span className="text-sm text-muted-foreground">{page} / {totalPages}</span>
-          <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => setPage((p) => Math.min(totalPages, p + 1))}>
-            Keyingi
+          <span className="text-sm text-muted-foreground">
+            {page} / {totalPages}
+          </span>
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={page >= totalPages}
+            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+            className="gap-1"
+          >
+            Keyingi <ChevronRight size={14} />
           </Button>
         </div>
       )}
