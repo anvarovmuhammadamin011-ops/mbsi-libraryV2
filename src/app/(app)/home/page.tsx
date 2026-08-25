@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/db";
 import { getSessionUser } from "@/lib/server/auth";
 import Link from "next/link";
+import Image from "next/image";
 import {
   BookOpen,
   Flame,
@@ -87,12 +88,12 @@ export default async function HomePage() {
   // Get total coins (demo)
   const coins = 450;
 
-  // Get recommended books
+  // Get newest books
   const recommendedBooks = await prisma.book.findMany({
     where: { isPublished: true },
     include: { author: true, ratings: { select: { rating: true } } },
     orderBy: { createdAt: "desc" },
-    take: 4,
+    take: 8,
   });
 
   // Get trending books (most sessions)
@@ -100,7 +101,7 @@ export default async function HomePage() {
     by: ["bookId"],
     _count: { id: true },
     orderBy: { _count: { id: "desc" } },
-    take: 5,
+    take: 10,
   });
   const trendingBooks = trendingIds.length > 0
     ? await prisma.book.findMany({
@@ -296,8 +297,18 @@ export default async function HomePage() {
                 href={`/books/${book.slug}`}
                 className="group rounded-xl border border-border bg-card overflow-hidden hover:shadow-md transition-all"
               >
-                <div className="aspect-[3/4] bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center">
-                  <BookOpen size={32} className="text-primary/30" />
+                <div className="relative aspect-[3/4] bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center">
+                  {book.coverUrl ? (
+                    <Image
+                      src={book.coverUrl}
+                      alt={book.title}
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 640px) 50vw, 25vw"
+                    />
+                  ) : (
+                    <BookOpen size={32} className="text-primary/30" />
+                  )}
                 </div>
                 <div className="p-3">
                   <p className="text-xs font-semibold text-foreground truncate">{book.title}</p>
