@@ -23,17 +23,17 @@ const COIN_HISTORY: CoinHistory[] = [
   { id: "1", amount: 50, type: "earn", description: "Missiya bajarildi", date: "Bugun" },
   { id: "2", amount: 20, type: "earn", description: "Kitob tugatildi", date: "Kecha" },
   { id: "3", amount: 10, type: "earn", description: "Kunlik maqsad bajarildi", date: "Kecha" },
-  { id: "4", amount: 100, type: "spend", description: "Marketdan sotib olindi", date: "2 kun oldin" },
+  { id: "4", amount: 100, type: "spend", description: "Do'kondan sotib olindi", date: "2 kun oldin" },
   { id: "5", amount: 30, type: "earn", description: "Missiya bajarildi", date: "3 kun oldin" },
 ];
 
 const MARKET_ITEMS: MarketItem[] = [
-  { id: "1", name: "Premium Theme", description: "Maxsus dizayn mavzusi", price: 100, icon: "🎨", category: "Theme" },
-  { id: "2", name: "Special Badge", description: "Maxsus badge yutuq", price: 150, icon: "🏆", category: "Badge" },
-  { id: "3", name: "Streak Freeze", description: "1 kunlik streak himoya", price: 100, icon: "🔥", category: "Power-up" },
-  { id: "4", name: "Reading Bonus", description: "2x coin 3 kun", price: 200, icon: "🎟️", category: "Power-up" },
-  { id: "5", name: "Avatar Frame", description: "Maxsus avatar ramka", price: 120, icon: "🖼️", category: "Avatar" },
-  { id: "6", name: "Custom Status", description: "Shaxsiy status matn", price: 80, icon: "✨", category: "Profile" },
+  { id: "1", name: "Premium mavzu", description: "Maxsus dizayn mavzusi", price: 100, icon: "🎨", category: "Theme" },
+  { id: "2", name: "Maxsus nishon", description: "Maxsus badge yutuq", price: 150, icon: "🏆", category: "Badge" },
+  { id: "3", name: "Ketma-ketlikni muzlatish", description: "1 kunlik ketma-ketlik himoyasi", price: 100, icon: "🔥", category: "Power-up" },
+  { id: "4", name: "O'qish bonusi", description: "2x coin 3 kun", price: 200, icon: "🎟️", category: "Power-up" },
+  { id: "5", name: "Avatar ramkasi", description: "Maxsus avatar ramka", price: 120, icon: "🖼️", category: "Avatar" },
+  { id: "6", name: "Shaxsiy status", description: "Shaxsiy status matn", price: 80, icon: "✨", category: "Profile" },
 ];
 
 export default function CoinsPage() {
@@ -74,7 +74,7 @@ export default function CoinsPage() {
       {/* Market */}
       <div>
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-sm font-semibold text-foreground">🛒 Coin Market</h2>
+          <h2 className="text-sm font-semibold text-foreground">🛒 Coin do&apos;koni</h2>
           <span className="text-xs text-muted-foreground">{MARKET_ITEMS.length} mahsulot</span>
         </div>
         <div className="grid grid-cols-2 gap-3">

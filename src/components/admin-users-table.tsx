@@ -71,10 +71,10 @@ export function AdminUsersTable({ users, currentUserId, stats }: Props) {
     try {
       const next = current === "TEACHER" ? "STUDENT" : "TEACHER";
       await api.patch(`/api/admin/users/${id}`, { role: next });
-      toast.success(`User role updated to ${next}`);
+      toast.success(`Foydalanuvchi roli ${next} ga o'zgartirildi`);
       router.refresh();
     } catch (e: any) {
-      toast.error(e.message || "Failed to update role");
+      toast.error(e.message || "Rolni o'zgartirishda xatolik");
     } finally {
       setBusy(null);
     }
@@ -84,10 +84,10 @@ export function AdminUsersTable({ users, currentUserId, stats }: Props) {
     setBusy(id);
     try {
       await api.patch(`/api/admin/users/${id}`, { isActive: !current });
-      toast.success(current ? "User deactivated" : "User activated");
+      toast.success(current ? "Foydalanuvchi bloklandi" : "Foydalanuvchi faollashtirildi");
       router.refresh();
     } catch (e: any) {
-      toast.error(e.message || "Failed to update status");
+      toast.error(e.message || "Holatni o'zgartirishda xatolik");
     } finally {
       setBusy(null);
     }
@@ -97,18 +97,18 @@ export function AdminUsersTable({ users, currentUserId, stats }: Props) {
     <div className="space-y-6 animate-fade-in">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-foreground">Users</h1>
+        <h1 className="text-2xl font-bold text-foreground">Foydalanuvchilar</h1>
         <p className="text-sm text-muted-foreground mt-0.5">
-          Manage MBSI Library users
+          MBSI kutubxonasi foydalanuvchilarini boshqarish
         </p>
       </div>
 
       {/* Stats */}
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <Stat label="Total" value={stats.total.toLocaleString()} icon={<Users className="size-5" />} />
-        <Stat label="Students" value={stats.students.toLocaleString()} icon={<UserCheck className="size-5" />} />
-        <Stat label="Teachers" value={stats.teachers.toLocaleString()} icon={<Users className="size-5" />} />
-        <Stat label="Admins" value={stats.admins.toLocaleString()} icon={<Shield className="size-5" />} />
+        <Stat label="Jami" value={stats.total.toLocaleString()} icon={<Users className="size-5" />} />
+        <Stat label="O'quvchilar" value={stats.students.toLocaleString()} icon={<UserCheck className="size-5" />} />
+        <Stat label="O'qituvchilar" value={stats.teachers.toLocaleString()} icon={<Users className="size-5" />} />
+        <Stat label="Administratorlar" value={stats.admins.toLocaleString()} icon={<Shield className="size-5" />} />
       </div>
 
       {/* Search + Filters */}
@@ -119,25 +119,25 @@ export function AdminUsersTable({ users, currentUserId, stats }: Props) {
             <Input
               value={q}
               onChange={(e) => setQ(e.target.value)}
-              placeholder="Search users..."
+              placeholder="Foydalanuvchilarni qidirish..."
               className="pl-9 h-10"
             />
           </div>
           <Select value={role} onValueChange={(v) => setRole(v ?? "all")}>
-            <SelectTrigger className="w-36 h-10"><SelectValue placeholder="Role" /></SelectTrigger>
+            <SelectTrigger className="w-36 h-10"><SelectValue placeholder="Rol" /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All roles</SelectItem>
-              <SelectItem value="STUDENT">Student</SelectItem>
-              <SelectItem value="TEACHER">Teacher</SelectItem>
+              <SelectItem value="all">Barcha rollar</SelectItem>
+              <SelectItem value="STUDENT">O'quvchi</SelectItem>
+              <SelectItem value="TEACHER">O'qituvchi</SelectItem>
               <SelectItem value="ADMIN">Admin</SelectItem>
             </SelectContent>
           </Select>
           <Select value={status} onValueChange={(v) => setStatus(v ?? "all")}>
-            <SelectTrigger className="w-36 h-10"><SelectValue placeholder="Status" /></SelectTrigger>
+            <SelectTrigger className="w-36 h-10"><SelectValue placeholder="Holat" /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All status</SelectItem>
-              <SelectItem value="active">Active</SelectItem>
-              <SelectItem value="inactive">Inactive</SelectItem>
+              <SelectItem value="all">Barcha holatlar</SelectItem>
+              <SelectItem value="active">Faol</SelectItem>
+              <SelectItem value="inactive">Nofaol</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -147,8 +147,8 @@ export function AdminUsersTable({ users, currentUserId, stats }: Props) {
       {filtered.length === 0 ? (
         <EmptyState
           icon={<Users className="size-8" />}
-          title="No users found"
-          description="No users match your search criteria."
+          title="Foydalanuvchilar topilmadi"
+          description="Qidiruv mezonlariga mos foydalanuvchi topilmadi."
         />
       ) : (
         <div className="rounded-2xl border border-border bg-card overflow-hidden">
@@ -156,13 +156,13 @@ export function AdminUsersTable({ users, currentUserId, stats }: Props) {
             <table className="w-full text-sm">
               <thead className="border-b border-border bg-muted/30">
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground">User</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground">Role</th>
-                  <th className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground hidden sm:table-cell">Pages</th>
-                  <th className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground hidden md:table-cell">Time</th>
-                  <th className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground hidden lg:table-cell">Books</th>
-                  <th className="px-4 py-3 text-center text-xs font-semibold text-muted-foreground">Status</th>
-                  <th className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground">Actions</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground">Foydalanuvchi</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground">Rol</th>
+                  <th className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground hidden sm:table-cell">Sahifalar</th>
+                  <th className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground hidden md:table-cell">Vaqt</th>
+                  <th className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground hidden lg:table-cell">Kitoblar</th>
+                  <th className="px-4 py-3 text-center text-xs font-semibold text-muted-foreground">Holat</th>
+                  <th className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground">Amallar</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
@@ -176,7 +176,7 @@ export function AdminUsersTable({ users, currentUserId, stats }: Props) {
                         <div className="min-w-0">
                           <p className="font-medium text-foreground truncate max-w-[200px]">{u.name}</p>
                           <p className="text-xs text-muted-foreground">
-                            Joined {new Date(u.createdAt).toLocaleDateString()}
+                            Qo'shilgan: {new Date(u.createdAt).toLocaleDateString("uz-UZ")}
                           </p>
                         </div>
                       </div>
@@ -192,14 +192,14 @@ export function AdminUsersTable({ users, currentUserId, stats }: Props) {
                               : ""
                         }`}
                       >
-                        {u.role === "TEACHER" ? "Teacher" : u.role === "ADMIN" ? "Admin" : "Student"}
+                        {u.role === "TEACHER" ? "O'qituvchi" : u.role === "ADMIN" ? "Admin" : "O'quvchi"}
                       </Badge>
                     </td>
                     <td className="px-4 py-3 text-right text-xs text-muted-foreground hidden sm:table-cell">
                       {u.totalPages.toLocaleString()}
                     </td>
                     <td className="px-4 py-3 text-right text-xs text-muted-foreground hidden md:table-cell">
-                      {Math.round(u.readingTime / 60)}h
+                      {Math.round(u.readingTime / 60)} soat
                     </td>
                     <td className="px-4 py-3 text-right text-xs text-muted-foreground hidden lg:table-cell">
                       {u.bookCount}
@@ -211,7 +211,7 @@ export function AdminUsersTable({ users, currentUserId, stats }: Props) {
                           u.isActive ? "bg-green-500/10 text-green-600" : ""
                         }`}
                       >
-                        {u.isActive ? "Active" : "Inactive"}
+                        {u.isActive ? "Faol" : "Nofaol"}
                       </Badge>
                     </td>
                     <td className="px-4 py-3 text-right">
@@ -226,7 +226,7 @@ export function AdminUsersTable({ users, currentUserId, stats }: Props) {
                               onClick={() => toggleRole(u.id, u.role)}
                             >
                               {busy === u.id ? <Loader2 className="size-3 animate-spin" /> : null}
-                              {u.role === "TEACHER" ? "Make Student" : "Make Teacher"}
+                              {u.role === "TEACHER" ? "O'quvchi qilish" : "O'qituvchi qilish"}
                             </Button>
                             <Button
                               variant="outline"

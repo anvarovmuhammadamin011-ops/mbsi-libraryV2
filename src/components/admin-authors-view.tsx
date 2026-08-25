@@ -33,7 +33,7 @@ export function AdminAuthorsView({ authors }: { authors: AuthorItem[] }) {
 
   async function addAuthor() {
     if (!form.name.trim()) {
-      toast.error("Author name is required");
+      toast.error("Muallif ismi to'ldirish shart");
       return;
     }
     setBusy(true);
@@ -42,12 +42,12 @@ export function AdminAuthorsView({ authors }: { authors: AuthorItem[] }) {
         name: form.name.trim(),
         biography: form.biography.trim() || undefined,
       });
-      toast.success("Author created");
+      toast.success("Muallif yaratildi");
       setForm({ name: "", biography: "" });
       setShowAdd(false);
       router.refresh();
     } catch (e: any) {
-      toast.error(e.message || "Failed to create author");
+      toast.error(e.message || "Muallifni yaratishda xatolik");
     } finally {
       setBusy(false);
     }
@@ -61,24 +61,24 @@ export function AdminAuthorsView({ authors }: { authors: AuthorItem[] }) {
         name: form.name.trim(),
         biography: form.biography.trim() || undefined,
       });
-      toast.success("Author updated");
+      toast.success("Muallif yangilandi");
       setEditing(null);
       router.refresh();
     } catch (e: any) {
-      toast.error(e.message || "Failed to update author");
+      toast.error(e.message || "Muallifni yangilashda xatolik");
     } finally {
       setBusy(false);
     }
   }
 
   async function deleteAuthor(id: string, name: string) {
-    if (!confirm(`Delete author "${name}"?`)) return;
+    if (!confirm(`"${name}" muallifi o'chirilsinmi?`)) return;
     try {
       await api.delete(`/api/admin/authors/${id}`);
-      toast.success("Author deleted");
+      toast.success("Muallif o'chirildi");
       router.refresh();
     } catch (e: any) {
-      toast.error(e.message || "Failed to delete author");
+      toast.error(e.message || "Muallifni o'chirishda xatolik");
     }
   }
 
@@ -86,31 +86,31 @@ export function AdminAuthorsView({ authors }: { authors: AuthorItem[] }) {
     <div className="space-y-6 animate-fade-in">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Authors</h1>
+          <h1 className="text-2xl font-bold text-foreground">Mualliflar</h1>
           <p className="text-sm text-muted-foreground mt-0.5">
-            Manage library authors · {authors.length} total
+            Kutubxona mualliflarini boshqarish · Jami {authors.length}
           </p>
         </div>
         <Button className="gap-2" onClick={() => { setForm({ name: "", biography: "" }); setShowAdd(true); }}>
-          <Plus size={16} /> Add Author
+          <Plus size={16} /> Muallif qo'shish
         </Button>
       </div>
 
       {authors.length === 0 ? (
         <EmptyState
           icon={<Users className="size-8" />}
-          title="No authors"
-          description="Add authors to categorize books."
+          title="Mualliflar yo'q"
+          description="Kitoblarni tasniflash uchun mualliflar qo'shing."
         />
       ) : (
         <div className="rounded-2xl border border-border bg-card overflow-hidden">
           <table className="w-full text-sm">
             <thead className="border-b border-border bg-muted/30">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground">Author</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground hidden md:table-cell">Biography</th>
-                <th className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground">Books</th>
-                <th className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground">Actions</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground">Muallif</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground hidden md:table-cell">Biografiya</th>
+                <th className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground">Kitoblar</th>
+                <th className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground">Amallar</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
@@ -128,7 +128,7 @@ export function AdminAuthorsView({ authors }: { authors: AuthorItem[] }) {
                     {a.biography || "—"}
                   </td>
                   <td className="px-4 py-3 text-right">
-                    <Badge variant="secondary" className="text-[10px]">{a.bookCount} books</Badge>
+                    <Badge variant="secondary" className="text-[10px]">{a.bookCount} kitob</Badge>
                   </td>
                   <td className="px-4 py-3 text-right">
                     <div className="flex items-center justify-end gap-1">
@@ -163,18 +163,18 @@ export function AdminAuthorsView({ authors }: { authors: AuthorItem[] }) {
       {/* Add Dialog */}
       <Dialog open={showAdd} onOpenChange={setShowAdd}>
         <DialogContent>
-          <DialogHeader><DialogTitle>Add Author</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>Muallif qo'shish</DialogTitle></DialogHeader>
           <div className="space-y-3">
             <div className="space-y-1.5">
-              <Label>Name *</Label>
-              <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="e.g. Abdulla Qodiriy" />
+              <Label>Nomi *</Label>
+              <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Masalan: Abdulla Qodiriy" />
             </div>
             <div className="space-y-1.5">
-              <Label>Biography</Label>
-              <Input value={form.biography} onChange={(e) => setForm({ ...form, biography: e.target.value })} placeholder="Short bio" />
+              <Label>Biografiya</Label>
+              <Input value={form.biography} onChange={(e) => setForm({ ...form, biography: e.target.value })} placeholder="Qisqa ma'lumot" />
             </div>
             <Button onClick={addAuthor} disabled={busy} className="w-full">
-              {busy ? "Creating..." : "Create Author"}
+              {busy ? "Yaratilmoqda..." : "Muallifni yaratish"}
             </Button>
           </div>
         </DialogContent>
@@ -183,18 +183,18 @@ export function AdminAuthorsView({ authors }: { authors: AuthorItem[] }) {
       {/* Edit Dialog */}
       <Dialog open={!!editing} onOpenChange={(open) => { if (!open) setEditing(null); }}>
         <DialogContent>
-          <DialogHeader><DialogTitle>Edit Author</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>Muallifni tahrirlash</DialogTitle></DialogHeader>
           <div className="space-y-3">
             <div className="space-y-1.5">
-              <Label>Name *</Label>
+              <Label>Nomi *</Label>
               <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
             </div>
             <div className="space-y-1.5">
-              <Label>Biography</Label>
+              <Label>Biografiya</Label>
               <Input value={form.biography} onChange={(e) => setForm({ ...form, biography: e.target.value })} />
             </div>
             <Button onClick={saveEdit} disabled={busy} className="w-full">
-              {busy ? "Saving..." : "Save Changes"}
+              {busy ? "Saqlanmoqda..." : "O'zgarishlarni saqlash"}
             </Button>
           </div>
         </DialogContent>

@@ -305,7 +305,7 @@ export default async function HomePage() {
                   <div className="flex items-center gap-1 mt-1">
                     <Star size={10} className="fill-yellow-400 text-yellow-400" />
                     <span className="text-[10px] font-medium">{avgRating}</span>
-                    <span className="text-[10px] text-muted-foreground ml-auto">{book.totalPages}p</span>
+                    <span className="text-[10px] text-muted-foreground ml-auto">{book.totalPages} bet</span>
                   </div>
                 </div>
               </Link>

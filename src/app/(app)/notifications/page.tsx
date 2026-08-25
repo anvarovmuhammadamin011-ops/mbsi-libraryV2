@@ -56,8 +56,8 @@ const DEMO_NOTIFICATIONS: Notification[] = [
   },
   {
     id: "5",
-    title: "Streak xabardorligi",
-    message: "Bugungi streakni saqlab qolish uchun kamida 1 sahifa o'qing",
+    title: "Ketma-ketlik xabardorligi",
+    message: "Bugungi ketma-ketlikni saqlab qolish uchun kamida 1 sahifa o'qing",
     type: "system",
     read: true,
     time: "2 kun oldin",

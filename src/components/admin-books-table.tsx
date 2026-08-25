@@ -90,14 +90,14 @@ export function AdminBooksTable({ books, categories, authors }: Props) {
   }, [books, q, language, category, status, sort]);
 
   async function deleteBook(id: string) {
-    if (!confirm("Are you sure you want to delete this book? This action cannot be undone.")) return;
+    if (!confirm("Bu kitobni o'chirishni xohlaysizmi? Bu amalni bekor qilib bo'lmaydi.")) return;
     setDeleting(id);
     try {
       await api.delete(`/api/admin/books/${id}`);
-      toast.success("Book deleted successfully");
+      toast.success("Kitob o'chirildi");
       router.refresh();
     } catch (e: any) {
-      toast.error(e.message || "Failed to delete book");
+      toast.error(e.message || "Kitobni o'chirishda xatolik");
     } finally {
       setDeleting(null);
     }
@@ -106,10 +106,10 @@ export function AdminBooksTable({ books, categories, authors }: Props) {
   async function togglePublish(id: string, current: boolean) {
     try {
       await api.patch(`/api/admin/books/${id}`, { isPublished: !current });
-      toast.success(current ? "Book unpublished" : "Book published");
+      toast.success(current ? "Kitob nashrdan olindi" : "Kitob nashr etildi");
       router.refresh();
     } catch (e: any) {
-      toast.error(e.message || "Failed to update");
+      toast.error(e.message || "Yangilashda xatolik");
     }
   }
 
@@ -118,13 +118,13 @@ export function AdminBooksTable({ books, categories, authors }: Props) {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Books</h1>
+          <h1 className="text-2xl font-bold text-foreground">Kitoblar</h1>
           <p className="text-sm text-muted-foreground mt-0.5">
-            Manage all MBSI Library books · {books.length} total
+            MBSI kutubxonasi kitoblarini boshqarish · Jami {books.length}
           </p>
         </div>
-        <Button className="gap-2" onClick={() => toast.info("Use the upload form below to add books")}>
-          <Plus size={16} /> Add Book
+        <Button className="gap-2" onClick={() => toast.info("Kitob qo'shish uchun quyidagi yuklash formasidan foydalaning")}>
+          <Plus size={16} /> Kitob qo'shish
         </Button>
       </div>
 
@@ -136,43 +136,43 @@ export function AdminBooksTable({ books, categories, authors }: Props) {
             <Input
               value={q}
               onChange={(e) => setQ(e.target.value)}
-              placeholder="Search books..."
+              placeholder="Kitoblarni qidirish..."
               className="pl-9 h-10"
             />
           </div>
           <Select value={language} onValueChange={(v) => setLanguage(v ?? "all")}>
-            <SelectTrigger className="w-32 h-10"><SelectValue placeholder="Language" /></SelectTrigger>
+            <SelectTrigger className="w-32 h-10"><SelectValue placeholder="Til" /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All languages</SelectItem>
+              <SelectItem value="all">Barcha tillar</SelectItem>
               <SelectItem value="UZ">O'zbek</SelectItem>
               <SelectItem value="RU">Rus</SelectItem>
-              <SelectItem value="EN">English</SelectItem>
+              <SelectItem value="EN">Ingliz</SelectItem>
             </SelectContent>
           </Select>
           <Select value={category} onValueChange={(v) => setCategory(v ?? "all")}>
-            <SelectTrigger className="w-40 h-10"><SelectValue placeholder="Category" /></SelectTrigger>
+            <SelectTrigger className="w-40 h-10"><SelectValue placeholder="Kategoriya" /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All categories</SelectItem>
+              <SelectItem value="all">Barcha kategoriyalar</SelectItem>
               {categories.map((c) => (
                 <SelectItem key={c.id} value={c.name}>{c.name}</SelectItem>
               ))}
             </SelectContent>
           </Select>
           <Select value={status} onValueChange={(v) => setStatus(v ?? "all")}>
-            <SelectTrigger className="w-32 h-10"><SelectValue placeholder="Status" /></SelectTrigger>
+            <SelectTrigger className="w-32 h-10"><SelectValue placeholder="Holat" /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All status</SelectItem>
-              <SelectItem value="published">Published</SelectItem>
-              <SelectItem value="draft">Draft</SelectItem>
+              <SelectItem value="all">Barcha holatlar</SelectItem>
+              <SelectItem value="published">Nashr etilgan</SelectItem>
+              <SelectItem value="draft">Qoralama</SelectItem>
             </SelectContent>
           </Select>
           <Select value={sort} onValueChange={(v) => setSort(v ?? "newest")}>
-            <SelectTrigger className="w-36 h-10"><SelectValue placeholder="Sort" /></SelectTrigger>
+            <SelectTrigger className="w-36 h-10"><SelectValue placeholder="Saralash" /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="newest">Newest</SelectItem>
-              <SelectItem value="oldest">Oldest</SelectItem>
-              <SelectItem value="popular">Most read</SelectItem>
-              <SelectItem value="rating">Highest rated</SelectItem>
+              <SelectItem value="newest">Eng yangi</SelectItem>
+              <SelectItem value="oldest">Eng eski</SelectItem>
+              <SelectItem value="popular">Eng ko'p o'qilgan</SelectItem>
+              <SelectItem value="rating">Eng yuqori reytingli</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -182,8 +182,8 @@ export function AdminBooksTable({ books, categories, authors }: Props) {
       {filtered.length === 0 ? (
         <EmptyState
           icon={<BookMarked className="size-8" />}
-          title="No books found"
-          description="Try different search terms or filters."
+          title="Kitoblar topilmadi"
+          description="Boshqa qidiruv so'zlari yoki filtrlarni sinab ko'ring."
         />
       ) : (
         <div className="rounded-2xl border border-border bg-card overflow-hidden">
@@ -191,14 +191,14 @@ export function AdminBooksTable({ books, categories, authors }: Props) {
             <table className="w-full text-sm">
               <thead className="border-b border-border bg-muted/30">
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground">Book</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground hidden md:table-cell">Category</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground hidden lg:table-cell">Language</th>
-                  <th className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground">Pages</th>
-                  <th className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground hidden sm:table-cell">Readers</th>
-                  <th className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground hidden md:table-cell">Rating</th>
-                  <th className="px-4 py-3 text-center text-xs font-semibold text-muted-foreground">Status</th>
-                  <th className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground">Actions</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground">Kitob</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground hidden md:table-cell">Kategoriya</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground hidden lg:table-cell">Til</th>
+                  <th className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground">Sahifalar</th>
+                  <th className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground hidden sm:table-cell">O'quvchilar</th>
+                  <th className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground hidden md:table-cell">Reyting</th>
+                  <th className="px-4 py-3 text-center text-xs font-semibold text-muted-foreground">Holat</th>
+                  <th className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground">Amallar</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
@@ -233,7 +233,7 @@ export function AdminBooksTable({ books, categories, authors }: Props) {
                         variant={b.isPublished ? "default" : "secondary"}
                         className={`text-[10px] ${b.isPublished ? "bg-green-500/10 text-green-600" : ""}`}
                       >
-                        {b.isPublished ? "Published" : "Draft"}
+                        {b.isPublished ? "Nashr etilgan" : "Qoralama"}
                       </Badge>
                     </td>
                     <td className="px-4 py-3 text-right">

@@ -102,7 +102,7 @@ export default async function AdminDashboard() {
   for (let i = 6; i >= 0; i--) {
     const d = new Date();
     d.setDate(d.getDate() - i);
-    const dayStr = d.toLocaleDateString("en-US", { weekday: "short" });
+    const dayStr = d.toLocaleDateString("uz-UZ", { weekday: "short" });
     const dayStart = new Date(d.setHours(0, 0, 0, 0));
     const dayEnd = new Date(d.setHours(23, 59, 59, 999));
     const daySessions = dailySessions.filter((s) => {
@@ -130,51 +130,51 @@ export default async function AdminDashboard() {
     <div className="space-y-8 animate-fade-in">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
+        <h1 className="text-2xl font-bold text-foreground">Boshqaruv paneli</h1>
         <p className="text-sm text-muted-foreground mt-1">
-          MBSI Library overview
+          MBSI Library umumiy ko&apos;rinishi
         </p>
       </div>
 
       {/* Stats Grid */}
       <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
         <Stat
-          label="Total Users"
+          label="Jami foydalanuvchilar"
           value={totalUsers.toLocaleString()}
           icon={<Users className="size-5" />}
         />
         <Stat
-          label="Total Books"
+          label="Jami kitoblar"
           value={totalBooks.toLocaleString()}
           icon={<BookMarked className="size-5" />}
         />
         <Stat
-          label="Pages Read"
+          label="O'qilgan sahifa"
           value={totalPages.toLocaleString()}
           icon={<BookOpen className="size-5" />}
         />
         <Stat
-          label="Reading Time"
-          value={`${totalHours}h`}
+          label="O'qish vaqti"
+          value={`${totalHours} soat`}
           icon={<Clock className="size-5" />}
         />
         <Stat
-          label="Active Readers"
+          label="Faol o'quvchilar"
           value={activeToday.length.toLocaleString()}
           icon={<Activity className="size-5" />}
         />
         <Stat
-          label="Completed Books"
+          label="Yakunlangan kitoblar"
           value={completedProgress.toLocaleString()}
           icon={<CheckCircle className="size-5" />}
         />
         <Stat
-          label="Avg Rating"
+          label="O'rtacha reyting"
           value={avgRating._avg.rating ? avgRating._avg.rating.toFixed(1) : "—"}
           icon={<Star className="size-5" />}
         />
         <Stat
-          label="Reading Sessions"
+          label="O'qish sessiyalari"
           value={sessions.toLocaleString()}
           icon={<TrendingUp className="size-5" />}
         />
@@ -187,9 +187,9 @@ export default async function AdminDashboard() {
         {/* Top Students */}
         <div className="rounded-2xl border border-border bg-card p-5">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-base font-semibold text-foreground">🏆 Top Students</h2>
+            <h2 className="text-base font-semibold text-foreground">🏆 Eng faol o&apos;quvchilar</h2>
             <Link href="/admin/ratings" className="text-xs font-medium text-primary hover:underline">
-              View all
+              Barchasini ko&apos;rish
             </Link>
           </div>
           <div className="space-y-2">
@@ -215,8 +215,8 @@ export default async function AdminDashboard() {
                   {(studentMap.get(s.userId) ?? "?").charAt(0)}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="truncate text-sm font-medium">{studentMap.get(s.userId) ?? "Unknown"}</p>
-                  <p className="text-xs text-muted-foreground">{s._count.id} sessions</p>
+                  <p className="truncate text-sm font-medium">{studentMap.get(s.userId) ?? "Noma'lum"}</p>
+                  <p className="text-xs text-muted-foreground">{s._count.id} sessiya</p>
                 </div>
                 <p className="text-sm font-semibold text-foreground">
                   {(s._sum.currentPage ?? 0).toLocaleString()}
@@ -229,9 +229,9 @@ export default async function AdminDashboard() {
         {/* Top Teachers */}
         <div className="rounded-2xl border border-border bg-card p-5">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-base font-semibold text-foreground">👨‍🏫 Top Teachers</h2>
+            <h2 className="text-base font-semibold text-foreground">👨‍🏫 Eng faol o&apos;qituvchilar</h2>
             <Link href="/admin/ratings" className="text-xs font-medium text-primary hover:underline">
-              View all
+              Barchasini ko&apos;rish
             </Link>
           </div>
           <div className="space-y-2">
@@ -257,9 +257,9 @@ export default async function AdminDashboard() {
                   {(teacherMap.get(t.userId) ?? "?").charAt(0)}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="truncate text-sm font-medium">{teacherMap.get(t.userId) ?? "Unknown"}</p>
+                  <p className="truncate text-sm font-medium">{teacherMap.get(t.userId) ?? "Noma'lum"}</p>
                   <p className="text-xs text-muted-foreground">
-                    {Math.round((t._sum.duration ?? 0) / 60)} min reading
+                    {Math.round((t._sum.duration ?? 0) / 60)} daqiqa o&apos;qish
                   </p>
                 </div>
                 <p className="text-sm font-semibold text-foreground">
@@ -273,7 +273,7 @@ export default async function AdminDashboard() {
 
       {/* Recent Activity */}
       <div className="rounded-2xl border border-border bg-card p-5">
-        <h2 className="text-base font-semibold text-foreground mb-4">Recent Activity</h2>
+        <h2 className="text-base font-semibold text-foreground mb-4">So&apos;nggi faoliyat</h2>
         <div className="space-y-3">
           {recentSessions.map((s) => (
             <div
@@ -285,16 +285,17 @@ export default async function AdminDashboard() {
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm">
-                  <span className="font-medium">{s.user?.name ?? "Unknown"}</span>
-                  {" "}read{" "}
-                  <span className="font-medium">{s.book?.title ?? "a book"}</span>
+                  <span className="font-medium">{s.user?.name ?? "Noma'lum"}</span>
+                  {" "}
+                  <span className="font-medium">{s.book?.title ?? "bir"}</span>
+                  {" "}kitobini o&apos;qidi
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  {s.pagesRead} pages · {Math.round(s.duration / 60)} min
+                  {s.pagesRead} sahifa · {Math.round(s.duration / 60)} daqiqa
                 </p>
               </div>
               <p className="text-xs text-muted-foreground whitespace-nowrap">
-                {new Date(s.startedAt).toLocaleTimeString("en-US", {
+                {new Date(s.startedAt).toLocaleTimeString("uz-UZ", {
                   hour: "2-digit",
                   minute: "2-digit",
                 })}

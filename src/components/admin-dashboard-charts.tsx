@@ -12,8 +12,8 @@ export function AdminDashboardCharts({ data }: { data: ChartData[] }) {
   return (
     <div className="rounded-2xl border border-border bg-card p-5">
       <div className="mb-5">
-        <h2 className="text-base font-semibold text-foreground">Reading Activity</h2>
-        <p className="text-xs text-muted-foreground mt-0.5">Pages read per day (last 7 days)</p>
+        <h2 className="text-base font-semibold text-foreground">O'qish faolligi</h2>
+        <p className="text-xs text-muted-foreground mt-0.5">Kunlik o'qilgan sahifalar (oxirgi 7 kun)</p>
       </div>
 
       {/* Simple bar chart */}
@@ -42,13 +42,13 @@ export function AdminDashboardCharts({ data }: { data: ChartData[] }) {
         <div className="flex items-center gap-2">
           <div className="h-2.5 w-2.5 rounded-full bg-primary/80" />
           <span className="text-xs text-muted-foreground">
-            Total: {data.reduce((sum, d) => sum + d.pages, 0).toLocaleString()} pages
+            Jami: {data.reduce((sum, d) => sum + d.pages, 0).toLocaleString()} sahifa
           </span>
         </div>
         <div className="flex items-center gap-2">
           <div className="h-2.5 w-2.5 rounded-full bg-primary/40" />
           <span className="text-xs text-muted-foreground">
-            Avg: {Math.round(data.reduce((sum, d) => sum + d.pages, 0) / 7).toLocaleString()} pages/day
+            O'rtacha: {Math.round(data.reduce((sum, d) => sum + d.pages, 0) / 7).toLocaleString()} sahifa/kun
           </span>
         </div>
       </div>

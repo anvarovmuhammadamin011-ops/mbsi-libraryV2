@@ -27,27 +27,27 @@ export default async function AdminAuditLogPage() {
   return (
     <div className="space-y-6 animate-fade-in">
       <div>
-        <h1 className="text-2xl font-bold text-foreground">Audit Logs</h1>
+        <h1 className="text-2xl font-bold text-foreground">Audit jurnali</h1>
         <p className="text-sm text-muted-foreground mt-1">
-          System activity history
+          Tizim harakatlari tarixi
         </p>
       </div>
 
       {logs.length === 0 ? (
         <div className="rounded-2xl border border-border bg-card p-12 text-center">
           <FileText className="size-8 text-muted-foreground mx-auto mb-3" />
-          <p className="text-sm text-muted-foreground">No audit logs yet. Activity will appear here as actions are performed.</p>
+          <p className="text-sm text-muted-foreground">Hali audit yozuvlari yo&apos;q. Harakatlar bajarilganda shu yerda ko&apos;rinadi.</p>
         </div>
       ) : (
         <div className="rounded-2xl border border-border bg-card overflow-hidden">
           <table className="w-full text-sm">
             <thead className="border-b border-border bg-muted/30">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground">Time</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground">User</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground">Action</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground hidden md:table-cell">Entity</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground hidden lg:table-cell">Details</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground">Vaqt</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground">Foydalanuvchi</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground">Harakat</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground hidden md:table-cell">Obyekt</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground hidden lg:table-cell">Batafsil</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
@@ -59,14 +59,14 @@ export default async function AdminAuditLogPage() {
                 return (
                   <tr key={log.id} className="hover:bg-muted/30 transition-colors">
                     <td className="px-4 py-3 text-xs text-muted-foreground whitespace-nowrap">
-                      {new Date(log.createdAt).toLocaleString("en-US", {
+                      {new Date(log.createdAt).toLocaleString("uz-UZ", {
                         month: "short",
                         day: "numeric",
                         hour: "2-digit",
                         minute: "2-digit",
                       })}
                     </td>
-                    <td className="px-4 py-3 text-sm font-medium">{log.user?.name ?? "System"}</td>
+                    <td className="px-4 py-3 text-sm font-medium">{log.user?.name ?? "Tizim"}</td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
                         <div className={`flex h-6 w-6 items-center justify-center rounded-md ${actionInfo.color}`}>

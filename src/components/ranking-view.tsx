@@ -47,7 +47,7 @@ function LeaderboardCard({ entry, rank, currentUserId }: { entry: RankingEntry; 
           {isMe && <Badge variant="secondary" className="shrink-0 text-[10px]">Siz</Badge>}
         </div>
         <p className="text-xs text-muted-foreground">
-          {entry.streak > 0 ? `${entry.streak} kunlik streak` : "Yangi boshladi"}
+          {entry.streak > 0 ? `${entry.streak} kunlik ketma-ketlik` : "Yangi boshladi"}
         </p>
       </div>
 

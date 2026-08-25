@@ -96,7 +96,7 @@ export default async function ReportsPage() {
             <p className="text-xs text-muted-foreground mt-1">Sahifalar</p>
           </div>
           <div className="text-center p-3 rounded-lg bg-muted/30">
-            <p className="text-2xl font-bold text-foreground">{totalHours}h</p>
+            <p className="text-2xl font-bold text-foreground">{totalHours} soat</p>
             <p className="text-xs text-muted-foreground mt-1">O'qish vaqti</p>
           </div>
         </div>
@@ -115,7 +115,7 @@ export default async function ReportsPage() {
               </div>
               <Button variant="ghost" size="sm" className="h-8 gap-1.5 text-xs">
                 <Download size={14} />
-                Export
+                Eksport
               </Button>
             </div>
             <h3 className="text-sm font-semibold text-foreground mb-1">{r.title}</h3>
@@ -130,15 +130,15 @@ export default async function ReportsPage() {
 
       {/* Export Options */}
       <div className="rounded-xl border border-border bg-card p-6">
-        <h2 className="text-base font-semibold text-foreground mb-4">Export formatlari</h2>
+        <h2 className="text-base font-semibold text-foreground mb-4">Eksport formatlari</h2>
         <div className="flex flex-wrap gap-3">
           <Button variant="outline" size="sm" className="gap-2">
             <FileText size={14} />
-            PDF export
+            PDF eksport
           </Button>
           <Button variant="outline" size="sm" className="gap-2">
             <Table size={14} />
-            Excel/CSV export
+            Excel/CSV eksport
           </Button>
         </div>
       </div>

@@ -6,11 +6,11 @@ import { Home, BookMarked, Target, Trophy, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
-  { label: "Home", href: "/home", icon: Home },
-  { label: "Books", href: "/books", icon: BookMarked },
-  { label: "Mission", href: "/missions", icon: Target },
-  { label: "Rank", href: "/ranking", icon: Trophy },
-  { label: "Profile", href: "/profile", icon: User },
+  { label: "Asosiy", href: "/home", icon: Home },
+  { label: "Kitoblar", href: "/books", icon: BookMarked },
+  { label: "Missiyalar", href: "/missions", icon: Target },
+  { label: "Reyting", href: "/ranking", icon: Trophy },
+  { label: "Profil", href: "/profile", icon: User },
 ];
 
 export function MobileNav() {

@@ -162,7 +162,7 @@ export default async function ProfilePage() {
             <div className="mt-4 max-w-xs mx-auto sm:mx-0">
               <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
                 <span className="flex items-center gap-1 font-medium text-foreground">
-                  <Crown size={12} className="text-amber-500" /> Level {level}
+                  <Crown size={12} className="text-amber-500" /> Daraja {level}
                 </span>
                 <span>{xp} / {next} XP</span>
               </div>
@@ -178,7 +178,7 @@ export default async function ProfilePage() {
             <div className="mt-3 flex items-center justify-center sm:justify-start gap-1 text-sm text-muted-foreground">
               <Flame size={14} className="text-orange-500" />
               <span className="font-semibold text-orange-600">{stats.currentStreak} kun</span>
-              <span>streak</span>
+              <span>ketma-ketlik</span>
             </div>
           </div>
 
@@ -412,14 +412,14 @@ export default async function ProfilePage() {
         </div>
         <div className="grid grid-cols-4 sm:grid-cols-6 gap-3">
           {[
-            { icon: "📚", label: "First Book", unlocked: stats.totalBooks >= 1 },
-            { icon: "📖", label: "Bookworm", unlocked: stats.totalBooks >= 5 },
-            { icon: "🔥", label: "Streak", unlocked: stats.currentStreak >= 7 },
-            { icon: "📄", label: "1000 Pages", unlocked: stats.totalPages >= 1000 },
-            { icon: "🎯", label: "Mission", unlocked: false },
-            { icon: "🪙", label: "Coin Master", unlocked: false },
-            { icon: "🏆", label: "Top 10", unlocked: myRank <= 10 },
-            { icon: "⚡", label: "Speed Reader", unlocked: false },
+            { icon: "📚", label: "Birinchi kitob", unlocked: stats.totalBooks >= 1 },
+            { icon: "📖", label: "Kitobqurt", unlocked: stats.totalBooks >= 5 },
+            { icon: "🔥", label: "Ketma-ketlik", unlocked: stats.currentStreak >= 7 },
+            { icon: "📄", label: "1000 sahifa", unlocked: stats.totalPages >= 1000 },
+            { icon: "🎯", label: "Missiya", unlocked: false },
+            { icon: "🪙", label: "Coin ustasi", unlocked: false },
+            { icon: "🏆", label: "Eng yaxshi 10", unlocked: myRank <= 10 },
+            { icon: "⚡", label: "Tezkor o'quvchi", unlocked: false },
           ].map((badge, i) => (
             <div
               key={i}

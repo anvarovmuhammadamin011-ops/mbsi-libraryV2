@@ -47,7 +47,7 @@ const NAV_GROUPS: NavGroup[] = [
       { label: "Audio kitoblar", href: "/audio", icon: Headphones },
       { label: "Missiyalar", href: "/missions", icon: Target },
       { label: "Reyting", href: "/ranking", icon: Trophy },
-      { label: "Coin & Market", href: "/coins", icon: Coins },
+      { label: "Coinlar va do'kon", href: "/coins", icon: Coins },
       { label: "Statistika", href: "/statistics", icon: BarChart3 },
       { label: "Saqlanganlar", href: "/favorites", icon: Heart },
       { label: "Tarix", href: "/history", icon: Clock },
@@ -163,7 +163,7 @@ export function StudentSidebar() {
             className="flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-all"
           >
             <Shield size={18} className="shrink-0" />
-            <span>Admin Panel</span>
+            <span>Admin panel</span>
           </Link>
         </div>
       )}

@@ -135,14 +135,14 @@ export default async function StatisticsPage() {
           </div>
           <p className="text-xl font-bold text-foreground">
             {totalMinutes >= 60
-              ? `${Math.floor(totalMinutes / 60)}s ${totalMinutes % 60}d`
-              : `${totalMinutes}d`}
+              ? `${Math.floor(totalMinutes / 60)} soat ${totalMinutes % 60} daq`
+              : `${totalMinutes} daq`}
           </p>
         </div>
         <div className="rounded-xl border border-border bg-card p-4">
           <div className="flex items-center gap-2 mb-2">
             <Flame size={14} className="text-orange-600" />
-            <span className="text-[10px] text-muted-foreground">Streak</span>
+            <span className="text-[10px] text-muted-foreground">Ketma-ketlik</span>
           </div>
           <p className="text-xl font-bold text-foreground">{streakDays} kun</p>
         </div>

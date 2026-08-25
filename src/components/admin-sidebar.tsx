@@ -43,11 +43,11 @@ interface NavGroup {
 
 const NAV_GROUPS: NavGroup[] = [
   {
-    title: "Overview",
-    items: [{ label: "Dashboard", href: "/admin", icon: LayoutDashboard }],
+    title: "Umumiy ko'rinish",
+    items: [{ label: "Boshqaruv paneli", href: "/admin", icon: LayoutDashboard }],
   },
   {
-    title: "Library",
+    title: "Kutubxona",
     items: [
       { label: "Kitoblar", href: "/admin/books", icon: BookMarked },
       { label: "Kategoriyalar", href: "/admin/categories", icon: Tags },
@@ -71,18 +71,18 @@ const NAV_GROUPS: NavGroup[] = [
     ],
   },
   {
-    title: "Analytics",
+    title: "Analitika",
     items: [
       { label: "Reyting", href: "/admin/ratings", icon: Trophy },
       { label: "Statistikalar", href: "/admin/statistics", icon: BarChart3 },
     ],
   },
   {
-    title: "System",
+    title: "Tizim",
     items: [
       { label: "Bildirishnomalar", href: "/admin/notifications", icon: Bell },
       { label: "Hisobotlar", href: "/admin/reports", icon: FileBarChart },
-      { label: "Audit Log", href: "/admin/audit-log", icon: FileText },
+      { label: "Audit jurnali", href: "/admin/audit-log", icon: FileText },
       { label: "Sozlamalar", href: "/admin/settings", icon: Settings },
     ],
   },
@@ -114,7 +114,7 @@ export function AdminSidebar() {
                 ANVAROV LIBRARY
               </span>
               <span className="text-[10px] font-medium text-primary leading-none mt-0.5">
-                Admin Panel
+                Admin panel
               </span>
             </div>
           </Link>

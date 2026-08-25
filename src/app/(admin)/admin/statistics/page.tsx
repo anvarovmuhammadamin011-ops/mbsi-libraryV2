@@ -64,23 +64,23 @@ export default async function AdminStatisticsPage() {
   return (
     <div className="space-y-8 animate-fade-in">
       <div>
-        <h1 className="text-2xl font-bold text-foreground">Statistics</h1>
-        <p className="text-sm text-muted-foreground mt-1">Detailed MBSI Library analytics</p>
+        <h1 className="text-2xl font-bold text-foreground">Statistika</h1>
+        <p className="text-sm text-muted-foreground mt-1">MBSI Library batafsil analitikasi</p>
       </div>
 
       {/* Stats Grid */}
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
-        <Stat label="Total Pages Read" value={totalPagesRead.toLocaleString()} icon={<BookOpen className="size-5" />} />
-        <Stat label="Reading Sessions" value={totalSessions.toLocaleString()} icon={<BarChart3 className="size-5" />} />
-        <Stat label="Completed Books" value={completedBooks.toLocaleString()} icon={<CheckCircle className="size-5" />} />
-        <Stat label="Active Users (7d)" value={activeUsersThisWeek.toLocaleString()} icon={<Users className="size-5" />} />
-        <Stat label="New Users (this month)" value={newUsersThisMonth.toLocaleString()} icon={<TrendingUp className="size-5" />} />
-        <Stat label="Avg Session" value={`${totalHours}h`} icon={<Clock className="size-5" />} />
+        <Stat label="Jami o'qilgan sahifa" value={totalPagesRead.toLocaleString()} icon={<BookOpen className="size-5" />} />
+        <Stat label="O'qish sessiyalari" value={totalSessions.toLocaleString()} icon={<BarChart3 className="size-5" />} />
+        <Stat label="Yakunlangan kitoblar" value={completedBooks.toLocaleString()} icon={<CheckCircle className="size-5" />} />
+        <Stat label="Faol foydalanuvchilar (7 kun)" value={activeUsersThisWeek.toLocaleString()} icon={<Users className="size-5" />} />
+        <Stat label="Yangi foydalanuvchilar (bu oy)" value={newUsersThisMonth.toLocaleString()} icon={<TrendingUp className="size-5" />} />
+        <Stat label="O'rtacha sessiya" value={`${totalHours} soat`} icon={<Clock className="size-5" />} />
       </div>
 
       {/* Most Read Books */}
       <div className="rounded-2xl border border-border bg-card p-5">
-        <h2 className="text-base font-semibold text-foreground mb-4">Most Read Books</h2>
+        <h2 className="text-base font-semibold text-foreground mb-4">Eng ko&apos;p o&apos;qilgan kitoblar</h2>
         <div className="space-y-2">
           {topBooks.map((b, i) => {
             const book = bookMap.get(b.bookId);
@@ -90,10 +90,10 @@ export default async function AdminStatisticsPage() {
                   {i + 1}
                 </span>
                 <div className="flex-1 min-w-0">
-                  <p className="truncate text-sm font-medium">{book?.title ?? "Unknown"}</p>
-                  <p className="text-xs text-muted-foreground">{book?.totalPages ?? 0} pages</p>
+                  <p className="truncate text-sm font-medium">{book?.title ?? "Noma'lum"}</p>
+                  <p className="text-xs text-muted-foreground">{book?.totalPages ?? 0} sahifa</p>
                 </div>
-                <p className="text-sm font-semibold text-primary">{b._count.id} readers</p>
+                <p className="text-sm font-semibold text-primary">{b._count.id} o&apos;quvchi</p>
               </div>
             );
           })}
@@ -102,9 +102,9 @@ export default async function AdminStatisticsPage() {
 
       {/* Least Read */}
       <div className="rounded-2xl border border-border bg-card p-5">
-        <h2 className="text-base font-semibold text-foreground mb-4">Least Read (0 readers)</h2>
+        <h2 className="text-base font-semibold text-foreground mb-4">Eng kam o&apos;qilgan (0 o&apos;quvchi)</h2>
         {leastRead.length === 0 ? (
-          <p className="text-sm text-muted-foreground py-4 text-center">All published books have readers!</p>
+          <p className="text-sm text-muted-foreground py-4 text-center">Barcha nashr etilgan kitoblarda o&apos;quvchilar bor!</p>
         ) : (
           <div className="space-y-2">
             {leastRead.map((b) => (
