@@ -127,58 +127,6 @@ export default function SettingsPage() {
         </p>
       </div>
 
-      {/* Profile */}
-      <Card>
-        <CardContent className="p-5 space-y-5">
-          <div className="flex items-center gap-2 mb-1">
-            <User size={16} className="text-primary" />
-            <h2 className="text-sm font-semibold text-foreground">👤 Profil</h2>
-          </div>
-
-          <div className="flex items-center gap-4">
-            <Avatar className="h-16 w-16">
-              {avatar && <AvatarImage src={avatar} alt={name} />}
-              <AvatarFallback className="bg-primary/10 text-lg font-semibold text-primary">
-                {name?.charAt(0) ?? "?"}
-              </AvatarFallback>
-            </Avatar>
-            <div>
-              <p className="font-medium text-foreground">{name}</p>
-              <p className="text-sm text-muted-foreground capitalize">
-                {user?.role === "ADMIN"
-                  ? "Admin"
-                  : user?.role === "TEACHER"
-                    ? "O'qituvchi"
-                    : "O'quvchi"}
-              </p>
-            </div>
-          </div>
-
-          <div className="space-y-1">
-            <Label htmlFor="name">Ism</Label>
-            <Input
-              id="name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
-          </div>
-
-          <div className="space-y-1">
-            <Label htmlFor="avatar">Avatar (URL)</Label>
-            <Input
-              id="avatar"
-              value={avatar}
-              onChange={(e) => setAvatar(e.target.value)}
-              placeholder="https://…"
-            />
-          </div>
-
-          <Button onClick={save} disabled={saving}>
-            {saving ? "Saqlanmoqda…" : "Saqlash"}
-          </Button>
-        </CardContent>
-      </Card>
-
       {/* Appearance */}
       <Card>
         <CardContent className="p-5 space-y-4">
