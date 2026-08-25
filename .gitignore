@@ -24,6 +24,7 @@ yarn-debug.log*
 yarn-error.log*
 
 # local env files
+.env
 .env*.local
 
 # vercel
@@ -38,7 +39,8 @@ prisma/dev.db
 prisma/dev.db-journal
 
 # generated files
-storage/private/pdfs/
+# NOTE: seeded PDFs under storage/private/pdfs are committed so the
+# deployed app can serve them. New admin uploads still stay local.
 
 # freebuff
 .freebuff/

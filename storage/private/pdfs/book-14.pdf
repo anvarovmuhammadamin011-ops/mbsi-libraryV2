@@ -1,0 +1,115 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R 4 0 R 5 0 R 6 0 R 7 0 R] /Count 5 >>endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 8 0 R /Resources << /Font << /F1 9 0 R >> >> >>
+endobj
+4 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 8 0 R /Resources << /Font << /F1 9 0 R >> >> >>
+endobj
+5 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 8 0 R /Resources << /Font << /F1 9 0 R >> >> >>
+endobj
+6 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 8 0 R /Resources << /Font << /F1 9 0 R >> >> >>
+endobj
+7 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 8 0 R /Resources << /Font << /F1 9 0 R >> >> >>
+endobj
+8 0 obj
+<< /Length 1204 >>
+stream
+BT
+/F1 28 Tf
+72 600 Td
+(Matematika 9-sinf) Tj
+/F1 18 Tf
+0 -40 Td
+(by Mehmon Baxtiyorov) Tj
+0 -80 Td
+/F1 14 Tf
+(MBSI Library) Tj
+0 -30 Td
+(Digital Collection) Tj
+ET
+BT
+/F1 16 Tf
+72 720 Td
+(1-Bob: Sonlar tizimi) Tj
+ET
+BT
+/F1 12 Tf
+72 9800 Td
+(9-sinf matematikasida sonlar tizimi chuqur o'rganiladi.
+
+Natural sonlar,) Tj
+72 9786 Td
+(butun sonlar, ratsional va irratsional sonlar.
+
+Kvadrat ildiz va darajalar:) Tj
+72 9772 Td
+(root\(a\), a^n, \(a^n\)^m = a^\(n*m\).
+
+Hadlar yig'indisi: a + b, \(a + b\)^2 = a^2) Tj
+72 9758 Td
+(+ 2ab + b^2.
+
+Ko'paytma: \(a + b\)\(a - b\) = a^2 - b^2.
+
+These formulas are) Tj
+72 9744 Td
+(fundamental for algebra and higher mathematics.) Tj
+ET
+BT
+/F1 16 Tf
+72 720 Td
+(2-Bob: Hadlar va tenglamalar) Tj
+ET
+BT
+/F1 12 Tf
+72 9800 Td
+(Tenglamalar — bu noma'lum son topish uchun ishlatiladigan matematik) Tj
+72 9786 Td
+(ifodalar.
+
+Birinchi darajali tenglamalar: ax + b = 0, yechimi: x =) Tj
+72 9772 Td
+(-b/a.
+
+Ikkinchi darajali tenglamalar: ax^2 + bx + c = 0.
+
+Diskriminant: D =) Tj
+72 9758 Td
+(b^2 - 4ac. Agar D > 0 — ikki yechim, D = 0 — bir yechim, D < 0 — yechim) Tj
+72 9744 Td
+(yo'q.
+
+Tenglamalar sistemasini yechish usullari:代入 va ekvivalent) Tj
+72 9730 Td
+(o'zgartirish.) Tj
+ET
+endstream
+endobj
+9 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+xref
+0 10
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000138 00000 n 
+0000000264 00000 n 
+0000000390 00000 n 
+0000000516 00000 n 
+0000000642 00000 n 
+0000000768 00000 n 
+0000002023 00000 n 
+trailer
+<< /Size 10 /Root 1 0 R >>
+startxref
+2093
+%%EOF

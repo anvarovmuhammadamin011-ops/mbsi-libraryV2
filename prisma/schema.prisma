@@ -1,13 +1,8 @@
 // Prisma schema — MBSI Library
 // ============================================================
-// Datasource is configurable via DATABASE_URL.
-//
-// LOCAL DEV:  provider = "sqlite"  (default — runs with zero setup)
-// PRODUCTION: change `provider` below to "postgresql" and point
-//             DATABASE_URL at your Postgres instance.
-// The schema is fully portable: enums are stored as `String`
-// and only cross-compatible scalar types are used, so switching
-// providers requires no model changes.
+// Datasource: PostgreSQL (works locally, on Vercel, on Neon).
+// DATABASE_URL must point at a Postgres instance.
+// Enums are stored as `String` so the schema stays portable.
 // ============================================================
 
 generator client {
@@ -15,7 +10,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
