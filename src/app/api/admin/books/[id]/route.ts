@@ -1,9 +1,17 @@
 import { route } from "@/lib/server/handler";
 import { requireRole } from "@/lib/server/auth";
 import { updateBook, deleteBook } from "@/lib/server/books";
-import { deletePrivate } from "@/lib/server/storage";
+import { deletePrivate, deleteCover, saveCover } from "@/lib/server/storage";
 import { ApiError, ERROR_CODES, success } from "@/lib/server/errors";
 import { prisma } from "@/lib/db";
+
+async function resolveAuthor(name: string): Promise<string> {
+  const trimmed = name.trim();
+  if (!trimmed) throw new ApiError(ERROR_CODES.VALIDATION, "Muallif nomi kerak", 400);
+  const existing = await prisma.author.findFirst({ where: { name: trimmed } });
+  if (existing) return existing.id;
+  return (await prisma.author.create({ data: { name: trimmed } })).id;
+}
 
 export const PATCH = route(async (req, ctx) => {
   const admin = await requireRole("ADMIN");
@@ -19,15 +27,32 @@ export const PATCH = route(async (req, ctx) => {
     language?: string;
     isPublished?: boolean;
     totalPages?: number;
+    coverUrl?: string;
   } = {};
 
   if (form.get("title") !== null) data.title = String(form.get("title"));
   if (form.get("description") !== null) data.description = String(form.get("description"));
-  if (form.get("authorId")) data.authorId = String(form.get("authorId"));
+  const authorName = form.get("author");
+  if (authorName !== null && String(authorName).trim()) {
+    data.authorId = await resolveAuthor(String(authorName));
+  } else if (form.get("authorId")) {
+    data.authorId = String(form.get("authorId"));
+  }
   if (form.get("categoryId")) data.categoryId = String(form.get("categoryId"));
   if (form.get("language")) data.language = String(form.get("language"));
   if (form.get("isPublished") !== null) data.isPublished = form.get("isPublished") === "true";
-  if (form.get("totalPages") !== null) data.totalPages = Number(form.get("totalPages"));
+  if (form.get("totalPages") !== null && String(form.get("totalPages")) !== "") {
+    data.totalPages = Number(form.get("totalPages"));
+  }
+
+  // Optional new cover upload.
+  const coverFile = form.get("cover") as File | null;
+  if (coverFile && coverFile.size > 0) {
+    const saved = await saveCover(coverFile);
+    const existing = await prisma.book.findUnique({ where: { id }, select: { coverUrl: true } });
+    if (existing?.coverUrl) await deleteCover(existing.coverUrl);
+    data.coverUrl = saved.urlOrKey;
+  }
 
   const book = await updateBook(id, { ...data, userId: admin.id });
   return success(book);
@@ -40,5 +65,6 @@ export const DELETE = route(async (req, ctx) => {
   const existing = await prisma.book.findUnique({ where: { id } });
   await deleteBook(id, admin.id);
   if (existing?.pdfUrl) await deletePrivate(existing.pdfUrl);
+  if (existing?.coverUrl) await deleteCover(existing.coverUrl);
   return success({ id });
 });

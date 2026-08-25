@@ -7,7 +7,6 @@ import {
   BookMarked,
   Tags,
   Users,
-  Star,
   BarChart3,
   Trophy,
   Settings,
@@ -51,8 +50,6 @@ const NAV_GROUPS: NavGroup[] = [
     items: [
       { label: "Kitoblar", href: "/admin/books", icon: BookMarked },
       { label: "Kategoriyalar", href: "/admin/categories", icon: Tags },
-      { label: "Mualliflar", href: "/admin/authors", icon: Users },
-      { label: "Tavsiyalar", href: "/admin/recommendations", icon: Star },
       { label: "Bannerlar", href: "/admin/banners", icon: Image },
     ],
   },

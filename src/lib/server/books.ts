@@ -371,28 +371,3 @@ export async function listActiveBanners(): Promise<Banner[]> {
     orderBy: { order: "asc" },
   });
 }
-
-export type HomeRecommendation = {
-  id: string;
-  title: string;
-  description: string | null;
-  order: number;
-  book: Book;
-};
-
-export async function listActiveRecommendations(): Promise<HomeRecommendation[]> {
-  const rows = await prisma.recommendation.findMany({
-    where: { isActive: true },
-    orderBy: { order: "asc" },
-    include: { book: { include: bookInclude } },
-  });
-  return rows
-    .filter((r) => r.book)
-    .map((r) => ({
-      id: r.id,
-      title: r.title,
-      description: r.description,
-      order: r.order,
-      book: toApiBook(r.book),
-    }));
-}

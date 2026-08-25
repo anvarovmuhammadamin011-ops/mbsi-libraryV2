@@ -277,10 +277,10 @@ export default async function HomePage() {
         </div>
       </div>
 
-      {/* Recommended Books */}
+      {/* New Books */}
       <div>
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-sm font-semibold text-foreground">⭐ Siz uchun tavsiya</h2>
+          <h2 className="text-sm font-semibold text-foreground">🆕 Yangi kitoblar</h2>
           <Link href="/books" className="text-xs font-medium text-primary hover:underline flex items-center gap-1">
             Barchasi <ArrowRight size={12} />
           </Link>
@@ -320,7 +320,7 @@ export default async function HomePage() {
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-sm font-semibold text-foreground">🔥 Hozir eng ko&apos;p o&apos;qilayotganlar</h2>
           </div>
-          <div className="space-y-2">
+          <div className="grid grid-cols-2 gap-2">
             {trendingBooks.map((book, i) => (
               <Link
                 key={book.id}
@@ -335,12 +335,9 @@ export default async function HomePage() {
                 }`}>
                   {i + 1}
                 </span>
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                  <BookOpen size={16} />
-                </div>
-                <div className="flex-1 min-w-0">
+                <div className="min-w-0">
                   <p className="text-sm font-medium text-foreground truncate">{book.title}</p>
-                  <p className="text-xs text-muted-foreground">{book.author?.name}</p>
+                  <p className="text-xs text-muted-foreground truncate">{book.author?.name}</p>
                 </div>
               </Link>
             ))}

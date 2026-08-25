@@ -3,13 +3,14 @@
 import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import Link from "next/link";
 import { api } from "@/lib/api-client";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/empty-state";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog,
   DialogContent,
@@ -27,13 +28,12 @@ import {
 import {
   Search,
   Plus,
-  Pencil,
   Trash2,
-  ExternalLink,
-  BookMarked,
-  MoreHorizontal,
   Eye,
+  BookMarked,
   Upload,
+  Pencil,
+  Loader2,
 } from "lucide-react";
 
 interface BookRow {
@@ -42,6 +42,7 @@ interface BookRow {
   slug: string;
   authorName: string;
   categoryName: string;
+  description: string;
   language: string;
   totalPages: number;
   isPublished: boolean;
@@ -55,10 +56,35 @@ interface BookRow {
 interface Props {
   books: BookRow[];
   categories: { id: string; name: string }[];
-  authors: { id: string; name: string }[];
 }
 
-export function AdminBooksTable({ books, categories, authors }: Props) {
+interface BookForm {
+  title: string;
+  author: string;
+  categoryId: string;
+  newCategory: string;
+  language: string;
+  totalPages: string;
+  description: string;
+  isPublished: boolean;
+  file: File | null;
+  cover: File | null;
+}
+
+const EMPTY_FORM: BookForm = {
+  title: "",
+  author: "",
+  categoryId: "",
+  newCategory: "",
+  language: "UZ",
+  totalPages: "",
+  description: "",
+  isPublished: true,
+  file: null,
+  cover: null,
+};
+
+export function AdminBooksTable({ books, categories }: Props) {
   const router = useRouter();
   const [q, setQ] = useState("");
   const [language, setLanguage] = useState("all");
@@ -66,6 +92,11 @@ export function AdminBooksTable({ books, categories, authors }: Props) {
   const [status, setStatus] = useState("all");
   const [sort, setSort] = useState("newest");
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [addOpen, setAddOpen] = useState(false);
+  const [form, setForm] = useState<BookForm>(EMPTY_FORM);
+  const [saving, setSaving] = useState(false);
+  const [editing, setEditing] = useState<BookRow | null>(null);
+  const [editSaving, setEditSaving] = useState(false);
 
   // Filter & sort
   const filtered = useMemo(() => {
@@ -88,6 +119,71 @@ export function AdminBooksTable({ books, categories, authors }: Props) {
     if (sort === "rating") result.sort((a, b) => (b.averageRating ?? 0) - (a.averageRating ?? 0));
     return result;
   }, [books, q, language, category, status, sort]);
+
+  async function submitAdd(e: React.FormEvent) {
+    e.preventDefault();
+    if (!form.title.trim() || !form.author.trim() || !form.file) {
+      toast.error("Sarlavha, muallif va PDF fayl to'ldirilishi shart");
+      return;
+    }
+    if (!form.categoryId && !form.newCategory.trim()) {
+      toast.error("Kategoriya tanlang yoki yangi nom yozing");
+      return;
+    }
+    setSaving(true);
+    try {
+      const fd = new FormData();
+      fd.append("title", form.title.trim());
+      fd.append("author", form.author.trim());
+      fd.append("description", form.description.trim());
+      fd.append("language", form.language);
+      fd.append("totalPages", form.totalPages || "1");
+      fd.append("isPublished", String(form.isPublished));
+      if (form.categoryId) fd.append("categoryId", form.categoryId);
+      if (form.newCategory.trim()) fd.append("newCategory", form.newCategory.trim());
+      fd.append("file", form.file);
+      if (form.cover && form.cover.size > 0) fd.append("cover", form.cover);
+
+      const r = await fetch("/api/admin/upload", { method: "POST", body: fd });
+      if (!r.ok) {
+        const err = await r.json().catch(() => ({}));
+        throw new Error(err?.error?.message || err?.error || "Yuklashda xatolik");
+      }
+      toast.success("Kitob qo'shildi");
+      setForm(EMPTY_FORM);
+      setAddOpen(false);
+      router.refresh();
+    } catch (e: any) {
+      toast.error(e.message || "Yuklashda xatolik");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function saveEdit() {
+    if (!editing) return;
+    if (!editing.title.trim()) {
+      toast.error("Sarlavha bo'sh bo'lmasligi kerak");
+      return;
+    }
+    setEditSaving(true);
+    try {
+      const fd = new FormData();
+      fd.append("title", editing.title.trim());
+      fd.append("author", editing.authorName);
+      fd.append("description", editing.description ?? "");
+      fd.append("language", editing.language);
+      fd.append("totalPages", String(editing.totalPages));
+      await api.patch(`/api/admin/books/${editing.id}`, fd);
+      toast.success("Yangilandi");
+      setEditing(null);
+      router.refresh();
+    } catch (e: any) {
+      toast.error(e.message || "Saqlashda xatolik");
+    } finally {
+      setEditSaving(false);
+    }
+  }
 
   async function deleteBook(id: string) {
     if (!confirm("Bu kitobni o'chirishni xohlaysizmi? Bu amalni bekor qilib bo'lmaydi.")) return;
@@ -123,9 +219,121 @@ export function AdminBooksTable({ books, categories, authors }: Props) {
             MBSI kutubxonasi kitoblarini boshqarish · Jami {books.length}
           </p>
         </div>
-        <Button className="gap-2" onClick={() => toast.info("Kitob qo'shish uchun quyidagi yuklash formasidan foydalaning")}>
-          <Plus size={16} /> Kitob qo'shish
-        </Button>
+        <Dialog open={addOpen} onOpenChange={setAddOpen}>
+          <DialogTrigger render={<Button className="gap-2" />}>
+            <Plus size={16} /> Kitob qo&apos;shish
+          </DialogTrigger>
+          <DialogContent className="max-h-[90vh] overflow-y-auto max-w-lg">
+            <DialogHeader>
+              <DialogTitle>Yangi kitob qo&apos;shish</DialogTitle>
+            </DialogHeader>
+            <form onSubmit={submitAdd} className="grid gap-3">
+              <div className="space-y-1.5">
+                <Label>Sarlavha *</Label>
+                <Input
+                  value={form.title}
+                  onChange={(e) => setForm({ ...form, title: e.target.value })}
+                  placeholder="Kitob nomi"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Muallif *</Label>
+                <Input
+                  value={form.author}
+                  onChange={(e) => setForm({ ...form, author: e.target.value })}
+                  placeholder="Muallif ismi (yangi bo'lsa yaratiladi)"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <Label>Kategoriya</Label>
+                  <Select
+                    value={form.categoryId || undefined}
+                    onValueChange={(v) => setForm({ ...form, categoryId: v ?? "", newCategory: "" })}
+                  >
+                    <SelectTrigger className="w-full h-9"><SelectValue placeholder="Tanlang" /></SelectTrigger>
+                    <SelectContent>
+                      {categories.map((c) => (
+                        <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1.5">
+                  <Label>yoki yangi kategoriya</Label>
+                  <Input
+                    value={form.newCategory}
+                    onChange={(e) => setForm({ ...form, newCategory: e.target.value, categoryId: "" })}
+                    placeholder="Masalan: Ona tili"
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <Label>Til</Label>
+                  <select
+                    value={form.language}
+                    onChange={(e) => setForm({ ...form, language: e.target.value })}
+                    className="h-9 w-full rounded-md border border-input bg-transparent px-2 text-sm"
+                  >
+                    <option value="UZ">O&apos;zbek</option>
+                    <option value="RU">Rus</option>
+                    <option value="EN">Ingliz</option>
+                  </select>
+                </div>
+                <div className="space-y-1.5">
+                  <Label>Sahifalar soni</Label>
+                  <Input
+                    type="number"
+                    min={1}
+                    value={form.totalPages}
+                    onChange={(e) => setForm({ ...form, totalPages: e.target.value })}
+                    placeholder="masalan: 120"
+                  />
+                </div>
+              </div>
+              <div className="space-y-1.5">
+                <Label>Tavsif</Label>
+                <Textarea
+                  rows={3}
+                  value={form.description}
+                  onChange={(e) => setForm({ ...form, description: e.target.value })}
+                  placeholder="Kitob haqida qisqacha..."
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label>PDF fayl *</Label>
+                <Input
+                  type="file"
+                  accept="application/pdf"
+                  onChange={(e) => setForm({ ...form, file: e.target.files?.[0] ?? null })}
+                />
+                <p className="text-[11px] text-muted-foreground">Maksimal 25 MB</p>
+              </div>
+              <div className="space-y-1.5">
+                <Label>Muqova rasmi</Label>
+                <Input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => setForm({ ...form, cover: e.target.files?.[0] ?? null })}
+                />
+              </div>
+              <label className="flex items-center gap-2 text-sm text-muted-foreground cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={form.isPublished}
+                  onChange={(e) => setForm({ ...form, isPublished: e.target.checked })}
+                  className="accent-primary"
+                />
+                Darhol nashr etish
+              </label>
+              <Button type="submit" disabled={saving} className="gap-2">
+                {saving ? <Loader2 className="size-4 animate-spin" /> : <Upload className="size-4" />}
+                Yuklash
+              </Button>
+            </form>
+          </DialogContent>
+        </Dialog>
       </div>
 
       {/* Search + Filters */}
@@ -144,7 +352,7 @@ export function AdminBooksTable({ books, categories, authors }: Props) {
             <SelectTrigger className="w-32 h-10"><SelectValue placeholder="Til" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Barcha tillar</SelectItem>
-              <SelectItem value="UZ">O'zbek</SelectItem>
+              <SelectItem value="UZ">O&apos;zbek</SelectItem>
               <SelectItem value="RU">Rus</SelectItem>
               <SelectItem value="EN">Ingliz</SelectItem>
             </SelectContent>
@@ -171,7 +379,7 @@ export function AdminBooksTable({ books, categories, authors }: Props) {
             <SelectContent>
               <SelectItem value="newest">Eng yangi</SelectItem>
               <SelectItem value="oldest">Eng eski</SelectItem>
-              <SelectItem value="popular">Eng ko'p o'qilgan</SelectItem>
+              <SelectItem value="popular">Eng ko&apos;p o&apos;qilgan</SelectItem>
               <SelectItem value="rating">Eng yuqori reytingli</SelectItem>
             </SelectContent>
           </Select>
@@ -195,7 +403,7 @@ export function AdminBooksTable({ books, categories, authors }: Props) {
                   <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground hidden md:table-cell">Kategoriya</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground hidden lg:table-cell">Til</th>
                   <th className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground">Sahifalar</th>
-                  <th className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground hidden sm:table-cell">O'quvchilar</th>
+                  <th className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground hidden sm:table-cell">O&apos;quvchilar</th>
                   <th className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground hidden md:table-cell">Reyting</th>
                   <th className="px-4 py-3 text-center text-xs font-semibold text-muted-foreground">Holat</th>
                   <th className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground">Amallar</th>
@@ -207,8 +415,12 @@ export function AdminBooksTable({ books, categories, authors }: Props) {
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
                         <div className="relative h-10 w-8 shrink-0 overflow-hidden rounded-lg bg-muted">
-                          {b.coverUrl && (
-                            <Image src={b.coverUrl} alt={b.title} fill className="object-cover" sizes="32px" />
+                          {b.coverUrl ? (
+                            <Image src={b.coverUrl} alt={b.title} fill className="object-cover" sizes="32px" unoptimized />
+                          ) : (
+                            <div className="flex h-full items-center justify-center">
+                              <BookMarked size={12} className="text-muted-foreground" />
+                            </div>
                           )}
                         </div>
                         <div className="min-w-0">
@@ -242,6 +454,14 @@ export function AdminBooksTable({ books, categories, authors }: Props) {
                           variant="ghost"
                           size="icon"
                           className="h-8 w-8"
+                          onClick={() => setEditing(b)}
+                        >
+                          <Pencil size={14} className="text-muted-foreground" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8"
                           onClick={() => togglePublish(b.id, b.isPublished)}
                         >
                           {b.isPublished ? (
@@ -268,6 +488,68 @@ export function AdminBooksTable({ books, categories, authors }: Props) {
           </div>
         </div>
       )}
+
+      {/* Edit dialog */}
+      <Dialog open={editing !== null} onOpenChange={(open) => !open && setEditing(null)}>
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Kitobni tahrirlash</DialogTitle>
+          </DialogHeader>
+          {editing && (
+            <div className="grid gap-3">
+              <div className="space-y-1.5">
+                <Label>Sarlavha</Label>
+                <Input
+                  value={editing.title}
+                  onChange={(e) => setEditing({ ...editing, title: e.target.value })}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Muallif</Label>
+                <Input
+                  value={editing.authorName}
+                  onChange={(e) => setEditing({ ...editing, authorName: e.target.value })}
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <Label>Til</Label>
+                  <select
+                    value={editing.language}
+                    onChange={(e) => setEditing({ ...editing, language: e.target.value })}
+                    className="h-9 w-full rounded-md border border-input bg-transparent px-2 text-sm"
+                  >
+                    <option value="UZ">O&apos;zbek</option>
+                    <option value="RU">Rus</option>
+                    <option value="EN">Ingliz</option>
+                  </select>
+                </div>
+                <div className="space-y-1.5">
+                  <Label>Sahifalar</Label>
+                  <Input
+                    type="number"
+                    min={1}
+                    value={editing.totalPages}
+                    onChange={(e) => setEditing({ ...editing, totalPages: Number(e.target.value) })}
+                  />
+                </div>
+              </div>
+              <div className="space-y-1.5">
+                <Label>Tavsif</Label>
+                <Textarea
+                  rows={3}
+                  value={editing.description ?? ""}
+                  onChange={(e) => setEditing({ ...editing, description: e.target.value })}
+                />
+              </div>
+              <Button onClick={saveEdit} disabled={editSaving} className="gap-2">
+                {editSaving ? <Loader2 className="size-4 animate-spin" /> : null}
+                Saqlash
+              </Button>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

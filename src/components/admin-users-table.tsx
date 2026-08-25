@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { api } from "@/lib/api-client";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -27,6 +28,7 @@ import {
   Clock,
   Trophy,
   UserX,
+  ChevronRight,
 } from "lucide-react";
 
 interface UserRow {
@@ -46,6 +48,13 @@ interface Props {
   currentUserId: string;
   stats: { total: number; students: number; teachers: number; admins: number };
 }
+
+const ROLE_TABS = [
+  { value: "all", label: "Barchasi" },
+  { value: "STUDENT", label: "O'quvchilar" },
+  { value: "TEACHER", label: "O'qituvchilar" },
+  { value: "ADMIN", label: "Adminlar" },
+];
 
 export function AdminUsersTable({ users, currentUserId, stats }: Props) {
   const router = useRouter();
@@ -112,7 +121,32 @@ export function AdminUsersTable({ users, currentUserId, stats }: Props) {
       </div>
 
       {/* Search + Filters */}
-      <div className="rounded-2xl border border-border bg-card p-4">
+      <div className="rounded-2xl border border-border bg-card p-4 space-y-3">
+        {/* Role tabs */}
+        <div className="flex flex-wrap gap-1.5">
+          {ROLE_TABS.map((t) => (
+            <button
+              key={t.value}
+              onClick={() => setRole(t.value)}
+              className={`rounded-full px-3.5 py-1.5 text-xs font-medium transition-colors ${
+                role === t.value
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-muted/60 text-muted-foreground hover:bg-muted"
+              }`}
+            >
+              {t.label}
+              <span className="ml-1 opacity-70">
+                {t.value === "all"
+                  ? stats.total
+                  : t.value === "STUDENT"
+                    ? stats.students
+                    : t.value === "TEACHER"
+                      ? stats.teachers
+                      : stats.admins}
+              </span>
+            </button>
+          ))}
+        </div>
         <div className="flex flex-wrap items-center gap-2">
           <div className="relative min-w-[200px] flex-1">
             <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
@@ -123,15 +157,6 @@ export function AdminUsersTable({ users, currentUserId, stats }: Props) {
               className="pl-9 h-10"
             />
           </div>
-          <Select value={role} onValueChange={(v) => setRole(v ?? "all")}>
-            <SelectTrigger className="w-36 h-10"><SelectValue placeholder="Rol" /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Barcha rollar</SelectItem>
-              <SelectItem value="STUDENT">O'quvchi</SelectItem>
-              <SelectItem value="TEACHER">O'qituvchi</SelectItem>
-              <SelectItem value="ADMIN">Admin</SelectItem>
-            </SelectContent>
-          </Select>
           <Select value={status} onValueChange={(v) => setStatus(v ?? "all")}>
             <SelectTrigger className="w-36 h-10"><SelectValue placeholder="Holat" /></SelectTrigger>
             <SelectContent>
@@ -169,17 +194,17 @@ export function AdminUsersTable({ users, currentUserId, stats }: Props) {
                 {filtered.map((u) => (
                   <tr key={u.id} className="hover:bg-muted/30 transition-colors">
                     <td className="px-4 py-3">
-                      <div className="flex items-center gap-3">
+                      <Link href={`/admin/users/${u.id}`} className="flex items-center gap-3 group">
                         <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
                           {u.name?.charAt(0)}
                         </div>
                         <div className="min-w-0">
-                          <p className="font-medium text-foreground truncate max-w-[200px]">{u.name}</p>
+                          <p className="font-medium text-foreground truncate max-w-[200px] group-hover:text-primary transition-colors">{u.name}</p>
                           <p className="text-xs text-muted-foreground">
                             Qo'shilgan: {new Date(u.createdAt).toLocaleDateString("uz-UZ")}
                           </p>
                         </div>
-                      </div>
+                      </Link>
                     </td>
                     <td className="px-4 py-3">
                       <Badge
@@ -239,6 +264,12 @@ export function AdminUsersTable({ users, currentUserId, stats }: Props) {
                             </Button>
                           </>
                         )}
+                        <Link
+                          href={`/admin/users/${u.id}`}
+                          className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                        >
+                          <ChevronRight size={14} />
+                        </Link>
                       </div>
                     </td>
                   </tr>

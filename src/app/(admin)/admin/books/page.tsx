@@ -8,7 +8,7 @@ export default async function AdminBooksPage() {
   const user = await requireRole("ADMIN");
   if (!user) return null;
 
-  const [books, categories, authors] = await Promise.all([
+  const [books, categories] = await Promise.all([
     prisma.book.findMany({
       orderBy: { createdAt: "desc" },
       include: {
@@ -22,14 +22,10 @@ export default async function AdminBooksPage() {
       orderBy: { name: "asc" },
       select: { id: true, name: true },
     }),
-    prisma.author.findMany({
-      orderBy: { name: "asc" },
-      select: { id: true, name: true },
-    }),
   ]);
 
   // Compute average ratings
-    const ratingAgg = await prisma.rating.groupBy({
+  const ratingAgg = await prisma.rating.groupBy({
     by: ["bookId"],
     _avg: { rating: true },
   });
@@ -41,6 +37,7 @@ export default async function AdminBooksPage() {
     slug: b.slug,
     authorName: b.author?.name ?? "-",
     categoryName: b.category?.name ?? "-",
+    description: b.description ?? "",
     language: b.language,
     totalPages: b.totalPages,
     isPublished: b.isPublished,
@@ -55,7 +52,6 @@ export default async function AdminBooksPage() {
     <AdminBooksTable
       books={rows}
       categories={categories.map((c) => ({ id: c.id, name: c.name }))}
-      authors={authors.map((a) => ({ id: a.id, name: a.name }))}
     />
   );
 }

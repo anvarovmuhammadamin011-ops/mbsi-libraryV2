@@ -28,7 +28,6 @@ const pageTitles: Record<string, string> = {
   "/search": "Qidiruv",
   "/admin": "Admin panel",
   "/admin/books": "Kitoblar boshqaruvi",
-  "/admin/authors": "Mualliflar",
   "/admin/categories": "Kategoriyalar",
   "/admin/users": "Foydalanuvchilar",
 };
