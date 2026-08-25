@@ -13,6 +13,7 @@ export const bookCreateSchema = z.object({
   categoryId: z.string().min(1, "Kategoriya tanlang"),
   language: z.enum(["UZ", "RU", "EN"]),
   isPublished: z.boolean().optional().default(false),
+  coinReward: z.coerce.number().int().min(0).max(1000).optional().default(10),
 });
 
 export const bookUpdateSchema = bookCreateSchema

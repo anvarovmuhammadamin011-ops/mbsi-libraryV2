@@ -38,6 +38,7 @@ export interface User {
   name: string;
   role: UserRole;
   avatar?: string;
+  coins?: number;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -71,6 +72,7 @@ export interface Book {
   pdfUrl: string;
   language: Language;
   totalPages: number;
+  coinReward?: number;
   authorId: string;
   author?: Author;
   categoryId: string;

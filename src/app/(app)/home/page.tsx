@@ -85,8 +85,8 @@ export default async function HomePage() {
   // Get active missions count
   const missionCount = 2; // Demo
 
-  // Get total coins (demo)
-  const coins = 450;
+  // Get total coins (real)
+  const coins = (user as any)?.coins ?? 0;
 
   // Get newest books
   const recommendedBooks = await prisma.book.findMany({

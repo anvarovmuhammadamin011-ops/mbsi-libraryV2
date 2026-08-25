@@ -72,6 +72,7 @@ export default async function BookDetailPage({
               {book.averageRating ?? 0}
             </Badge>
             <Badge variant="secondary" className="text-xs">{book.totalPages} bet</Badge>
+            <Badge className="gap-1 text-xs bg-yellow-500/15 text-yellow-700 dark:text-yellow-400 border-yellow-500/20">🪙 {book.coinReward ?? 10} coin</Badge>
           </div>
 
           {/* Description */}

@@ -27,6 +27,7 @@ export const PATCH = route(async (req, ctx) => {
     language?: string;
     isPublished?: boolean;
     totalPages?: number;
+    coinReward?: number;
     coverUrl?: string;
   } = {};
 
@@ -43,6 +44,9 @@ export const PATCH = route(async (req, ctx) => {
   if (form.get("isPublished") !== null) data.isPublished = form.get("isPublished") === "true";
   if (form.get("totalPages") !== null && String(form.get("totalPages")) !== "") {
     data.totalPages = Number(form.get("totalPages"));
+  }
+  if (form.get("coinReward") !== null && String(form.get("coinReward")) !== "") {
+    data.coinReward = Number(form.get("coinReward"));
   }
 
   // Optional new cover upload.

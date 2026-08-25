@@ -123,15 +123,22 @@ export async function upsertProgress(
   });
 
   if (existing) {
+    const shouldAward = completed && !existing.completedAt;
     const updated = await prisma.readingProgress.update({
       where: { userId_bookId: { userId, bookId } },
       data: {
         currentPage: clamped,
         progress,
         lastReadAt: new Date(),
-        completedAt: completed ? new Date() : existing.completedAt,
+        completedAt: completed ? existing.completedAt ?? new Date() : existing.completedAt,
       },
     });
+    if (shouldAward) {
+      await prisma.user.update({
+        where: { id: userId },
+        data: { coins: { increment: (book as any).coinReward ?? 10 } },
+      });
+    }
     return toApiProgress(updated, book);
   }
 
@@ -152,6 +159,12 @@ export async function upsertProgress(
       completedAt: completed ? new Date() : null,
     },
   });
+  if (completed) {
+    await prisma.user.update({
+      where: { id: userId },
+      data: { coins: { increment: (book as any).coinReward ?? 10 } },
+    });
+  }
   return toApiProgress(created, book);
 }
 
@@ -446,6 +459,7 @@ export async function getRanking(role: "STUDENT" | "TEACHER") {
         name: u.name,
         role: u.role as any,
         avatar: u.avatar ?? undefined,
+        coins: (u as any).coins ?? 0,
         isActive: u.isActive,
         createdAt: u.createdAt.toISOString(),
         updatedAt: u.updatedAt.toISOString(),

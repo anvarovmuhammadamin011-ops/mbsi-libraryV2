@@ -36,8 +36,15 @@ const MARKET_ITEMS: MarketItem[] = [
   { id: "6", name: "Shaxsiy status", description: "Shaxsiy status matn", price: 80, icon: "✨", category: "Profile" },
 ];
 
-export default function CoinsPage() {
-  const totalCoins = 450;
+import { getSessionUser } from "@/lib/server/auth";
+import { prisma } from "@/lib/db";
+
+export default async function CoinsPage() {
+  const sessionUser = await getSessionUser();
+  const dbUser = sessionUser
+    ? await prisma.user.findUnique({ where: { id: sessionUser.id }, select: { coins: true } })
+    : null;
+  const totalCoins = (dbUser as any)?.coins ?? 450;
 
   return (
     <div className="space-y-6 animate-fade-in pb-20 lg:pb-0">

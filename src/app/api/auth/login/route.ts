@@ -10,6 +10,7 @@ function toUser(u: {
   name: string;
   role: string;
   avatar: string | null;
+  coins: number;
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -19,6 +20,7 @@ function toUser(u: {
     name: u.name,
     role: u.role as User["role"],
     avatar: u.avatar ?? undefined,
+    coins: u.coins ?? 0,
     isActive: u.isActive,
     createdAt: u.createdAt.toISOString(),
     updatedAt: u.updatedAt.toISOString(),

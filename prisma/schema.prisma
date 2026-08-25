@@ -25,6 +25,7 @@ model User {
   avatar          String?
   externalUserId  String?  @map("external_user_id") // future MBSI SSO link
   telegramId      String?  @unique @map("telegram_id") // Telegram bot link
+  coins           Int      @default(0)
   isActive        Boolean  @default(true) @map("is_active")
   createdAt       DateTime @default(now()) @map("created_at")
   updatedAt       DateTime @updatedAt @map("updated_at")
@@ -78,6 +79,7 @@ model Book {
   language    String   @default("UZ") // UZ | RU | EN
   totalPages  Int      @default(0) @map("total_pages")
   fileSize    Int?     @map("file_size")
+  coinReward  Int      @default(10) @map("coin_reward")
   authorId    String   @map("author_id")
   categoryId  String   @map("category_id")
   isPublished Boolean  @default(false) @map("is_published")

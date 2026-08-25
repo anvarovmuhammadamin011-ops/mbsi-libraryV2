@@ -43,6 +43,7 @@ export async function POST(req: NextRequest) {
   const categoryIdInput = String(form.get("categoryId") || "").trim();
   const newCategoryName = String(form.get("newCategory") || "").trim();
   const totalPages = Math.max(1, Number(form.get("totalPages")) || 1);
+  const coinReward = Math.max(0, Math.min(1000, Number(form.get("coinReward")) || 10));
   const isPublished = String(form.get("isPublished") || "true") !== "false";
 
   if (!file || !title) {
@@ -121,6 +122,7 @@ export async function POST(req: NextRequest) {
     coverUrl,
     pdfUrl: saved.urlOrKey,
     totalPages: detectedPages,
+    coinReward,
     fileSize: saved.size,
     userId: user.id,
   });

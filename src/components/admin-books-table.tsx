@@ -45,6 +45,7 @@ interface BookRow {
   description: string;
   language: string;
   totalPages: number;
+  coinReward: number;
   isPublished: boolean;
   readerCount: number;
   ratingCount: number;
@@ -64,6 +65,7 @@ interface BookForm {
   categoryId: string;
   language: string;
   totalPages: string;
+  coinReward: string;
   description: string;
   isPublished: boolean;
   file: File | null;
@@ -76,6 +78,7 @@ const EMPTY_FORM: BookForm = {
   categoryId: "",
   language: "UZ",
   totalPages: "",
+  coinReward: "10",
   description: "",
   isPublished: true,
   file: null,
@@ -136,6 +139,7 @@ export function AdminBooksTable({ books, categories }: Props) {
       fd.append("description", form.description.trim());
       fd.append("language", form.language);
       fd.append("totalPages", form.totalPages || "1");
+      fd.append("coinReward", form.coinReward || "10");
       fd.append("isPublished", String(form.isPublished));
       fd.append("categoryId", form.categoryId);
       fd.append("file", form.file);
@@ -171,6 +175,7 @@ export function AdminBooksTable({ books, categories }: Props) {
       fd.append("description", editing.description ?? "");
       fd.append("language", editing.language);
       fd.append("totalPages", String(editing.totalPages));
+      fd.append("coinReward", String(editing.coinReward ?? 10));
       await api.patch(`/api/admin/books/${editing.id}`, fd);
       toast.success("Yangilandi");
       setEditing(null);
@@ -278,6 +283,18 @@ export function AdminBooksTable({ books, categories }: Props) {
                     placeholder="avtomatik aniqlanadi"
                   />
                 </div>
+              </div>
+              <div className="space-y-1.5">
+                <Label>Coin mukofoti *</Label>
+                <Input
+                  type="number"
+                  min={0}
+                  max={1000}
+                  value={form.coinReward}
+                  onChange={(e) => setForm({ ...form, coinReward: e.target.value })}
+                  placeholder="masalan: 20"
+                />
+                <p className="text-xs text-muted-foreground">Kitob tugatganda beriladigan coin miqdori</p>
               </div>
               <div className="space-y-1.5">
                 <Label>Tavsif</Label>
@@ -390,6 +407,7 @@ export function AdminBooksTable({ books, categories }: Props) {
                   <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground hidden md:table-cell">Kategoriya</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground hidden lg:table-cell">Til</th>
                   <th className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground">Sahifalar</th>
+                  <th className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground">🪙</th>
                   <th className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground hidden sm:table-cell">O&apos;quvchilar</th>
                   <th className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground hidden md:table-cell">Reyting</th>
                   <th className="px-4 py-3 text-center text-xs font-semibold text-muted-foreground">Holat</th>
@@ -423,6 +441,7 @@ export function AdminBooksTable({ books, categories }: Props) {
                       <Badge variant="secondary" className="text-[10px]">{b.language}</Badge>
                     </td>
                     <td className="px-4 py-3 text-right text-xs text-muted-foreground">{b.totalPages}</td>
+                    <td className="px-4 py-3 text-right text-xs font-medium text-yellow-600">{b.coinReward}</td>
                     <td className="px-4 py-3 text-right text-xs text-muted-foreground hidden sm:table-cell">{b.readerCount}</td>
                     <td className="px-4 py-3 text-right text-xs text-muted-foreground hidden md:table-cell">
                       {b.averageRating ? b.averageRating.toFixed(1) : "—"}
@@ -520,6 +539,16 @@ export function AdminBooksTable({ books, categories }: Props) {
                     onChange={(e) => setEditing({ ...editing, totalPages: Number(e.target.value) })}
                   />
                 </div>
+              </div>
+              <div className="space-y-1.5">
+                <Label>Coin mukofoti</Label>
+                <Input
+                  type="number"
+                  min={0}
+                  max={1000}
+                  value={editing.coinReward ?? 10}
+                  onChange={(e) => setEditing({ ...editing, coinReward: Number(e.target.value) })}
+                />
               </div>
               <div className="space-y-1.5">
                 <Label>Tavsif</Label>

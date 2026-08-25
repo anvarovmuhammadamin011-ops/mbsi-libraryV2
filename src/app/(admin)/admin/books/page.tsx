@@ -40,6 +40,7 @@ export default async function AdminBooksPage() {
     description: b.description ?? "",
     language: b.language,
     totalPages: b.totalPages,
+    coinReward: (b as any).coinReward ?? 10,
     isPublished: b.isPublished,
     readerCount: b._count.progress,
     ratingCount: b._count.ratings,
