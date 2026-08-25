@@ -22,11 +22,6 @@ import {
   Users,
   UserCheck,
   Shield,
-  Loader2,
-  Trash2,
-  BookOpen,
-  Clock,
-  Trophy,
   UserX,
   ChevronRight,
 } from "lucide-react";
@@ -52,7 +47,6 @@ interface Props {
 const ROLE_TABS = [
   { value: "all", label: "Barchasi" },
   { value: "STUDENT", label: "O'quvchilar" },
-  { value: "TEACHER", label: "O'qituvchilar" },
   { value: "ADMIN", label: "Adminlar" },
 ];
 
@@ -64,7 +58,8 @@ export function AdminUsersTable({ users, currentUserId, stats }: Props) {
   const [busy, setBusy] = useState<string | null>(null);
 
   const filtered = useMemo(() => {
-    let result = [...users];
+    // Teachers are managed on their own page — never shown here.
+    let result = users.filter((u) => u.role !== "TEACHER");
     if (q) {
       const lower = q.toLowerCase();
       result = result.filter((u) => u.name.toLowerCase().includes(lower));
@@ -74,20 +69,6 @@ export function AdminUsersTable({ users, currentUserId, stats }: Props) {
     if (status === "inactive") result = result.filter((u) => !u.isActive);
     return result;
   }, [users, q, role, status]);
-
-  async function toggleRole(id: string, current: string) {
-    setBusy(id);
-    try {
-      const next = current === "TEACHER" ? "STUDENT" : "TEACHER";
-      await api.patch(`/api/admin/users/${id}`, { role: next });
-      toast.success(`Foydalanuvchi roli ${next} ga o'zgartirildi`);
-      router.refresh();
-    } catch (e: any) {
-      toast.error(e.message || "Rolni o'zgartirishda xatolik");
-    } finally {
-      setBusy(null);
-    }
-  }
 
   async function toggleActive(id: string, current: boolean) {
     setBusy(id);
@@ -113,10 +94,9 @@ export function AdminUsersTable({ users, currentUserId, stats }: Props) {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <Stat label="Jami" value={stats.total.toLocaleString()} icon={<Users className="size-5" />} />
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
+        <Stat label="Jami" value={(stats.total - stats.teachers).toLocaleString()} icon={<Users className="size-5" />} />
         <Stat label="O'quvchilar" value={stats.students.toLocaleString()} icon={<UserCheck className="size-5" />} />
-        <Stat label="O'qituvchilar" value={stats.teachers.toLocaleString()} icon={<Users className="size-5" />} />
         <Stat label="Administratorlar" value={stats.admins.toLocaleString()} icon={<Shield className="size-5" />} />
       </div>
 
@@ -140,9 +120,7 @@ export function AdminUsersTable({ users, currentUserId, stats }: Props) {
                   ? stats.total
                   : t.value === "STUDENT"
                     ? stats.students
-                    : t.value === "TEACHER"
-                      ? stats.teachers
-                      : stats.admins}
+                    : stats.admins}
               </span>
             </button>
           ))}
@@ -242,27 +220,16 @@ export function AdminUsersTable({ users, currentUserId, stats }: Props) {
                     <td className="px-4 py-3 text-right">
                       <div className="flex items-center justify-end gap-1">
                         {u.id !== currentUserId && u.role !== "ADMIN" && (
-                          <>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="h-7 text-xs"
-                              disabled={busy === u.id}
-                              onClick={() => toggleRole(u.id, u.role)}
-                            >
-                              {busy === u.id ? <Loader2 className="size-3 animate-spin" /> : null}
-                              {u.role === "TEACHER" ? "O'quvchi qilish" : "O'qituvchi qilish"}
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="icon"
-                              className="h-7 w-7"
-                              disabled={busy === u.id}
-                              onClick={() => toggleActive(u.id, u.isActive)}
-                            >
-                              {u.isActive ? <UserX size={13} /> : <UserCheck size={13} />}
-                            </Button>
-                          </>
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            className="h-7 w-7"
+                            disabled={busy === u.id}
+                            onClick={() => toggleActive(u.id, u.isActive)}
+                            title={u.isActive ? "Bloklash" : "Faollashtirish"}
+                          >
+                            {u.isActive ? <UserX size={13} /> : <UserCheck size={13} />}
+                          </Button>
                         )}
                         <Link
                           href={`/admin/users/${u.id}`}

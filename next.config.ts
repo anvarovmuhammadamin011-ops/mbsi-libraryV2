@@ -6,6 +6,10 @@ const nextConfig: NextConfig = {
   },
   devIndicators: false,
 
+  // Keep pdfjs as a plain Node dependency so the legacy build
+  // works at runtime for server-side page counting.
+  serverExternalPackages: ["pdfjs-dist"],
+
   // PWA headers
   async headers() {
     return [

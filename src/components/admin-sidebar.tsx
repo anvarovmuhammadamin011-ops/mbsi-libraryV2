@@ -27,6 +27,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useAuthStore } from "@/lib/auth-store";
+import { LogoutButton } from "@/components/logout-button";
 import { useState } from "react";
 
 interface NavItem {
@@ -167,7 +168,7 @@ export function AdminSidebar() {
       </ScrollArea>
 
       {/* User */}
-      <div className="border-t border-border p-3">
+      <div className="border-t border-border p-3 space-y-2">
         <div className="flex items-center gap-3 rounded-xl px-2 py-2">
           <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-semibold text-primary">
             {user.name?.charAt(0)}
@@ -193,6 +194,7 @@ export function AdminSidebar() {
             </>
           )}
         </div>
+        {!collapsed && <LogoutButton />}
       </div>
     </aside>
   );

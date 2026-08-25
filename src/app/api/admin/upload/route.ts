@@ -8,6 +8,25 @@ import { ApiError, ERROR_CODES, success } from "@/lib/server/errors";
 const MAX_PDF_BYTES = 25 * 1024 * 1024; // 25 MB
 const MAX_COVER_BYTES = 5 * 1024 * 1024; // 5 MB
 
+// Reads the PDF and returns its real page count. Falls back to
+// `fallback` when parsing fails (corrupt or exotic PDF structure).
+async function detectPageCount(buf: Buffer, fallback: number): Promise<number> {
+  try {
+    const pdfjs = await import("pdfjs-dist/legacy/build/pdf.mjs");
+    const doc = await pdfjs.getDocument({
+      data: new Uint8Array(buf),
+      isEvalSupported: false,
+      useSystemFonts: false,
+    }).promise;
+    const n = doc.numPages;
+    await doc.destroy();
+    return n > 0 ? n : fallback;
+  } catch (err) {
+    console.error("PDF page count detection failed:", err);
+    return fallback;
+  }
+}
+
 export async function POST(req: NextRequest) {
   const user = await requireRole("ADMIN");
   if (!user) throw new ApiError(ERROR_CODES.FORBIDDEN, "Ruxsat yo'q", 403);
@@ -88,6 +107,10 @@ export async function POST(req: NextRequest) {
     coverUrl = savedCover.urlOrKey;
   }
 
+  // Auto-detect the real page count from the PDF itself.
+  const pdfBuffer = Buffer.from(await file.arrayBuffer());
+  const detectedPages = await detectPageCount(pdfBuffer, totalPages);
+
   const book = await createBook({
     title,
     description,
@@ -97,7 +120,7 @@ export async function POST(req: NextRequest) {
     isPublished,
     coverUrl,
     pdfUrl: saved.urlOrKey,
-    totalPages,
+    totalPages: detectedPages,
     fileSize: saved.size,
     userId: user.id,
   });

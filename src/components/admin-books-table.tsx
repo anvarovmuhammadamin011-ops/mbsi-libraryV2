@@ -62,7 +62,6 @@ interface BookForm {
   title: string;
   author: string;
   categoryId: string;
-  newCategory: string;
   language: string;
   totalPages: string;
   description: string;
@@ -75,7 +74,6 @@ const EMPTY_FORM: BookForm = {
   title: "",
   author: "",
   categoryId: "",
-  newCategory: "",
   language: "UZ",
   totalPages: "",
   description: "",
@@ -126,8 +124,8 @@ export function AdminBooksTable({ books, categories }: Props) {
       toast.error("Sarlavha, muallif va PDF fayl to'ldirilishi shart");
       return;
     }
-    if (!form.categoryId && !form.newCategory.trim()) {
-      toast.error("Kategoriya tanlang yoki yangi nom yozing");
+    if (!form.categoryId) {
+      toast.error("Kategoriya tanlang");
       return;
     }
     setSaving(true);
@@ -139,8 +137,7 @@ export function AdminBooksTable({ books, categories }: Props) {
       fd.append("language", form.language);
       fd.append("totalPages", form.totalPages || "1");
       fd.append("isPublished", String(form.isPublished));
-      if (form.categoryId) fd.append("categoryId", form.categoryId);
-      if (form.newCategory.trim()) fd.append("newCategory", form.newCategory.trim());
+      fd.append("categoryId", form.categoryId);
       fd.append("file", form.file);
       if (form.cover && form.cover.size > 0) fd.append("cover", form.cover);
 
@@ -244,29 +241,19 @@ export function AdminBooksTable({ books, categories }: Props) {
                   placeholder="Muallif ismi (yangi bo'lsa yaratiladi)"
                 />
               </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1.5">
-                  <Label>Kategoriya</Label>
-                  <Select
-                    value={form.categoryId || undefined}
-                    onValueChange={(v) => setForm({ ...form, categoryId: v ?? "", newCategory: "" })}
-                  >
-                    <SelectTrigger className="w-full h-9"><SelectValue placeholder="Tanlang" /></SelectTrigger>
-                    <SelectContent>
-                      {categories.map((c) => (
-                        <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-1.5">
-                  <Label>yoki yangi kategoriya</Label>
-                  <Input
-                    value={form.newCategory}
-                    onChange={(e) => setForm({ ...form, newCategory: e.target.value, categoryId: "" })}
-                    placeholder="Masalan: Ona tili"
-                  />
-                </div>
+              <div className="space-y-1.5">
+                <Label>Kategoriya *</Label>
+                <Select
+                  value={form.categoryId || undefined}
+                  onValueChange={(v) => setForm({ ...form, categoryId: v ?? "" })}
+                >
+                  <SelectTrigger className="w-full h-9"><SelectValue placeholder="Tanlang" /></SelectTrigger>
+                  <SelectContent>
+                    {categories.map((c) => (
+                      <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
@@ -288,7 +275,7 @@ export function AdminBooksTable({ books, categories }: Props) {
                     min={1}
                     value={form.totalPages}
                     onChange={(e) => setForm({ ...form, totalPages: e.target.value })}
-                    placeholder="masalan: 120"
+                    placeholder="avtomatik aniqlanadi"
                   />
                 </div>
               </div>
