@@ -22,8 +22,6 @@ import {
   Moon,
   Sun,
   Monitor,
-  Columns,
-  Rows3,
   Keyboard,
 } from "lucide-react";
 
@@ -44,7 +42,7 @@ type ThemeMode = "light" | "dark" | "system";
 
 export function Reader({ bookId, title, totalPages, pdfUrl, initialPage }: Props) {
   const [page, setPage] = useState(Math.min(Math.max(initialPage, 1), totalPages || 1));
-  const [totalPdfPages] = useState(totalPages);
+  const [totalPdfPages, setTotalPdfPages] = useState(totalPages || 1);
   const [theme, setTheme] = useState<ThemeMode>("light");
   const [saving, setSaving] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -58,12 +56,22 @@ export function Reader({ bookId, title, totalPages, pdfUrl, initialPage }: Props
   const [transition, setTransition] = useState<"none" | "fade">("none");
   const [hintText, setHintText] = useState<string | null>(null);
 
+  // ─── Canvas-rendered single page ───────────────────────────
+  const pdfDocRef = useRef<any>(null);
+  const [docReady, setDocReady] = useState(false);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
+  const renderTaskRef = useRef<{ cancel: () => void } | null>(null);
+  const [fitScale, setFitScale] = useState(1);
+  const [zoom, setZoom] = useState(1);
+  const [rendering, setRendering] = useState(true);
+
   const sessionRef = useRef<string | null>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const hideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastSavePageRef = useRef(initialPage);
   const touchStartRef = useRef<{ x: number; y: number } | null>(null);
+  const pinchRef = useRef<{ dist: number; zoom: number } | null>(null);
 
   const progressPct = totalPdfPages ? Math.round((page / totalPdfPages) * 100) : 0;
 
@@ -78,10 +86,108 @@ export function Reader({ bookId, title, totalPages, pdfUrl, initialPage }: Props
 
   const isDark = currentTheme === "dark";
 
-  // ─── PDF iframe URL — single page, full width, no toolbar ─
-  const pdfSrc = useMemo(() => {
-    return `${pdfUrl}#page=${page}&zoom=page-fit&toolbar=0&navpanes=0&scrollbar=0&statusbar=0`;
-  }, [pdfUrl, page]);
+  // ─── Load PDF document ────────────────────────────────────
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const pdfjs = await import("pdfjs-dist");
+        pdfjs.GlobalWorkerOptions.workerSrc = "/pdf-worker/pdf.worker.min.mjs";
+        const doc = await pdfjs.getDocument({ url: pdfUrl }).promise;
+        if (cancelled) {
+          doc.destroy();
+          return;
+        }
+        pdfDocRef.current = doc;
+        setTotalPdfPages(doc.numPages);
+        setDocReady(true);
+      } catch {
+        if (!cancelled) {
+          toast.error("PDF faylni yuklashda xatolik");
+          setLoading(false);
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+      pdfDocRef.current?.destroy?.();
+      pdfDocRef.current = null;
+    };
+  }, [pdfUrl]);
+
+  // ─── Fit-to-screen scale (computed once per doc / resize) ─
+  const recomputeFit = useCallback(async () => {
+    const doc = pdfDocRef.current;
+    const el = contentRef.current;
+    if (!doc || !el) return;
+    try {
+      const pg = await doc.getPage(Math.min(Math.max(page, 1), totalPdfPages));
+      const vp = pg.getViewport({ scale: 1 });
+      const w = el.clientWidth - 24;
+      const h = el.clientHeight - 24;
+      if (w > 0 && h > 0) {
+        setFitScale(Math.min(w / vp.width, h / vp.height));
+      }
+    } catch {
+      /* ignore */
+    }
+  }, [page, totalPdfPages]);
+
+  useEffect(() => {
+    if (!docReady) return;
+    recomputeFit();
+    window.addEventListener("resize", recomputeFit);
+    return () => window.removeEventListener("resize", recomputeFit);
+  }, [docReady, recomputeFit]);
+
+  // ─── Render exactly ONE page onto the canvas ──────────────
+  useEffect(() => {
+    if (!docReady || !canvasRef.current) return;
+    let cancelled = false;
+    const dpr = typeof window !== "undefined" ? Math.min(window.devicePixelRatio || 1, 3) : 1;
+
+    (async () => {
+      setRendering(true);
+      try {
+        renderTaskRef.current?.cancel();
+      } catch {
+        /* ignore */
+      }
+      try {
+        const doc = pdfDocRef.current;
+        const canvas = canvasRef.current;
+        if (!doc || !canvas) return;
+        const pg = await doc.getPage(Math.min(Math.max(page, 1), totalPdfPages));
+        if (cancelled) return;
+        const scale = Math.max(0.1, fitScale * zoom * dpr);
+        const viewport = pg.getViewport({ scale });
+        canvas.width = Math.floor(viewport.width);
+        canvas.height = Math.floor(viewport.height);
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return;
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        const task = pg.render({
+          canvasContext: ctx,
+          viewport,
+          canvas,
+        });
+        renderTaskRef.current = task;
+        await task.promise;
+      } catch {
+        /* render cancelled or failed — keep previous frame */
+      } finally {
+        if (!cancelled) {
+          setRendering(false);
+          setLoading(false);
+        }
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [docReady, page, fitScale, zoom, totalPdfPages]);
 
   // ─── Reading Session ──────────────────────────────────────
   useEffect(() => {
@@ -163,6 +269,15 @@ export function Reader({ bookId, title, totalPages, pdfUrl, initialPage }: Props
           e.preventDefault();
           goto(page + 1);
           break;
+        case "+":
+        case "=":
+          e.preventDefault();
+          setZoom((z) => Math.min(4, +(z + 0.2).toFixed(2)));
+          break;
+        case "-":
+          e.preventDefault();
+          setZoom((z) => Math.max(0.6, +(z - 0.2).toFixed(2)));
+          break;
         case "f":
         case "F":
           e.preventDefault();
@@ -184,13 +299,33 @@ export function Reader({ bookId, title, totalPages, pdfUrl, initialPage }: Props
     return () => window.removeEventListener("keydown", handler);
   }, [page, totalPdfPages, isFullscreen, showSettings, showPageInput]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ─── Touch Swipe ──────────────────────────────────────────
+  // ─── Touch Swipe / Pinch ──────────────────────────────────
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    if (e.touches.length === 2) {
+      const dx = e.touches[0].clientX - e.touches[1].clientX;
+      const dy = e.touches[0].clientY - e.touches[1].clientY;
+      pinchRef.current = { dist: Math.hypot(dx, dy), zoom };
+      return;
+    }
     touchStartRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+  }, [zoom]);
+
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
+    if (e.touches.length === 2 && pinchRef.current) {
+      const dx = e.touches[0].clientX - e.touches[1].clientX;
+      const dy = e.touches[0].clientY - e.touches[1].clientY;
+      const dist = Math.hypot(dx, dy);
+      const next = pinchRef.current.zoom * (dist / pinchRef.current.dist);
+      setZoom(Math.min(4, Math.max(0.6, +next.toFixed(2))));
+    }
   }, []);
 
   const handleTouchEnd = useCallback(
     (e: React.TouchEvent) => {
+      if (pinchRef.current) {
+        if (e.touches.length < 2) pinchRef.current = null;
+        return;
+      }
       if (!touchStartRef.current) return;
       const dx = e.changedTouches[0].clientX - touchStartRef.current.x;
       const dy = e.changedTouches[0].clientY - touchStartRef.current.y;
@@ -297,7 +432,7 @@ export function Reader({ bookId, title, totalPages, pdfUrl, initialPage }: Props
 
   // ─── Hint Toast ───────────────────────────────────────────
   useEffect(() => {
-    setHintText("Ekran bosishi orqali sahifalarni almashtiring");
+    setHintText("Sahifa almashtirish uchun chetlarga bosing yoki suring");
     const t = setTimeout(() => setHintText(null), 3000);
     return () => clearTimeout(t);
   }, []);
@@ -312,12 +447,12 @@ export function Reader({ bookId, title, totalPages, pdfUrl, initialPage }: Props
 
   return (
     <div
-      ref={containerRef}
       className={`fixed inset-0 z-50 flex flex-col select-none overflow-hidden ${bgClass} ${textClass}`}
       onMouseMove={resetHideTimer}
       onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
-      style={{ touchAction: "pan-y" }}
+      style={{ touchAction: "none" }}
     >
       {/* ═══ Loading State ═══ */}
       {loading && (
@@ -388,72 +523,96 @@ export function Reader({ bookId, title, totalPages, pdfUrl, initialPage }: Props
             ))}
           </div>
         </div>
+        <div className="mb-3">
+          <p className={`text-xs font-medium mb-1.5 ${mutedClass}`}>Masshtab</p>
+          <div className="flex items-center gap-1">
+            <Button variant="outline" size="sm" className="h-7 flex-1"
+              onClick={() => setZoom((z) => Math.max(0.6, +(z - 0.2).toFixed(2)))}>
+              <ZoomOut className="size-3" />
+            </Button>
+            <span className={`text-xs font-mono px-1 w-12 text-center ${mutedClass}`}>
+              {Math.round(zoom * 100)}%
+            </span>
+            <Button variant="outline" size="sm" className="h-7 flex-1"
+              onClick={() => setZoom((z) => Math.min(4, +(z + 0.2).toFixed(2)))}>
+              <ZoomIn className="size-3" />
+            </Button>
+            <Button variant="outline" size="sm" className="h-7"
+              onClick={() => setZoom(1)} aria-label="Masshtabni tiklash">
+              <RotateCcw className="size-3" />
+            </Button>
+          </div>
+        </div>
         <div className={`border-t pt-2 ${headerBorder}`}>
           <p className={`text-xs font-medium mb-1 ${mutedClass}`}>
             <Keyboard className="size-3 inline mr-1" /> Klaviatura
           </p>
           <div className={`text-[10px] ${mutedClass} space-y-0.5`}>
             <div className="flex justify-between"><span>← →</span><span>Sahifa almashtirish</span></div>
-            <div className="flex justify-between"><span>F</span><span>To'liq ekran</span></div>
-            <div className="flex justify-between"><span>B</span><span>Xatcho'p</span></div>
+            <div className="flex justify-between"><span>+ −</span><span>Masshtab</span></div>
+            <div className="flex justify-between"><span>F</span><span>To&apos;liq ekran</span></div>
+            <div className="flex justify-between"><span>B</span><span>Xatcho&apos;p</span></div>
           </div>
         </div>
       </div>
 
-      {/* ═══ PDF Content — FULL SCREEN ═══ */}
+      {/* ═══ Page Content — ALWAYS exactly ONE page ═══ */}
       <div
-        className="flex-1 relative"
+        ref={contentRef}
+        className="flex-1 relative overflow-hidden"
         onClick={handleClick}
         style={{ cursor: showControls ? "default" : "none" }}
       >
-        {/* Left touch zone */}
-        <div className="absolute left-0 top-0 bottom-0 w-[25%] z-10"
+        {/* Left tap zone */}
+        <div className="absolute left-0 top-0 bottom-0 w-[25%] z-20"
           onClick={(e) => { e.stopPropagation(); goto(page - 1); }} />
 
-        {/* Right touch zone */}
-        <div className="absolute right-0 top-0 bottom-0 w-[25%] z-10"
+        {/* Right tap zone */}
+        <div className="absolute right-0 top-0 bottom-0 w-[25%] z-20"
           onClick={(e) => { e.stopPropagation(); goto(page + 1); }} />
 
         {/* Center tap zone */}
-        <div className="absolute left-[25%] right-[25%] top-0 bottom-0 z-10"
+        <div className="absolute left-[25%] right-[25%] top-0 bottom-0 z-20"
           onClick={(e) => { e.stopPropagation(); setShowControls((prev) => !prev); if (showSettings) setShowSettings(false); }} />
 
-        {/* PDF iframe — takes up ALL available space, no constraints */}
-        <div className={`absolute inset-0 transition-opacity duration-200 ${transition === "fade" ? "opacity-0" : "opacity-100"}`}>
-          <iframe
-            key={pdfSrc}
-            src={pdfSrc}
-            title={title}
-            className="w-full h-full border-0"
-            style={{ background: "white" }}
-            onLoad={() => setLoading(false)}
+        {/* Single-page canvas */}
+        <div className={`absolute inset-0 flex items-center justify-center p-2 transition-opacity duration-200 ${transition === "fade" ? "opacity-0" : "opacity-100"}`}>
+          <canvas
+            ref={canvasRef}
+            className="max-w-full max-h-full object-contain rounded-lg shadow-lg"
+            style={{ background: "#ffffff" }}
           />
+          {(rendering || !docReady) && (
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+              <Loader2 className="size-6 animate-spin text-slate-400" />
+            </div>
+          )}
         </div>
 
         {/* Side Arrows */}
         {showControls && page > 1 && (
           <button onClick={(e) => { e.stopPropagation(); goto(page - 1); }}
-            className={`absolute left-2 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full flex items-center justify-center transition-opacity ${controlBg} border ${headerBorder}`}
+            className={`absolute left-2 top-1/2 -translate-y-1/2 z-30 w-10 h-10 rounded-full flex items-center justify-center transition-opacity ${controlBg} border ${headerBorder}`}
             aria-label="Oldingi sahifa">
             <ChevronLeft className="size-5" />
           </button>
         )}
         {showControls && page < totalPdfPages && (
           <button onClick={(e) => { e.stopPropagation(); goto(page + 1); }}
-            className={`absolute right-2 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full flex items-center justify-center transition-opacity ${controlBg} border ${headerBorder}`}
+            className={`absolute right-2 top-1/2 -translate-y-1/2 z-30 w-10 h-10 rounded-full flex items-center justify-center transition-opacity ${controlBg} border ${headerBorder}`}
             aria-label="Keyingi sahifa">
             <ChevronRight className="size-5" />
           </button>
         )}
 
         {/* Page Badge */}
-        <div className={`absolute top-3 left-1/2 -translate-x-1/2 z-20 px-3 py-1 rounded-full text-xs transition-opacity duration-300 ${controlBg} border ${headerBorder} shadow-sm ${
+        <div className={`absolute top-3 left-1/2 -translate-x-1/2 z-30 px-3 py-1 rounded-full text-xs transition-opacity duration-300 ${controlBg} border ${headerBorder} shadow-sm ${
           showControls ? "opacity-100" : "opacity-0"}`}>
           {page} / {totalPdfPages}
         </div>
 
         {saving && (
-          <div className="absolute top-3 right-3 z-20">
+          <div className="absolute top-3 right-3 z-30">
             <Loader2 className="size-3 animate-spin text-blue-400" />
           </div>
         )}
@@ -466,8 +625,8 @@ export function Reader({ bookId, title, totalPages, pdfUrl, initialPage }: Props
         }`}
         style={{ height: 52, zIndex: 30 }}
       >
-        <div className="flex items-center justify-between px-4 h-full">
-          <div className="flex items-center gap-2">
+        <div className="flex items-center justify-between px-3 h-full">
+          <div className="flex items-center gap-1.5">
             <Button variant="ghost" size="icon" className="h-8 w-8"
               onClick={(e) => { e.stopPropagation(); goto(page - 1); }}
               disabled={page <= 1} aria-label="Oldingi sahifa">
@@ -499,18 +658,28 @@ export function Reader({ bookId, title, totalPages, pdfUrl, initialPage }: Props
             </Button>
           </div>
 
-          <div className="flex items-center gap-3 flex-1 mx-4 max-w-md">
+          <div className="hidden sm:flex items-center gap-2 flex-1 mx-3 max-w-md">
             <Progress value={progressPct} className="h-1.5 flex-1" />
             <span className={`text-xs font-mono ${mutedClass}`}>{progressPct}%</span>
           </div>
 
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-0.5">
+            <Button variant="ghost" size="icon" className="h-8 w-8"
+              onClick={(e) => { e.stopPropagation(); setZoom((z) => Math.max(0.6, +(z - 0.2).toFixed(2))); }}
+              disabled={zoom <= 0.6} aria-label="Kichiklashtirish">
+              <ZoomOut className="size-4" />
+            </Button>
+            <Button variant="ghost" size="icon" className="h-8 w-8"
+              onClick={(e) => { e.stopPropagation(); setZoom((z) => Math.min(4, +(z + 0.2).toFixed(2))); }}
+              disabled={zoom >= 4} aria-label="Kattalashtirish">
+              <ZoomIn className="size-4" />
+            </Button>
             <Button variant="ghost" size="icon" className="h-8 w-8"
               onClick={(e) => { e.stopPropagation(); toggleBookmark(); }}
               aria-label={isBookmarked ? "Xatcho'p o'chirish" : "Xatcho'p qo'shish"}>
               {isBookmarked ? <BookmarkCheck className="size-4 text-yellow-500 fill-yellow-500" /> : <BookmarkPlus className="size-4" />}
             </Button>
-            <Button variant="ghost" size="icon" className="h-8 w-8"
+            <Button variant="ghost" size="icon" className="h-8 w-8 hidden sm:inline-flex"
               onClick={(e) => { e.stopPropagation(); toggleFullscreen(); }}
               aria-label="To'liq ekran">
               {isFullscreen ? <Minimize className="size-4" /> : <Maximize className="size-4" />}

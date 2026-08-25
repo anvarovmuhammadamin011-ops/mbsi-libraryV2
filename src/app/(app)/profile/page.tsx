@@ -126,24 +126,6 @@ export default async function ProfilePage() {
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/3 pointer-events-none" />
 
         <div className="relative flex flex-col items-center text-center sm:flex-row sm:text-left gap-5">
-          {/* Avatar */}
-          <div className="relative group">
-            <div className="flex h-24 w-24 sm:h-28 sm:w-28 items-center justify-center rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 text-4xl sm:text-5xl font-bold text-primary shadow-lg shadow-primary/10 ring-4 ring-card">
-              {user.avatar ? (
-                <img
-                  src={user.avatar}
-                  alt={user.name}
-                  className="h-full w-full rounded-2xl object-cover"
-                />
-              ) : (
-                user.name?.charAt(0)?.toUpperCase()
-              )}
-            </div>
-            <div className="absolute -bottom-1 -right-1 flex h-7 w-7 items-center justify-center rounded-full bg-primary text-white text-xs font-bold shadow-md">
-              {level}
-            </div>
-          </div>
-
           {/* Info */}
           <div className="flex-1 min-w-0">
             <h1 className="text-2xl sm:text-3xl font-bold text-foreground truncate">
