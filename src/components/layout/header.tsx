@@ -52,7 +52,7 @@ export function Header() {
   return (
     <header className="sticky top-0 z-40 flex h-16 items-center gap-4 border-b border-border bg-background/80 backdrop-blur-md px-4 lg:px-6">
       {/* Mobile logo */}
-      <div className="lg:hidden">
+      <div className="md:hidden">
         <Link href="/home" className="flex items-center gap-2">
           <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary">
             <span className="text-xs font-bold text-white">M</span>
@@ -60,8 +60,8 @@ export function Header() {
         </Link>
       </div>
 
-      {/* Page title (desktop) */}
-      <div className="hidden lg:block">
+      {/* Page title (tablet+) */}
+      <div className="hidden md:block">
         <h1 className="text-lg font-semibold text-foreground">{title}</h1>
       </div>
 

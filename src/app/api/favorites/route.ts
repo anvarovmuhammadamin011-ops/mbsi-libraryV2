@@ -30,7 +30,26 @@ export const POST = route(async (req) => {
 
 export const DELETE = route(async (req, ctx) => {
   const user = await requireUser();
-  const { bookId } = await ctx.params;
+  let bookId: string | null = null;
+  try {
+    const p: any = await (ctx as any).params;
+    if (p?.bookId) bookId = p.bookId;
+    else if (p?.id) bookId = p.id;
+  } catch {}
+  if (!bookId) bookId = req.nextUrl.searchParams.get("bookId");
+  if (!bookId) {
+    try {
+      const body = (await req.clone().json()) as any;
+      if (body?.bookId) bookId = body.bookId;
+    } catch {}
+  }
+  if (!bookId) {
+    const seg = req.nextUrl.pathname.split("/").pop();
+    if (seg && seg !== "favorites" && seg !== "route") bookId = seg;
+  }
+  if (!bookId) {
+    throw new ApiError(ERROR_CODES.VALIDATION, "bookId kerak", 400);
+  }
   await removeFavorite(user.id, bookId);
   return json({ success: true, data: { bookId, isFavorite: false } });
 });

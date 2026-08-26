@@ -4,91 +4,67 @@ import Link from "next/link";
 import Image from "next/image";
 import {
   BookOpen,
-  Flame,
-  Bell,
-  Target,
-  TrendingUp,
   Star,
   ArrowRight,
-  Headphones,
-  Trophy,
-  Coins,
+  Search,
 } from "lucide-react";
 
 export const dynamic = "force-dynamic";
+
+// Fallback emoji map for categories when DB icon is empty
+const CATEGORY_FALLBACK_ICON: Record<string, string> = {
+  fiction: "📚",
+  novel: "📚",
+  it: "💻",
+  technology: "💻",
+  programming: "💻",
+  psychology: "🧠",
+  history: "🌍",
+  science: "🔬",
+  business: "💼",
+  art: "🎨",
+  education: "📖",
+  default: "📚",
+};
+
+function getCategoryIcon(cat: { name: string; slug: string; icon: string | null }) {
+  if (cat.icon && cat.icon.trim().length > 0) return cat.icon;
+  const key = cat.slug.toLowerCase();
+  if (CATEGORY_FALLBACK_ICON[key]) return CATEGORY_FALLBACK_ICON[key];
+  const nameKey = cat.name.toLowerCase();
+  for (const k of Object.keys(CATEGORY_FALLBACK_ICON)) {
+    if (nameKey.includes(k)) return CATEGORY_FALLBACK_ICON[k];
+  }
+  return CATEGORY_FALLBACK_ICON.default;
+}
 
 export default async function HomePage() {
   const sessionUser = await getSessionUser();
   const userId = sessionUser?.id;
 
-  // Get user data
   const user = userId
     ? await prisma.user.findUnique({ where: { id: userId } })
     : null;
 
-  // Get reading progress
+  // Reading progress - most recent active first (up to 4 for tablet horizontal row)
   const readingProgress = userId
     ? await prisma.readingProgress.findMany({
         where: { userId, completedAt: null },
         include: { book: { include: { author: true } } },
         orderBy: { lastReadAt: "desc" },
-        take: 3,
+        take: 4,
       })
     : [];
 
-  // Get total pages read
-  const pagesAgg = userId
-    ? await prisma.readingProgress.aggregate({
-        where: { userId },
-        _sum: { currentPage: true },
-      })
-    : { _sum: { currentPage: 0 } };
+  const mostRecentProgress = readingProgress[0] ?? null;
 
-  // Get completed books
-  const completedBooks = userId
-    ? await prisma.readingProgress.count({
-        where: { userId, completedAt: { not: null } },
-      })
-    : 0;
+  // Categories from DB (6-8 items)
+  const categories = await prisma.category.findMany({
+    take: 8,
+    orderBy: { name: "asc" },
+  });
 
-  // Get streak (simple: count consecutive days with sessions)
-  const streak = userId
-    ? await prisma.readingSession.findMany({
-        where: { userId },
-        select: { startedAt: true },
-        orderBy: { startedAt: "desc" },
-      })
-    : [];
-
-  // Calculate streak
-  let streakDays = 0;
-  if (streak.length > 0) {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const sessionDates = [...new Set(
-      streak.map(s => new Date(s.startedAt).toDateString())
-    )];
-    for (let i = 0; i < 365; i++) {
-      const d = new Date(today);
-      d.setDate(d.getDate() - i);
-      if (sessionDates.includes(d.toDateString())) {
-        streakDays++;
-      } else if (i > 0) {
-        break;
-      }
-    }
-  }
-
-  // Get unread notifications count
-  const notificationCount = 3; // Demo
-
-  // Get active missions count
-  const missionCount = 2; // Demo
-
-  // Get total coins (real)
-  const coins = (user as any)?.coins ?? 0;
-
-  // Get newest books
+  // Recommended books (newest published)
   const recommendedBooks = await prisma.book.findMany({
     where: { isPublished: true },
     include: { author: true, ratings: { select: { rating: true } } },
@@ -96,265 +72,385 @@ export default async function HomePage() {
     take: 8,
   });
 
-  // Get trending books (most sessions)
+  // Trending books (most sessions)
   const trendingIds = await prisma.readingSession.groupBy({
     by: ["bookId"],
     _count: { id: true },
     orderBy: { _count: { id: "desc" } },
     take: 10,
   });
-  const trendingBooks = trendingIds.length > 0
+  const trendingBooksRaw = trendingIds.length > 0
     ? await prisma.book.findMany({
         where: { id: { in: trendingIds.map((t) => t.bookId) } },
-        include: { author: true },
+        include: { author: true, ratings: { select: { rating: true } } },
       })
     : [];
 
-  // Daily goal (demo: 18/30)
-  const todayPages = userId
-    ? await prisma.readingSession.findMany({
-        where: {
-          userId,
-          startedAt: {
-            gte: new Date(new Date().setHours(0, 0, 0, 0)),
-          },
-        },
-        select: { pagesRead: true },
-      })
+  // Preserve order from groupBy
+  const trendingBooks = trendingIds.length > 0
+    ? trendingIds
+        .map((t) => trendingBooksRaw.find((b) => b.id === t.bookId))
+        .filter(Boolean) as typeof trendingBooksRaw
     : [];
-  const todayTotal = todayPages.reduce((sum, s) => sum + s.pagesRead, 0);
-  const dailyGoal = 30;
-  const goalPercent = Math.min(Math.round((todayTotal / dailyGoal) * 100), 100);
+
+  // Popular this week: trending if available else recommended
+  const popularBooks = trendingBooks.length > 0 ? trendingBooks.slice(0, 8) : recommendedBooks.slice(0, 8);
+
+  const displayName = user?.name?.split(" ")[0] || sessionUser?.name?.split(" ")[0] || "Reader";
 
   return (
-    <div className="space-y-6 animate-fade-in pb-20 lg:pb-0">
-      {/* Welcome Header */}
-      <div className="flex items-start justify-between">
+    <div className="space-y-6 md:space-y-8 animate-fade-in pb-20 md:pb-6 max-w-2xl mx-auto md:max-w-4xl lg:max-w-5xl">
+      {/* ═══ HERO ═══ */}
+      <div className="space-y-3">
         <div>
-          <h1 className="text-xl font-bold text-foreground">
-            Assalomu alaykum, {user?.name?.split(" ")[0] || "O'quvchi"}! 👋
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">
+            Good evening, {displayName} 👋
           </h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Bugun ham bir necha sahifa o&apos;qib, maqsadingizga yaqinlashing.
+          <p className="text-sm md:text-base text-muted-foreground mt-1">
+            What do you want to read today?
           </p>
         </div>
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1.5 rounded-full bg-yellow-50 dark:bg-yellow-950/30 px-3 py-1.5">
-            <Coins size={14} className="text-yellow-600" />
-            <span className="text-sm font-bold text-yellow-700 dark:text-yellow-400">{coins}</span>
+
+        {/* Search bar - tappable, navigates to /search */}
+        <Link
+          href="/search"
+          className="flex items-center gap-3 rounded-2xl border border-border bg-card px-4 py-3 text-sm text-muted-foreground shadow-sm hover:bg-muted/50 transition-colors"
+        >
+          <Search size={18} className="shrink-0 text-muted-foreground" />
+          <span>Search books, authors...</span>
+        </Link>
+      </div>
+
+      {/* ═══ CONTINUE READING ═══ */}
+      {readingProgress.length > 0 && (
+        <section>
+          <h2 className="text-base md:text-lg font-semibold text-foreground mb-3 flex items-center gap-2">
+            📖 Continue Reading
+          </h2>
+
+          {/* Mobile: single large card */}
+          <div className="md:hidden">
+            {mostRecentProgress && (
+              <ContinueReadingCard progress={mostRecentProgress} />
+            )}
           </div>
-          <div className="flex items-center gap-1.5 rounded-full bg-orange-50 dark:bg-orange-950/30 px-3 py-1.5">
-            <Flame size={14} className="text-orange-600" />
-            <span className="text-sm font-bold text-orange-700 dark:text-orange-400">{streakDays}</span>
+
+          {/* Tablet / Desktop: horizontal row of cards */}
+          <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+            {readingProgress.map((p) => (
+              <ContinueReadingCard key={p.id} progress={p} compact />
+            ))}
           </div>
-          <div className="flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1.5 relative">
-            <Bell size={14} className="text-primary" />
-            {notificationCount > 0 && (
-              <span className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[9px] font-bold text-white">
-                {notificationCount}
-              </span>
+        </section>
+      )}
+
+      {/* ═══ POPULAR BOOKS ═══ */}
+      <section>
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-base md:text-lg font-semibold text-foreground">🔥 Popular this week</h2>
+          <Link
+            href="/books?sort=popular"
+            className="flex items-center gap-1 text-sm font-medium text-primary hover:underline"
+          >
+            →
+          </Link>
+        </div>
+
+        {popularBooks.length > 0 ? (
+          <>
+            {/* Mobile: horizontal scroll */}
+            <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-thin snap-x snap-mandatory md:mx-0 md:px-0 md:overflow-visible md:flex-wrap md:snap-none">
+              {popularBooks.map((book) => {
+                const avgRating =
+                  (book as any).ratings?.length > 0
+                    ? (
+                        (book as any).ratings.reduce((s: number, r: { rating: number }) => s + r.rating, 0) /
+                        (book as any).ratings.length
+                      ).toFixed(1)
+                    : "—";
+                return (
+                  <Link
+                    key={book.id}
+                    href={`/books/${book.slug}`}
+                    className="group shrink-0 snap-start w-[140px] md:w-[150px] lg:w-[160px]"
+                  >
+                    <div className="relative aspect-[3/4] w-full overflow-hidden rounded-xl bg-muted">
+                      {book.coverUrl ? (
+                        <Image
+                          src={book.coverUrl}
+                          alt={book.title}
+                          fill
+                          className="object-cover group-hover:scale-[1.02] transition-transform"
+                          sizes="(max-width: 640px) 140px, (max-width: 1024px) 150px, 160px"
+                        />
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-primary/10 to-primary/5">
+                          <BookOpen size={28} className="text-primary/30" />
+                        </div>
+                      )}
+                    </div>
+                    <div className="pt-2">
+                      <p className="text-xs md:text-sm font-semibold text-foreground line-clamp-2 leading-tight">
+                        {book.title}
+                      </p>
+                      <div className="flex items-center gap-1 mt-1">
+                        <Star size={12} className="fill-yellow-400 text-yellow-400" />
+                        <span className="text-xs font-medium">{avgRating}</span>
+                      </div>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          </>
+        ) : (
+          <p className="text-sm text-muted-foreground">No popular books yet.</p>
+        )}
+      </section>
+
+      {/* ═══ CATEGORIES ═══ */}
+      <section>
+        <h2 className="text-base md:text-lg font-semibold text-foreground mb-3">🗂️ Categories</h2>
+        {categories.length > 0 ? (
+          <>
+            <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-3">
+              {categories.slice(0, 8).map((cat) => (
+                <Link
+                  key={cat.id}
+                  href={`/books?categoryId=${cat.id}`}
+                  className="flex flex-col items-center justify-center gap-2 rounded-2xl border border-border bg-card p-3 md:p-4 text-center hover:shadow-sm hover:bg-muted/30 transition-colors"
+                >
+                  <span className="text-2xl leading-none" aria-hidden>
+                    {getCategoryIcon(cat)}
+                  </span>
+                  <span className="text-xs font-medium text-foreground line-clamp-1">
+                    {cat.name}
+                  </span>
+                </Link>
+              ))}
+            </div>
+            <div className="mt-3 flex justify-center">
+              <Link href="/books" className="text-sm font-medium text-primary hover:underline flex items-center gap-1">
+                View all <ArrowRight size={14} />
+              </Link>
+            </div>
+          </>
+        ) : (
+          // Fallback when no categories in DB — show spec icons as non-linked placeholders
+          <>
+            <div className="grid grid-cols-3 md:grid-cols-4 gap-3">
+              {[
+                { label: "Fiction", icon: "📚" },
+                { label: "IT", icon: "💻" },
+                { label: "Psychology", icon: "🧠" },
+                { label: "History", icon: "🌍" },
+                { label: "Science", icon: "🔬" },
+                { label: "Business", icon: "💼" },
+                { label: "Art", icon: "🎨" },
+                { label: "Education", icon: "📖" },
+              ].slice(0, 6).map((c) => (
+                <Link
+                  key={c.label}
+                  href="/books"
+                  className="flex flex-col items-center justify-center gap-2 rounded-2xl border border-border bg-card p-4 text-center hover:shadow-sm hover:bg-muted/30 transition-colors"
+                >
+                  <span className="text-2xl leading-none">{c.icon}</span>
+                  <span className="text-xs font-medium text-foreground">{c.label}</span>
+                </Link>
+              ))}
+            </div>
+            <div className="mt-3 flex justify-center">
+              <Link href="/books" className="text-sm font-medium text-primary hover:underline flex items-center gap-1">
+                View all <ArrowRight size={14} />
+              </Link>
+            </div>
+          </>
+        )}
+      </section>
+
+      {/* ═══ RECOMMENDED ═══ */}
+      <section>
+        <h2 className="text-base md:text-lg font-semibold text-foreground mb-3">⭐ Recommended for you</h2>
+
+        {/* Mobile: vertical list */}
+        <div className="md:hidden space-y-3">
+          {recommendedBooks.slice(0, 5).map((book) => (
+            <RecommendedRow key={book.id} book={book} />
+          ))}
+        </div>
+
+        {/* Tablet / Desktop: 2-col grid */}
+        <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-3 gap-3">
+          {recommendedBooks.slice(0, 6).map((book) => (
+            <RecommendedRow key={book.id} book={book} />
+          ))}
+        </div>
+
+        {recommendedBooks.length === 0 && (
+          <p className="text-sm text-muted-foreground">No recommendations yet.</p>
+        )}
+      </section>
+    </div>
+  );
+}
+
+/* ─── Sub-components ────────────────────────────────────────── */
+
+function ContinueReadingCard({
+  progress,
+  compact = false,
+}: {
+  progress: any;
+  compact?: boolean;
+}) {
+  const p = progress;
+  const totalP = p.book.totalPages || 320;
+  const pct = Math.min(Math.round((p.currentPage / totalP) * 100), 100);
+
+  if (compact) {
+    // Tablet: compact card for the grid
+    return (
+      <Link
+        href={`/reader/${p.book.slug}`}
+        className="group rounded-2xl border border-border bg-card p-3 shadow-sm hover:shadow-md transition-shadow flex gap-3"
+      >
+        <div className="shrink-0">
+          <div className="relative h-[90px] w-[65px] overflow-hidden rounded-lg bg-muted">
+            {p.book.coverUrl ? (
+              <Image
+                src={p.book.coverUrl}
+                alt={p.book.title}
+                fill
+                className="object-cover"
+                sizes="65px"
+              />
+            ) : (
+              <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-primary/20 to-primary/5">
+                <BookOpen size={22} className="text-primary/40" />
+              </div>
             )}
           </div>
         </div>
-      </div>
-
-      {/* Daily Goal */}
-      <div className="rounded-2xl border border-border bg-card p-5">
-        <div className="flex items-center gap-2 mb-3">
-          <Target size={18} className="text-primary" />
-          <h2 className="text-sm font-semibold text-foreground">Bugungi maqsad</h2>
-        </div>
-        <div className="flex items-end justify-between mb-2">
+        <div className="flex flex-1 flex-col justify-between min-w-0 py-0.5">
           <div>
-            <span className="text-3xl font-bold text-foreground">{todayTotal}</span>
-            <span className="text-sm text-muted-foreground"> / {dailyGoal} sahifa</span>
+            <h3 className="text-sm font-bold leading-tight text-foreground line-clamp-2">
+              {p.book.title}
+            </h3>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              {p.book.author?.name ?? "Unknown author"}
+            </p>
           </div>
-          <span className="text-sm font-medium text-primary">{goalPercent}%</span>
+          <div className="space-y-1.5 mt-2">
+            <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
+              <div
+                className="h-full rounded-full bg-primary transition-all"
+                style={{ width: `${pct}%` }}
+              />
+            </div>
+            <span className="text-xs font-medium text-muted-foreground">
+              {pct}%
+            </span>
+          </div>
         </div>
-        <div className="w-full h-2.5 rounded-full bg-muted overflow-hidden">
-          <div
-            className="h-full rounded-full bg-primary transition-all duration-500"
-            style={{ width: `${goalPercent}%` }}
-          />
-        </div>
-        {goalPercent < 100 ? (
-          <p className="text-xs text-muted-foreground mt-2">
-            Yana {dailyGoal - todayTotal} sahifa o&apos;qing!
-          </p>
-        ) : (
-          <p className="text-xs text-green-600 font-medium mt-2">
-            🎉 Bugungi maqsad bajarildi!
-          </p>
-        )}
-      </div>
+      </Link>
+    );
+  }
 
-      {/* Continue Reading */}
-      {readingProgress.length > 0 && (
-        <div>
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-sm font-semibold text-foreground">📖 O&apos;qishni davom ettirish</h2>
-            <Link href="/continue-reading" className="text-xs font-medium text-primary hover:underline flex items-center gap-1">
-              Barchasi <ArrowRight size={12} />
+  // Mobile: single large card
+  return (
+    <div className="rounded-2xl border border-border bg-card p-4 shadow-sm">
+      <div className="flex gap-4">
+        <div className="shrink-0">
+          <div className="relative h-[120px] w-[80px] overflow-hidden rounded-lg bg-muted">
+            {p.book.coverUrl ? (
+              <Image
+                src={p.book.coverUrl}
+                alt={p.book.title}
+                fill
+                className="object-cover"
+                sizes="80px"
+              />
+            ) : (
+              <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-primary/20 to-primary/5">
+                <BookOpen size={28} className="text-primary/40" />
+              </div>
+            )}
+          </div>
+        </div>
+        <div className="flex flex-1 flex-col justify-between min-w-0 py-1">
+          <div>
+            <h3 className="text-sm font-bold leading-tight text-foreground line-clamp-2">
+              {p.book.title}
+            </h3>
+            <p className="text-xs text-muted-foreground mt-1">
+              {p.book.author?.name ?? "Unknown author"}
+            </p>
+          </div>
+          <div className="space-y-3 mt-3">
+            <div className="space-y-1.5">
+              <div className="h-2 w-full rounded-full bg-muted overflow-hidden">
+                <div
+                  className="h-full rounded-full bg-primary transition-all"
+                  style={{ width: `${pct}%` }}
+                />
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-medium text-muted-foreground">
+                  {pct}%
+                </span>
+                <span className="text-xs text-muted-foreground">
+                  {p.currentPage} / {totalP}
+                </span>
+              </div>
+            </div>
+            <Link
+              href={`/reader/${p.book.slug}`}
+              className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors"
+            >
+              Continue <ArrowRight size={16} />
             </Link>
           </div>
-          <div className="space-y-3">
-            {readingProgress.map((p) => {
-              const totalP = p.book.totalPages || 320;
-              const pct = Math.round((p.currentPage / totalP) * 100);
-              return (
-                <Link
-                  key={p.id}
-                  href={`/reader/${p.book.slug}`}
-                  className="flex items-center gap-4 rounded-2xl border border-border bg-card p-4 hover:shadow-sm transition-shadow"
-                >
-                  <div className="flex h-14 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                    <BookOpen size={20} />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-foreground truncate">{p.book.title}</p>
-                    <p className="text-xs text-muted-foreground">{p.book.author?.name}</p>
-                    <div className="flex items-center gap-2 mt-1.5">
-                      <div className="flex-1 h-1.5 rounded-full bg-muted overflow-hidden">
-                        <div
-                          className="h-full rounded-full bg-primary"
-                          style={{ width: `${pct}%` }}
-                        />
-                      </div>
-                      <span className="text-[10px] font-medium text-muted-foreground">
-                        {p.currentPage}/{totalP} · {pct}%
-                      </span>
-                    </div>
-                  </div>
-                  <ArrowRight size={16} className="text-muted-foreground shrink-0" />
-                </Link>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
-      {/* Quick Stats */}
-      <div className="grid grid-cols-3 gap-3">
-        <div className="rounded-xl border border-border bg-card p-4 text-center">
-          <BookOpen size={18} className="mx-auto text-primary mb-1.5" />
-          <p className="text-xl font-bold text-foreground">{completedBooks}</p>
-          <p className="text-[10px] text-muted-foreground">Tugatilgan</p>
-        </div>
-        <div className="rounded-xl border border-border bg-card p-4 text-center">
-          <TrendingUp size={18} className="mx-auto text-green-600 mb-1.5" />
-          <p className="text-xl font-bold text-foreground">{(pagesAgg._sum.currentPage ?? 0).toLocaleString()}</p>
-          <p className="text-[10px] text-muted-foreground">Sahifalar</p>
-        </div>
-        <div className="rounded-xl border border-border bg-card p-4 text-center">
-          <Target size={18} className="mx-auto text-orange-600 mb-1.5" />
-          <p className="text-xl font-bold text-foreground">{missionCount}</p>
-          <p className="text-[10px] text-muted-foreground">Missiyalar</p>
         </div>
       </div>
-
-      {/* Active Mission */}
-      <div className="rounded-2xl border border-border bg-card p-5">
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2">
-            <Target size={18} className="text-orange-500" />
-            <h2 className="text-sm font-semibold text-foreground">🎯 Faol missiya</h2>
-          </div>
-          <Link href="/missions" className="text-xs font-medium text-primary hover:underline">
-            Barchasi
-          </Link>
-        </div>
-        <div className="rounded-xl bg-muted/30 p-4">
-          <div className="flex items-center justify-between mb-2">
-            <p className="text-sm font-medium text-foreground">Haftalik 100 sahifa challenge</p>
-            <span className="text-xs font-medium text-green-600">80%</span>
-          </div>
-          <div className="w-full h-2 rounded-full bg-muted overflow-hidden mb-2">
-            <div className="h-full rounded-full bg-green-500" style={{ width: "80%" }} />
-          </div>
-          <div className="flex items-center justify-between">
-            <p className="text-xs text-muted-foreground">80 / 100 sahifa</p>
-            <p className="text-xs text-orange-600 font-medium">⏰ 2 kun qoldi</p>
-          </div>
-        </div>
-      </div>
-
-      {/* New Books */}
-      <div>
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-sm font-semibold text-foreground">🆕 Yangi kitoblar</h2>
-          <Link href="/books" className="text-xs font-medium text-primary hover:underline flex items-center gap-1">
-            Barchasi <ArrowRight size={12} />
-          </Link>
-        </div>
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          {recommendedBooks.map((book) => {
-            const avgRating = book.ratings.length > 0
-              ? (book.ratings.reduce((s, r) => s + r.rating, 0) / book.ratings.length).toFixed(1)
-              : "—";
-            return (
-              <Link
-                key={book.id}
-                href={`/books/${book.slug}`}
-                className="group rounded-xl border border-border bg-card overflow-hidden hover:shadow-md transition-all"
-              >
-                <div className="relative aspect-[3/4] bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center">
-                  {book.coverUrl ? (
-                    <Image
-                      src={book.coverUrl}
-                      alt={book.title}
-                      fill
-                      className="object-cover"
-                      sizes="(max-width: 640px) 50vw, 25vw"
-                    />
-                  ) : (
-                    <BookOpen size={32} className="text-primary/30" />
-                  )}
-                </div>
-                <div className="p-3">
-                  <p className="text-xs font-semibold text-foreground truncate">{book.title}</p>
-                  <p className="text-[10px] text-muted-foreground truncate">{book.author?.name}</p>
-                  <div className="flex items-center gap-1 mt-1">
-                    <Star size={10} className="fill-yellow-400 text-yellow-400" />
-                    <span className="text-[10px] font-medium">{avgRating}</span>
-                    <span className="text-[10px] text-muted-foreground ml-auto">{book.totalPages} bet</span>
-                  </div>
-                </div>
-              </Link>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Trending Books */}
-      {trendingBooks.length > 0 && (
-        <div>
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-sm font-semibold text-foreground">🔥 Hozir eng ko&apos;p o&apos;qilayotganlar</h2>
-          </div>
-          <div className="grid grid-cols-2 gap-2">
-            {trendingBooks.map((book, i) => (
-              <Link
-                key={book.id}
-                href={`/books/${book.slug}`}
-                className="flex items-center gap-3 rounded-xl border border-border bg-card p-3 hover:bg-muted/30 transition-colors"
-              >
-                <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white ${
-                  i === 0 ? "bg-gradient-to-br from-yellow-400 to-amber-500" :
-                  i === 1 ? "bg-gradient-to-br from-gray-300 to-gray-400" :
-                  i === 2 ? "bg-gradient-to-br from-orange-300 to-orange-400" :
-                  "bg-muted text-muted-foreground"
-                }`}>
-                  {i + 1}
-                </span>
-                <div className="min-w-0">
-                  <p className="text-sm font-medium text-foreground truncate">{book.title}</p>
-                  <p className="text-xs text-muted-foreground truncate">{book.author?.name}</p>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </div>
-      )}
     </div>
+  );
+}
+
+function RecommendedRow({ book }: { book: any }) {
+  const avgRating =
+    book.ratings?.length > 0
+      ? (book.ratings.reduce((s: number, r: any) => s + r.rating, 0) / book.ratings.length).toFixed(1)
+      : "—";
+
+  return (
+    <Link
+      href={`/books/${book.slug}`}
+      className="flex items-center gap-3 rounded-2xl border border-border bg-card p-3 hover:shadow-sm transition-shadow"
+    >
+      <div className="relative h-[80px] w-[60px] shrink-0 overflow-hidden rounded-lg bg-muted">
+        {book.coverUrl ? (
+          <Image
+            src={book.coverUrl}
+            alt={book.title}
+            fill
+            className="object-cover"
+            sizes="60px"
+          />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-primary/10 to-primary/5">
+            <BookOpen size={20} className="text-primary/30" />
+          </div>
+        )}
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-semibold text-foreground truncate">{book.title}</p>
+        <p className="text-xs text-muted-foreground truncate">{book.author?.name ?? "Unknown"}</p>
+        <div className="flex items-center gap-1 mt-1">
+          <Star size={12} className="fill-yellow-400 text-yellow-400" />
+          <span className="text-xs font-medium">{avgRating}</span>
+        </div>
+      </div>
+      <ArrowRight size={16} className="text-muted-foreground shrink-0" />
+    </Link>
   );
 }

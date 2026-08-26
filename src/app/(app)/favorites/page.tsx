@@ -14,7 +14,7 @@ export default async function FavoritesPage() {
   const items = await listFavorites(user.id);
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-6 animate-fade-in max-w-2xl md:max-w-4xl lg:max-w-5xl mx-auto">
       <div>
         <h1 className="text-2xl font-bold text-foreground">Sevimli kitoblar</h1>
         <p className="text-sm text-muted-foreground mt-1">Siz qo&apos;shgan kitoblar</p>
@@ -31,7 +31,7 @@ export default async function FavoritesPage() {
           }
         />
       ) : (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
           {items.map((f) => (
             <BookCardView key={f.id} book={f.book!} initialFavorite />
           ))}

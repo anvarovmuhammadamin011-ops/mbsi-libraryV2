@@ -4,12 +4,31 @@ import Image from "next/image";
 import { getSessionUser } from "@/lib/server/auth";
 import { getBookBySlug } from "@/lib/server/books";
 import { isFavorite } from "@/lib/server/reading";
-import { BookCardView } from "@/components/book-card-view";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Star, BookOpen, ArrowLeft, Heart } from "lucide-react";
+import { prisma } from "@/lib/db";
+import { ArrowLeft, Star } from "lucide-react";
+import {
+  FavoriteHeartButton,
+  LibraryToggleButton,
+} from "@/components/book-detail-client";
 
 export const dynamic = "force-dynamic";
+
+function formatReaders(n: number): string {
+  if (n >= 1000) return `${(n / 1000).toFixed(1)}k`;
+  return `${n}`;
+}
+
+function formatRating(v: number | undefined): string {
+  const n = v ?? 0;
+  return n.toFixed(1);
+}
+
+function langLabel(lang: string): string {
+  if (lang === "UZ") return "Uzbek";
+  if (lang === "RU") return "Rus";
+  if (lang === "EN") return "English";
+  return lang;
+}
 
 export default async function BookDetailPage({
   params,
@@ -24,78 +43,357 @@ export default async function BookDetailPage({
 
   const fav = await isFavorite(user.id, book.id);
 
-  return (
-    <div className="space-y-6 animate-fade-in">
-      {/* Back button */}
-      <Button
-        variant="ghost"
-        size="sm"
-        render={<Link href="/books" />}
-        className="gap-1.5 text-muted-foreground hover:text-foreground"
-      >
-        <ArrowLeft size={15} /> Orqaga
-      </Button>
+  const ratings = await prisma.rating.findMany({
+    where: { bookId: book.id },
+    include: { user: true },
+    orderBy: { createdAt: "desc" },
+    take: 20,
+  });
 
-      {/* Book layout */}
-      <div className="flex flex-col gap-8 md:flex-row">
-        {/* Cover */}
-        <div className="mx-auto w-full max-w-[240px] shrink-0 md:mx-0">
-          <div className="relative aspect-[3/4] overflow-hidden rounded-2xl shadow-lg shadow-black/10">
+  const avg = book.averageRating ?? 0;
+  const readerCount = (book as any).readerCount ?? (book as any).totalReaders ?? 0;
+
+  return (
+    <div className="mx-auto max-w-md md:max-w-3xl lg:max-w-4xl px-4 pb-10 animate-fade-in">
+      {/* ═══ MOBILE LAYOUT (md below) ═══ */}
+      <div className="md:hidden">
+        <MobileBookDetail
+          book={book}
+          avg={avg}
+          readerCount={readerCount}
+          fav={fav}
+          ratings={ratings}
+        />
+      </div>
+
+      {/* ═══ TABLET / DESKTOP LAYOUT (md+) ═══ */}
+      <div className="hidden md:block">
+        {/* Back button */}
+        <div className="flex items-center justify-between py-3">
+          <Link
+            href="/books"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-full hover:bg-muted transition-colors"
+            aria-label="Back"
+          >
+            <ArrowLeft size={20} />
+          </Link>
+          <FavoriteHeartButton bookId={book.id} initialFavorite={fav} />
+        </div>
+
+        {/* Two-column layout */}
+        <div className="flex gap-8 mt-4">
+          {/* Left: Cover */}
+          <div className="shrink-0">
+            <div className="relative h-[320px] md:h-[360px] w-[220px] md:w-[240px] overflow-hidden rounded-2xl shadow-xl shadow-black/10 bg-muted">
+              {book.coverUrl ? (
+                <Image
+                  src={book.coverUrl}
+                  alt={book.title}
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 220px, 240px"
+                  priority
+                />
+              ) : (
+                <div className="flex h-full w-full items-center justify-center bg-muted text-muted-foreground text-sm">
+                  No cover
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Right: Details */}
+          <div className="flex-1 min-w-0 pt-2">
+            <h1 className="text-2xl lg:text-3xl font-bold leading-tight text-foreground">
+              {book.title}
+            </h1>
+            <p className="mt-2 text-base text-muted-foreground">
+              {book.author?.name ?? "Noma'lum muallif"}
+            </p>
+
+            <div className="mt-3 flex items-center gap-3 text-sm text-muted-foreground">
+              <div className="flex items-center gap-1">
+                <Star size={16} className="fill-yellow-400 text-yellow-400" />
+                <span className="font-semibold text-foreground">
+                  {formatRating(avg)}
+                </span>
+              </div>
+              <span>·</span>
+              <span>{formatReaders(readerCount)} readers</span>
+            </div>
+
+            {/* Action buttons */}
+            <div className="mt-6 flex flex-col gap-3 max-w-[280px]">
+              <Link
+                href={`/reader/${book.slug}`}
+                className="flex h-12 w-full items-center justify-center rounded-full bg-primary px-6 text-sm font-semibold tracking-wide text-primary-foreground shadow-sm hover:bg-primary/90 transition-colors"
+              >
+                READ NOW
+              </Link>
+              <LibraryToggleButton bookId={book.id} initialFavorite={fav} />
+            </div>
+
+            {/* About */}
+            <div className="mt-8">
+              <h2 className="text-base font-semibold text-foreground">
+                About this book
+              </h2>
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                {book.description?.trim()
+                  ? book.description
+                  : "Kitob haqida qisqa description."}
+              </p>
+            </div>
+
+            {/* Information */}
+            <div className="mt-6">
+              <h2 className="text-base font-semibold text-foreground">Information</h2>
+              <div className="mt-3 grid grid-cols-2 md:grid-cols-4 gap-4 rounded-2xl bg-muted/50 p-4">
+                <div>
+                  <p className="text-xs text-muted-foreground">Language</p>
+                  <p className="text-sm font-medium text-foreground">
+                    {langLabel(book.language)}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Pages</p>
+                  <p className="text-sm font-medium text-foreground">
+                    {book.totalPages}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Category</p>
+                  <p className="text-sm font-medium text-foreground">
+                    {book.category?.name ?? "—"}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Rating</p>
+                  <p className="flex items-center gap-1 text-sm font-medium text-foreground">
+                    <Star size={12} className="fill-yellow-400 text-yellow-400" />
+                    {formatRating(avg)}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Reviews - below two columns */}
+        <div className="mt-8">
+          <h2 className="text-base font-semibold text-foreground">Reviews</h2>
+          {ratings.length === 0 ? (
+            <p className="mt-3 text-sm text-muted-foreground">
+              Hali sharhlar yo&apos;q.
+            </p>
+          ) : (
+            <div className="mt-3 space-y-3 md:grid md:grid-cols-2 md:gap-3 md:space-y-0">
+              {ratings.map((r) => (
+                <div
+                  key={r.id}
+                  className="flex gap-3 rounded-xl border border-border p-3"
+                >
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-medium text-primary">
+                    {r.user.name?.[0]?.toUpperCase() ?? "?"}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="truncate text-sm font-medium text-foreground">
+                        {r.user.name}
+                      </p>
+                      <div className="flex shrink-0 items-center gap-0.5">
+                        {Array.from({ length: 5 }).map((_, i) => (
+                          <Star
+                            key={i}
+                            size={12}
+                            className={
+                              i < r.rating
+                                ? "fill-yellow-400 text-yellow-400"
+                                : "text-muted-foreground/30"
+                            }
+                          />
+                        ))}
+                      </div>
+                    </div>
+                    <p className="mt-0.5 text-xs text-muted-foreground">
+                      {new Date(r.createdAt).toLocaleDateString("uz-UZ")}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Mobile-only book detail ────────────────────────────── */
+
+function MobileBookDetail({
+  book,
+  avg,
+  readerCount,
+  fav,
+  ratings,
+}: {
+  book: any;
+  avg: number;
+  readerCount: number;
+  fav: boolean;
+  ratings: any[];
+}) {
+  return (
+    <>
+      {/* Top bar */}
+      <div className="flex items-center justify-between py-3">
+        <Link
+          href="/books"
+          className="inline-flex h-9 w-9 items-center justify-center rounded-full hover:bg-muted transition-colors"
+          aria-label="Back"
+        >
+          <ArrowLeft size={20} />
+        </Link>
+        <FavoriteHeartButton bookId={book.id} initialFavorite={fav} />
+      </div>
+
+      {/* Center cover + meta */}
+      <div className="flex flex-col items-center text-center">
+        <div className="relative h-[280px] w-[200px] overflow-hidden rounded-2xl shadow-xl shadow-black/10 bg-muted">
+          {book.coverUrl ? (
             <Image
               src={book.coverUrl}
               alt={book.title}
               fill
               className="object-cover"
-              sizes="240px"
+              sizes="200px"
               priority
             />
-          </div>
-        </div>
-
-        {/* Info */}
-        <div className="flex flex-1 flex-col">
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
-            {book.title}
-          </h1>
-          <p className="mt-1.5 text-base text-muted-foreground">
-            {book.author?.name}
-          </p>
-
-          {/* Meta */}
-          <div className="mt-4 flex flex-wrap items-center gap-2">
-            {book.category && (
-              <Badge variant="outline" className="text-xs">{book.category.name}</Badge>
-            )}
-            <Badge variant="secondary" className="text-xs">{book.language}</Badge>
-            <Badge variant="secondary" className="gap-1 text-xs">
-              <Star size={11} className="fill-yellow-400 text-yellow-400" />
-              {book.averageRating ?? 0}
-            </Badge>
-            <Badge variant="secondary" className="text-xs">{book.totalPages} bet</Badge>
-            <Badge className="gap-1 text-xs bg-yellow-500/15 text-yellow-700 dark:text-yellow-400 border-yellow-500/20">🪙 {book.coinReward ?? 10} coin</Badge>
-          </div>
-
-          {/* Description */}
-          {book.description && (
-            <div className="mt-5">
-              <h3 className="text-sm font-semibold text-foreground mb-1.5">Kitob haqida</h3>
-              <p className="text-sm leading-relaxed text-muted-foreground">
-                {book.description}
-              </p>
+          ) : (
+            <div className="flex h-full w-full items-center justify-center bg-muted text-muted-foreground text-sm">
+              No cover
             </div>
           )}
+        </div>
 
-          {/* Actions */}
-          <div className="mt-6 flex flex-wrap gap-2">
-            <Button render={<Link href={`/reader/${book.slug}`} />} className="gap-2 h-10">
-              <BookOpen size={16} /> O'qishni boshlash
-            </Button>
-            <Button variant="outline" className="gap-2 h-10">
-              <Heart size={16} /> {fav ? "Sevimlilardan o'chirish" : "Sevimlilarga qo'shish"}
-            </Button>
+        <h1 className="mt-5 text-xl font-bold leading-tight text-foreground">
+          {book.title}
+        </h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          {book.author?.name ?? "Noma'lum muallif"}
+        </p>
+
+        <div className="mt-2 flex items-center gap-1.5 text-sm text-muted-foreground">
+          <Star size={14} className="fill-yellow-400 text-yellow-400" />
+          <span className="font-medium text-foreground">
+            {formatRating(avg)}
+          </span>
+          <span>·</span>
+          <span>{formatReaders(readerCount)} readers</span>
+        </div>
+
+        {/* Buttons stacked full width */}
+        <div className="mt-6 w-full space-y-3">
+          <Link
+            href={`/reader/${book.slug}`}
+            className="flex h-12 w-full items-center justify-center rounded-full bg-primary px-6 text-sm font-semibold tracking-wide text-primary-foreground shadow-sm hover:bg-primary/90 transition-colors"
+          >
+            READ NOW
+          </Link>
+          <LibraryToggleButton bookId={book.id} initialFavorite={fav} />
+        </div>
+      </div>
+
+      {/* About */}
+      <div className="mt-8">
+        <h2 className="text-base font-semibold text-foreground">
+          About this book
+        </h2>
+        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+          {book.description?.trim()
+            ? book.description
+            : "Kitob haqida qisqa description."}
+        </p>
+      </div>
+
+      {/* Information */}
+      <div className="mt-6">
+        <h2 className="text-base font-semibold text-foreground">Information</h2>
+        <div className="mt-3 grid grid-cols-2 gap-4 rounded-2xl bg-muted/50 p-4">
+          <div>
+            <p className="text-xs text-muted-foreground">Language</p>
+            <p className="text-sm font-medium text-foreground">
+              {langLabel(book.language)}
+            </p>
+          </div>
+          <div>
+            <p className="text-xs text-muted-foreground">Pages</p>
+            <p className="text-sm font-medium text-foreground">
+              {book.totalPages}
+            </p>
+          </div>
+          <div>
+            <p className="text-xs text-muted-foreground">Category</p>
+            <p className="text-sm font-medium text-foreground">
+              {book.category?.name ?? "—"}
+            </p>
+          </div>
+          <div>
+            <p className="text-xs text-muted-foreground">Rating</p>
+            <p className="flex items-center gap-1 text-sm font-medium text-foreground">
+              <Star size={12} className="fill-yellow-400 text-yellow-400" />
+              {formatRating(avg)}
+            </p>
           </div>
         </div>
       </div>
-    </div>
+
+      {/* Reviews */}
+      <div className="mt-6">
+        <h2 className="text-base font-semibold text-foreground">Reviews</h2>
+        {ratings.length === 0 ? (
+          <p className="mt-3 text-sm text-muted-foreground">
+            Hali sharhlar yo&apos;q.
+          </p>
+        ) : (
+          <div className="mt-3 space-y-3">
+            {ratings.map((r) => (
+              <div
+                key={r.id}
+                className="flex gap-3 rounded-xl border border-border p-3"
+              >
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-medium text-primary">
+                  {r.user.name?.[0]?.toUpperCase() ?? "?"}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="truncate text-sm font-medium text-foreground">
+                      {r.user.name}
+                    </p>
+                    <div className="flex shrink-0 items-center gap-0.5">
+                      {Array.from({ length: 5 }).map((_, i) => (
+                        <Star
+                          key={i}
+                          size={12}
+                          className={
+                            i < r.rating
+                              ? "fill-yellow-400 text-yellow-400"
+                              : "text-muted-foreground/30"
+                          }
+                        />
+                      ))}
+                    </div>
+                  </div>
+                  <p className="mt-0.5 text-xs text-muted-foreground">
+                    {new Date(r.createdAt).toLocaleDateString("uz-UZ")}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </>
   );
 }

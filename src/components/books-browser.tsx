@@ -134,8 +134,7 @@ export function BooksBrowser({ categories, authors, initial }: Props) {
       </div>
 
       {/* Results */}
-      {loading ? (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+      {loading ? (          <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
           {Array.from({ length: 10 }).map((_, i) => (
             <div key={i} className="space-y-2">
               <Skeleton className="aspect-[3/4] w-full rounded-2xl" />
@@ -153,7 +152,7 @@ export function BooksBrowser({ categories, authors, initial }: Props) {
       ) : (
         <>
           <p className="text-sm text-muted-foreground">{data.length} ta kitob topildi</p>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
             {data.map((b) => (
               <BookCardView key={b.id} book={b} />
             ))}
