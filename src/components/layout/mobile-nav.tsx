@@ -2,13 +2,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Search, Library, User } from "lucide-react";
+import { Home, BookMarked, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
   { label: "Home", href: "/home", icon: Home },
-  { label: "Search", href: "/search", icon: Search },
-  { label: "My Library", href: "/library", icon: Library },
+  { label: "Books", href: "/books", icon: BookMarked },
   { label: "Profile", href: "/profile", icon: User },
 ];
 
@@ -29,13 +28,13 @@ export function MobileNav() {
               key={item.href}
               href={item.href}
               className={cn(
-                "flex flex-col items-center gap-0.5 rounded-xl px-3 py-1.5 text-[10px] font-medium transition-colors min-w-[52px]",
+                "flex flex-col items-center gap-0.5 rounded-xl px-4 py-1.5 text-[11px] font-medium transition-colors min-w-[64px]",
                 isActive
                   ? "text-primary"
                   : "text-muted-foreground"
               )}
             >
-              <Icon size={20} strokeWidth={isActive ? 2.5 : 2} />
+              <Icon size={22} strokeWidth={isActive ? 2.5 : 2} />
               <span>{item.label}</span>
             </Link>
           );

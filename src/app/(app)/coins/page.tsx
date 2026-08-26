@@ -47,7 +47,7 @@ export default async function CoinsPage() {
   const totalCoins = (dbUser as any)?.coins ?? 450;
 
   return (
-    <div className="space-y-6 animate-fade-in pb-20 lg:pb-0">
+    <div className="space-y-6 animate-fade-in pb-20 md:pb-0 max-w-2xl md:max-w-4xl lg:max-w-5xl mx-auto">
       {/* Coin Balance */}
       <div className="rounded-2xl bg-gradient-to-br from-yellow-500 to-amber-600 p-6 text-white">
         <div className="flex items-center gap-3 mb-4">

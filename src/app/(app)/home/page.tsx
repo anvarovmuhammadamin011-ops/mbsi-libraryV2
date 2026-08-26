@@ -11,33 +11,6 @@ import {
 
 export const dynamic = "force-dynamic";
 
-// Fallback emoji map for categories when DB icon is empty
-const CATEGORY_FALLBACK_ICON: Record<string, string> = {
-  fiction: "📚",
-  novel: "📚",
-  it: "💻",
-  technology: "💻",
-  programming: "💻",
-  psychology: "🧠",
-  history: "🌍",
-  science: "🔬",
-  business: "💼",
-  art: "🎨",
-  education: "📖",
-  default: "📚",
-};
-
-function getCategoryIcon(cat: { name: string; slug: string; icon: string | null }) {
-  if (cat.icon && cat.icon.trim().length > 0) return cat.icon;
-  const key = cat.slug.toLowerCase();
-  if (CATEGORY_FALLBACK_ICON[key]) return CATEGORY_FALLBACK_ICON[key];
-  const nameKey = cat.name.toLowerCase();
-  for (const k of Object.keys(CATEGORY_FALLBACK_ICON)) {
-    if (nameKey.includes(k)) return CATEGORY_FALLBACK_ICON[k];
-  }
-  return CATEGORY_FALLBACK_ICON.default;
-}
-
 export default async function HomePage() {
   const sessionUser = await getSessionUser();
   const userId = sessionUser?.id;
@@ -46,55 +19,25 @@ export default async function HomePage() {
     ? await prisma.user.findUnique({ where: { id: userId } })
     : null;
 
-  // Reading progress - most recent active first (up to 4 for tablet horizontal row)
+  // Continue Reading — most recent active book
   const readingProgress = userId
     ? await prisma.readingProgress.findMany({
         where: { userId, completedAt: null },
         include: { book: { include: { author: true } } },
         orderBy: { lastReadAt: "desc" },
-        take: 4,
+        take: 3,
       })
     : [];
 
   const mostRecentProgress = readingProgress[0] ?? null;
 
-  // Categories from DB (6-8 items)
-  const categories = await prisma.category.findMany({
-    take: 8,
-    orderBy: { name: "asc" },
-  });
-
-  // Recommended books (newest published)
-  const recommendedBooks = await prisma.book.findMany({
+  // Featured Books — newest published
+  const featuredBooks = await prisma.book.findMany({
     where: { isPublished: true },
     include: { author: true, ratings: { select: { rating: true } } },
     orderBy: { createdAt: "desc" },
-    take: 8,
+    take: 6,
   });
-
-  // Trending books (most sessions)
-  const trendingIds = await prisma.readingSession.groupBy({
-    by: ["bookId"],
-    _count: { id: true },
-    orderBy: { _count: { id: "desc" } },
-    take: 10,
-  });
-  const trendingBooksRaw = trendingIds.length > 0
-    ? await prisma.book.findMany({
-        where: { id: { in: trendingIds.map((t) => t.bookId) } },
-        include: { author: true, ratings: { select: { rating: true } } },
-      })
-    : [];
-
-  // Preserve order from groupBy
-  const trendingBooks = trendingIds.length > 0
-    ? trendingIds
-        .map((t) => trendingBooksRaw.find((b) => b.id === t.bookId))
-        .filter(Boolean) as typeof trendingBooksRaw
-    : [];
-
-  // Popular this week: trending if available else recommended
-  const popularBooks = trendingBooks.length > 0 ? trendingBooks.slice(0, 8) : recommendedBooks.slice(0, 8);
 
   const displayName = user?.name?.split(" ")[0] || sessionUser?.name?.split(" ")[0] || "Reader";
 
@@ -104,20 +47,20 @@ export default async function HomePage() {
       <div className="space-y-3">
         <div>
           <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">
-            Good evening, {displayName} 👋
+            Hello, {displayName} 👋
           </h1>
           <p className="text-sm md:text-base text-muted-foreground mt-1">
             What do you want to read today?
           </p>
         </div>
 
-        {/* Search bar - tappable, navigates to /search */}
+        {/* Search bar — navigates to /books */}
         <Link
-          href="/search"
+          href="/books"
           className="flex items-center gap-3 rounded-2xl border border-border bg-card px-4 py-3 text-sm text-muted-foreground shadow-sm hover:bg-muted/50 transition-colors"
         >
           <Search size={18} className="shrink-0 text-muted-foreground" />
-          <span>Search books, authors...</span>
+          <span>Search books...</span>
         </Link>
       </div>
 
@@ -125,7 +68,7 @@ export default async function HomePage() {
       {readingProgress.length > 0 && (
         <section>
           <h2 className="text-base md:text-lg font-semibold text-foreground mb-3 flex items-center gap-2">
-            📖 Continue Reading
+            Continue Reading
           </h2>
 
           {/* Mobile: single large card */}
@@ -136,7 +79,7 @@ export default async function HomePage() {
           </div>
 
           {/* Tablet / Desktop: horizontal row of cards */}
-          <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+          <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-3 gap-3">
             {readingProgress.map((p) => (
               <ContinueReadingCard key={p.id} progress={p} compact />
             ))}
@@ -144,23 +87,23 @@ export default async function HomePage() {
         </section>
       )}
 
-      {/* ═══ POPULAR BOOKS ═══ */}
+      {/* ═══ FEATURED BOOKS ═══ */}
       <section>
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-base md:text-lg font-semibold text-foreground">🔥 Popular this week</h2>
+          <h2 className="text-base md:text-lg font-semibold text-foreground">Featured Books</h2>
           <Link
-            href="/books?sort=popular"
+            href="/books"
             className="flex items-center gap-1 text-sm font-medium text-primary hover:underline"
           >
-            →
+            View all <ArrowRight size={14} />
           </Link>
         </div>
 
-        {popularBooks.length > 0 ? (
+        {featuredBooks.length > 0 ? (
           <>
             {/* Mobile: horizontal scroll */}
             <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-thin snap-x snap-mandatory md:mx-0 md:px-0 md:overflow-visible md:flex-wrap md:snap-none">
-              {popularBooks.map((book) => {
+              {featuredBooks.map((book) => {
                 const avgRating =
                   (book as any).ratings?.length > 0
                     ? (
@@ -193,6 +136,9 @@ export default async function HomePage() {
                       <p className="text-xs md:text-sm font-semibold text-foreground line-clamp-2 leading-tight">
                         {book.title}
                       </p>
+                      <p className="text-xs text-muted-foreground mt-0.5 truncate">
+                        {book.author?.name ?? "Unknown"}
+                      </p>
                       <div className="flex items-center gap-1 mt-1">
                         <Star size={12} className="fill-yellow-400 text-yellow-400" />
                         <span className="text-xs font-medium">{avgRating}</span>
@@ -204,90 +150,13 @@ export default async function HomePage() {
             </div>
           </>
         ) : (
-          <p className="text-sm text-muted-foreground">No popular books yet.</p>
-        )}
-      </section>
-
-      {/* ═══ CATEGORIES ═══ */}
-      <section>
-        <h2 className="text-base md:text-lg font-semibold text-foreground mb-3">🗂️ Categories</h2>
-        {categories.length > 0 ? (
-          <>
-            <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-3">
-              {categories.slice(0, 8).map((cat) => (
-                <Link
-                  key={cat.id}
-                  href={`/books?categoryId=${cat.id}`}
-                  className="flex flex-col items-center justify-center gap-2 rounded-2xl border border-border bg-card p-3 md:p-4 text-center hover:shadow-sm hover:bg-muted/30 transition-colors"
-                >
-                  <span className="text-2xl leading-none" aria-hidden>
-                    {getCategoryIcon(cat)}
-                  </span>
-                  <span className="text-xs font-medium text-foreground line-clamp-1">
-                    {cat.name}
-                  </span>
-                </Link>
-              ))}
-            </div>
-            <div className="mt-3 flex justify-center">
-              <Link href="/books" className="text-sm font-medium text-primary hover:underline flex items-center gap-1">
-                View all <ArrowRight size={14} />
-              </Link>
-            </div>
-          </>
-        ) : (
-          // Fallback when no categories in DB — show spec icons as non-linked placeholders
-          <>
-            <div className="grid grid-cols-3 md:grid-cols-4 gap-3">
-              {[
-                { label: "Fiction", icon: "📚" },
-                { label: "IT", icon: "💻" },
-                { label: "Psychology", icon: "🧠" },
-                { label: "History", icon: "🌍" },
-                { label: "Science", icon: "🔬" },
-                { label: "Business", icon: "💼" },
-                { label: "Art", icon: "🎨" },
-                { label: "Education", icon: "📖" },
-              ].slice(0, 6).map((c) => (
-                <Link
-                  key={c.label}
-                  href="/books"
-                  className="flex flex-col items-center justify-center gap-2 rounded-2xl border border-border bg-card p-4 text-center hover:shadow-sm hover:bg-muted/30 transition-colors"
-                >
-                  <span className="text-2xl leading-none">{c.icon}</span>
-                  <span className="text-xs font-medium text-foreground">{c.label}</span>
-                </Link>
-              ))}
-            </div>
-            <div className="mt-3 flex justify-center">
-              <Link href="/books" className="text-sm font-medium text-primary hover:underline flex items-center gap-1">
-                View all <ArrowRight size={14} />
-              </Link>
-            </div>
-          </>
-        )}
-      </section>
-
-      {/* ═══ RECOMMENDED ═══ */}
-      <section>
-        <h2 className="text-base md:text-lg font-semibold text-foreground mb-3">⭐ Recommended for you</h2>
-
-        {/* Mobile: vertical list */}
-        <div className="md:hidden space-y-3">
-          {recommendedBooks.slice(0, 5).map((book) => (
-            <RecommendedRow key={book.id} book={book} />
-          ))}
-        </div>
-
-        {/* Tablet / Desktop: 2-col grid */}
-        <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-3 gap-3">
-          {recommendedBooks.slice(0, 6).map((book) => (
-            <RecommendedRow key={book.id} book={book} />
-          ))}
-        </div>
-
-        {recommendedBooks.length === 0 && (
-          <p className="text-sm text-muted-foreground">No recommendations yet.</p>
+          <div className="text-center py-10">
+            <BookOpen size={32} className="mx-auto text-muted-foreground/50 mb-3" />
+            <p className="text-sm text-muted-foreground">No books yet.</p>
+            <Link href="/books" className="text-sm text-primary hover:underline mt-2 inline-block">
+              Browse books →
+            </Link>
+          </div>
         )}
       </section>
     </div>
@@ -308,7 +177,6 @@ function ContinueReadingCard({
   const pct = Math.min(Math.round((p.currentPage / totalP) * 100), 100);
 
   if (compact) {
-    // Tablet: compact card for the grid
     return (
       <Link
         href={`/reader/${p.book.slug}`}
@@ -413,44 +281,5 @@ function ContinueReadingCard({
         </div>
       </div>
     </div>
-  );
-}
-
-function RecommendedRow({ book }: { book: any }) {
-  const avgRating =
-    book.ratings?.length > 0
-      ? (book.ratings.reduce((s: number, r: any) => s + r.rating, 0) / book.ratings.length).toFixed(1)
-      : "—";
-
-  return (
-    <Link
-      href={`/books/${book.slug}`}
-      className="flex items-center gap-3 rounded-2xl border border-border bg-card p-3 hover:shadow-sm transition-shadow"
-    >
-      <div className="relative h-[80px] w-[60px] shrink-0 overflow-hidden rounded-lg bg-muted">
-        {book.coverUrl ? (
-          <Image
-            src={book.coverUrl}
-            alt={book.title}
-            fill
-            className="object-cover"
-            sizes="60px"
-          />
-        ) : (
-          <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-primary/10 to-primary/5">
-            <BookOpen size={20} className="text-primary/30" />
-          </div>
-        )}
-      </div>
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-semibold text-foreground truncate">{book.title}</p>
-        <p className="text-xs text-muted-foreground truncate">{book.author?.name ?? "Unknown"}</p>
-        <div className="flex items-center gap-1 mt-1">
-          <Star size={12} className="fill-yellow-400 text-yellow-400" />
-          <span className="text-xs font-medium">{avgRating}</span>
-        </div>
-      </div>
-      <ArrowRight size={16} className="text-muted-foreground shrink-0" />
-    </Link>
   );
 }

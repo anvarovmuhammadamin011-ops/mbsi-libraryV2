@@ -13,7 +13,7 @@ export default async function BookmarksPage() {
   const items = await listBookmarks(user.id);
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-6 animate-fade-in pb-20 md:pb-0 max-w-2xl md:max-w-4xl lg:max-w-5xl mx-auto">
       <div>
         <h1 className="text-2xl font-bold text-foreground">Xatcho&apos;plar</h1>
         <p className="text-sm text-muted-foreground mt-1">Saqlangan sahifalar</p>

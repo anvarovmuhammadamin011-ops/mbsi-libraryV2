@@ -5,29 +5,16 @@ import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
   BookMarked,
-  Tags,
   Users,
-  BarChart3,
-  Trophy,
   Settings,
-  FileText,
-  BookOpen,
+  BookOpenCheck,
   ChevronLeft,
   ChevronRight,
-  LogOut,
-  BookOpenCheck,
-  Target,
-  ClipboardList,
-  Bell,
-  GraduationCap,
-  FileBarChart,
-  Image,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useAuthStore } from "@/lib/auth-store";
-import { LogoutButton } from "@/components/logout-button";
 import { useState } from "react";
 
 interface NavItem {
@@ -36,54 +23,12 @@ interface NavItem {
   icon: React.ComponentType<{ size?: number; className?: string }>;
 }
 
-interface NavGroup {
-  title: string;
-  items: NavItem[];
-}
-
-const NAV_GROUPS: NavGroup[] = [
-  {
-    title: "Umumiy ko'rinish",
-    items: [{ label: "Boshqaruv paneli", href: "/admin", icon: LayoutDashboard }],
-  },
-  {
-    title: "Kutubxona",
-    items: [
-      { label: "Kitoblar", href: "/admin/books", icon: BookMarked },
-      { label: "Kategoriyalar", href: "/admin/categories", icon: Tags },
-      { label: "Bannerlar", href: "/admin/banners", icon: Image },
-    ],
-  },
-  {
-    title: "Foydalanuvchilar",
-    items: [
-      { label: "Foydalanuvchilar", href: "/admin/users", icon: Users },
-      { label: "Ustozlar", href: "/admin/teachers", icon: GraduationCap },
-    ],
-  },
-  {
-    title: "Topshiriqlar",
-    items: [
-      { label: "Topshiriqlar", href: "/admin/assignments", icon: ClipboardList },
-      { label: "Missiyalar", href: "/admin/missions", icon: Target },
-    ],
-  },
-  {
-    title: "Analitika",
-    items: [
-      { label: "Reyting", href: "/admin/ratings", icon: Trophy },
-      { label: "Statistikalar", href: "/admin/statistics", icon: BarChart3 },
-    ],
-  },
-  {
-    title: "Tizim",
-    items: [
-      { label: "Bildirishnomalar", href: "/admin/notifications", icon: Bell },
-      { label: "Hisobotlar", href: "/admin/reports", icon: FileBarChart },
-      { label: "Audit jurnali", href: "/admin/audit-log", icon: FileText },
-      { label: "Sozlamalar", href: "/admin/settings", icon: Settings },
-    ],
-  },
+// Phase 1 — Admin navigation only: Dashboard, Books, Users, Settings
+const NAV_ITEMS: NavItem[] = [
+  { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
+  { label: "Books", href: "/admin/books", icon: BookMarked },
+  { label: "Users", href: "/admin/users", icon: Users },
+  { label: "Settings", href: "/admin/settings", icon: Settings },
 ];
 
 export function AdminSidebar() {
@@ -109,7 +54,7 @@ export function AdminSidebar() {
             </div>
             <div className="flex flex-col">
               <span className="text-sm font-bold tracking-tight text-foreground leading-none">
-                ANVAROV LIBRARY
+                MBSI LIBRARY
               </span>
               <span className="text-[10px] font-medium text-primary leading-none mt-0.5">
                 Admin panel
@@ -127,48 +72,39 @@ export function AdminSidebar() {
         </Button>
       </div>
 
-      {/* Navigation */}
+      {/* Navigation — Phase 1: Dashboard, Books, Users, Settings */}
       <ScrollArea className="flex-1 py-3 px-2">
-        {NAV_GROUPS.map((group) => (
-          <div key={group.title} className="mb-4">
-            {!collapsed && (
-              <p className="mb-1.5 px-3 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
-                {group.title}
-              </p>
-            )}
-            <nav className="flex flex-col gap-0.5">
-              {group.items.map((item) => {
-                const isActive =
-                  pathname === item.href ||
-                  (item.href !== "/admin" && pathname.startsWith(item.href));
-                const Icon = item.icon;
+        <nav className="flex flex-col gap-0.5">
+          {NAV_ITEMS.map((item) => {
+            const isActive =
+              pathname === item.href ||
+              (item.href !== "/admin" && pathname.startsWith(item.href));
+            const Icon = item.icon;
 
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className={cn(
-                      "flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition-all duration-150",
-                      isActive
-                        ? "bg-accent text-accent-foreground"
-                        : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                    )}
-                  >
-                    <Icon
-                      size={18}
-                      className={cn("shrink-0", isActive ? "text-primary" : "")}
-                    />
-                    {!collapsed && <span>{item.label}</span>}
-                  </Link>
-                );
-              })}
-            </nav>
-          </div>
-        ))}
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={cn(
+                  "flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition-all duration-150",
+                  isActive
+                    ? "bg-accent text-accent-foreground"
+                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                )}
+              >
+                <Icon
+                  size={18}
+                  className={cn("shrink-0", isActive ? "text-primary" : "")}
+                />
+                {!collapsed && <span>{item.label}</span>}
+              </Link>
+            );
+          })}
+        </nav>
       </ScrollArea>
 
       {/* User */}
-      <div className="border-t border-border p-3 space-y-2">
+      <div className="border-t border-border p-3">
         <div className="flex items-center gap-3 rounded-xl px-2 py-2">
           <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-semibold text-primary">
             {user.name?.charAt(0)}
@@ -189,12 +125,11 @@ export function AdminSidebar() {
                 onClick={logout}
                 className="h-7 w-7 shrink-0 text-muted-foreground hover:text-destructive"
               >
-                <LogOut size={14} />
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>
               </Button>
             </>
           )}
         </div>
-        {!collapsed && <LogoutButton />}
       </div>
     </aside>
   );

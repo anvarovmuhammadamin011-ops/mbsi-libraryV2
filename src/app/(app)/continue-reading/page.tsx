@@ -14,7 +14,7 @@ export default async function ContinueReadingPage() {
   const items = await listContinueReading(user.id, 50);
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-6 animate-fade-in pb-20 md:pb-0 max-w-2xl md:max-w-4xl lg:max-w-5xl mx-auto">
       <div>
         <h1 className="text-2xl font-bold text-foreground">O&apos;qishni davom ettirish</h1>
         <p className="text-sm text-muted-foreground mt-1">Boshlagan kitoblaringiz</p>

@@ -5,23 +5,12 @@ import { usePathname } from "next/navigation";
 import {
   Home,
   BookMarked,
-  Headphones,
-  Target,
-  Trophy,
-  Coins,
-  BarChart3,
-  Heart,
-  Clock,
-  Bell,
   User,
-  Settings,
   LogOut,
   BookOpen,
   ChevronLeft,
   ChevronRight,
   Shield,
-  Search,
-  Library,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -33,47 +22,13 @@ interface NavItem {
   label: string;
   href: string;
   icon: React.ComponentType<{ size?: number; className?: string }>;
-  badge?: number;
 }
 
-interface NavGroup {
-  title?: string;
-  items: NavItem[];
-}
-
-// Tablet sidebar — simplified, touch-friendly
-const TABLET_NAV: NavItem[] = [
+// Phase 1 — Student/Teacher sidebar items (mobile → tablet → desktop)
+const NAV_ITEMS: NavItem[] = [
   { label: "Home", href: "/home", icon: Home },
-  { label: "Search", href: "/search", icon: Search },
-  { label: "My Library", href: "/library", icon: Library },
-  { label: "Saved", href: "/favorites", icon: Heart },
-  { label: "History", href: "/history", icon: Clock },
-  { label: "Settings", href: "/settings", icon: Settings },
-];
-
-// Desktop sidebar — full nav with groups
-const NAV_GROUPS: NavGroup[] = [
-  {
-    items: [
-      { label: "Bosh sahifa", href: "/home", icon: Home },
-      { label: "Kitoblar", href: "/books", icon: BookMarked },
-      { label: "Audio kitoblar", href: "/audio", icon: Headphones },
-      { label: "Missiyalar", href: "/missions", icon: Target },
-      { label: "Reyting", href: "/ranking", icon: Trophy },
-      { label: "Coinlar va do'kon", href: "/coins", icon: Coins },
-      { label: "Statistika", href: "/statistics", icon: BarChart3 },
-      { label: "Saqlanganlar", href: "/favorites", icon: Heart },
-      { label: "Tarix", href: "/history", icon: Clock },
-    ],
-  },
-  {
-    title: "Shaxsiy",
-    items: [
-      { label: "Bildirishnomalar", href: "/notifications", icon: Bell, badge: 3 },
-      { label: "Profil", href: "/profile", icon: User },
-      { label: "Sozlamalar", href: "/settings", icon: Settings },
-    ],
-  },
+  { label: "Books", href: "/books", icon: BookMarked },
+  { label: "Profile", href: "/profile", icon: User },
 ];
 
 export function StudentSidebar() {
@@ -87,7 +42,7 @@ export function StudentSidebar() {
 
   return (
     <>
-      {/* ═══ TABLET SIDEBAR (md to lg) ═══ */}
+      {/* ═══ TABLET SIDEBAR (md to lg) — icon only ═══ */}
       <aside className="hidden md:flex lg:hidden flex-col border-r border-border bg-card w-[72px]">
         {/* Logo */}
         <div className="flex h-16 items-center justify-center border-b border-border">
@@ -100,7 +55,7 @@ export function StudentSidebar() {
 
         {/* Navigation — icon only, larger touch targets */}
         <nav className="flex-1 flex flex-col items-center gap-1 py-4 px-1.5">
-          {TABLET_NAV.map((item) => {
+          {NAV_ITEMS.map((item) => {
             const isActive =
               pathname === item.href ||
               (item.href !== "/home" && pathname.startsWith(item.href));
@@ -148,7 +103,7 @@ export function StudentSidebar() {
         </div>
       </aside>
 
-      {/* ═══ DESKTOP SIDEBAR (lg+) ═══ */}
+      {/* ═══ DESKTOP SIDEBAR (lg+) — full labels ═══ */}
       <aside
         className={cn(
           "hidden lg:flex flex-col border-r border-border bg-card transition-all duration-200",
@@ -164,7 +119,7 @@ export function StudentSidebar() {
               </div>
               <div className="flex flex-col">
                 <span className="text-sm font-bold tracking-tight text-foreground leading-none">
-                  ANVAROV
+                  MBSI
                 </span>
                 <span className="text-[10px] font-medium text-primary leading-none mt-0.5">
                   LIBRARY
@@ -182,53 +137,35 @@ export function StudentSidebar() {
           </Button>
         </div>
 
-        {/* Navigation */}
+        {/* Navigation — Phase 1: Home, Books, Profile */}
         <ScrollArea className="flex-1 py-3 px-2">
-          {NAV_GROUPS.map((group, gi) => (
-            <div key={gi} className="mb-4">
-              {group.title && !collapsed && (
-                <p className="mb-1.5 px-3 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
-                  {group.title}
-                </p>
-              )}
-              <nav className="flex flex-col gap-0.5">
-                {group.items.map((item) => {
-                  const isActive =
-                    pathname === item.href ||
-                    (item.href !== "/home" && pathname.startsWith(item.href));
-                  const Icon = item.icon;
+          <nav className="flex flex-col gap-0.5">
+            {NAV_ITEMS.map((item) => {
+              const isActive =
+                pathname === item.href ||
+                (item.href !== "/home" && pathname.startsWith(item.href));
+              const Icon = item.icon;
 
-                  return (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      className={cn(
-                        "flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition-all duration-150",
-                        isActive
-                          ? "bg-accent text-accent-foreground"
-                          : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                      )}
-                    >
-                      <Icon
-                        size={18}
-                        className={cn("shrink-0", isActive ? "text-primary" : "")}
-                      />
-                      {!collapsed && (
-                        <>
-                          <span className="flex-1">{item.label}</span>
-                          {item.badge && item.badge > 0 && (
-                            <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-[10px] font-bold text-white">
-                              {item.badge}
-                            </span>
-                          )}
-                        </>
-                      )}
-                    </Link>
-                  );
-                })}
-              </nav>
-            </div>
-          ))}
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={cn(
+                    "flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition-all duration-150",
+                    isActive
+                      ? "bg-accent text-accent-foreground"
+                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                  )}
+                >
+                  <Icon
+                    size={18}
+                    className={cn("shrink-0", isActive ? "text-primary" : "")}
+                  />
+                  {!collapsed && <span className="flex-1">{item.label}</span>}
+                </Link>
+              );
+            })}
+          </nav>
         </ScrollArea>
 
         {/* Admin link (if admin) */}

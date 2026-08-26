@@ -133,7 +133,7 @@ export default function NotificationsPage() {
   }
 
   return (
-    <div className="space-y-6 animate-fade-in pb-20 lg:pb-0">
+    <div className="space-y-6 animate-fade-in pb-20 md:pb-0 max-w-2xl md:max-w-4xl lg:max-w-5xl mx-auto">
       <div className="flex items-start justify-between">
         <div>
           <h1 className="text-xl font-bold text-foreground">

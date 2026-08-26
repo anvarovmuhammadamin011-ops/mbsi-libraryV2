@@ -8,11 +8,7 @@ import {
   Star,
   ChevronRight,
   History,
-  Bookmark,
   Settings,
-  Globe,
-  Bell,
-  HelpCircle,
 } from "lucide-react";
 import Link from "next/link";
 import { ProfileLogoutButton } from "@/components/profile-logout-button";
@@ -72,7 +68,7 @@ export default async function ProfilePage() {
   const avgRating = avgRatingRaw === 0 ? 0 : Math.round(avgRatingRaw * 10) / 10;
 
   return (
-    <div className="max-w-md mx-auto animate-fade-in">
+    <div className="max-w-md md:max-w-lg lg:max-w-xl mx-auto animate-fade-in">
       <div className="rounded-2xl border border-border bg-card overflow-hidden">
         {/* Top centered */}
         <div className="flex flex-col items-center px-6 py-8 text-center">
@@ -117,27 +113,10 @@ export default async function ProfilePage() {
 
         <div className="h-px bg-border" />
 
-        {/* Menu group 1 */}
+        {/* Phase 1 menu items */}
         <nav className="flex flex-col divide-y divide-border/50">
           <MenuRow icon={<History size={18} />} label="Reading History" href="/history" />
-          <MenuRow icon={<Star size={18} />} label="My Reviews" href="/ratings" />
-          <MenuRow icon={<Bookmark size={18} />} label="My Bookmarks" href="/bookmarks" />
-        </nav>
-
-        <div className="h-px bg-border" />
-
-        {/* Menu group 2 */}
-        <nav className="flex flex-col divide-y divide-border/50">
-          <MenuRow icon={<Settings size={18} />} label="Appearance" href="/settings#appearance" />
-          <MenuRow icon={<Globe size={18} />} label="Language" href="/settings#language" />
-          <MenuRow icon={<Bell size={18} />} label="Notifications" href="/settings#notifications" />
-        </nav>
-
-        <div className="h-px bg-border" />
-
-        {/* Menu group 3 */}
-        <nav className="flex flex-col divide-y divide-border/50">
-          <MenuRow icon={<HelpCircle size={18} />} label="Help & Support" href="/help" />
+          <MenuRow icon={<Settings size={18} />} label="Settings" href="/settings" />
           <ProfileLogoutButton />
         </nav>
       </div>
