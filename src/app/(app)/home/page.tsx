@@ -31,13 +31,98 @@ export default async function HomePage() {
 
   const mostRecentProgress = readingProgress[0] ?? null;
 
-  // Featured Books — newest published
-  const featuredBooks = await prisma.book.findMany({
+  // ── Yangi kitoblar (newest 10)
+  const yangiKitoblar = await prisma.book.findMany({
     where: { isPublished: true },
     include: { author: true, ratings: { select: { rating: true } } },
     orderBy: { createdAt: "desc" },
-    take: 6,
+    take: 10,
   });
+
+  // ── Top 10 talik (eng ko'p o'qilgan)
+  const topIds = await prisma.readingSession.groupBy({
+    by: ["bookId"],
+    _count: { bookId: true },
+    orderBy: { _count: { bookId: "desc" } },
+    take: 10,
+  });
+  const top10Books =
+    topIds.length > 0
+      ? await prisma.book.findMany({
+          where: { id: { in: topIds.map((t) => t.bookId) }, isPublished: true },
+          include: { author: true, ratings: { select: { rating: true } } },
+        })
+      : [];
+  // preserve order by count
+  const top10Ordered = topIds
+    .map((t) => top10Books.find((b) => b.id === t.bookId))
+    .filter(Boolean) as typeof yangiKitoblar;
+
+  // ── Eng zo'rlari (eng yuqori reyting)
+  const ratedGroups = await prisma.rating.groupBy({
+    by: ["bookId"],
+    _avg: { rating: true },
+    _count: { bookId: true },
+    having: { rating: { _avg: { gte: 4 } } },
+    orderBy: { _avg: { rating: "desc" } },
+    take: 10,
+  });
+  let engZorlari: typeof yangiKitoblar = [];
+  if (ratedGroups.length > 0) {
+    const ids = ratedGroups.map((g) => g.bookId);
+    const books = await prisma.book.findMany({
+      where: { id: { in: ids }, isPublished: true },
+      include: { author: true, ratings: { select: { rating: true } } },
+    });
+    engZorlari = ratedGroups
+      .map((g) => books.find((b) => b.id === g.bookId))
+      .filter(Boolean) as typeof yangiKitoblar;
+  }
+  // fallback if not enough rated books
+  if (engZorlari.length < 4) {
+    const fallback = await prisma.book.findMany({
+      where: { isPublished: true },
+      include: { author: true, ratings: { select: { rating: true } } },
+      orderBy: { createdAt: "desc" },
+      take: 10,
+    });
+    const seen = new Set(engZorlari.map((b) => b.id));
+    for (const b of fallback) if (!seen.has(b.id) && engZorlari.length < 10) engZorlari.push(b);
+  }
+
+  // ── Sizga mos kitoblar (personalized)
+  let sizgaMos: typeof yangiKitoblar = [];
+  if (userId) {
+    const userProgress = await prisma.readingProgress.findMany({
+      where: { userId },
+      select: { bookId: true },
+    });
+    const readIds = userProgress.map((p) => p.bookId);
+    if (readIds.length > 0) {
+      const readBooks = await prisma.book.findMany({
+        where: { id: { in: readIds } },
+        select: { categoryId: true },
+      });
+      const catCount: Record<string, number> = {};
+      for (const b of readBooks) if (b.categoryId) catCount[b.categoryId] = (catCount[b.categoryId] || 0) + 1;
+      const topCat = Object.entries(catCount).sort((a, b) => b[1] - a[1])[0]?.[0];
+      if (topCat) {
+        sizgaMos = await prisma.book.findMany({
+          where: { categoryId: topCat, isPublished: true, id: { notIn: readIds } },
+          include: { author: true, ratings: { select: { rating: true } } },
+          take: 10,
+        });
+      }
+    }
+  }
+  if (sizgaMos.length === 0) {
+    sizgaMos = await prisma.book.findMany({
+      where: { isPublished: true },
+      include: { author: true, ratings: { select: { rating: true } } },
+      orderBy: { createdAt: "desc" },
+      take: 10,
+    });
+  }
 
   const displayName = user?.name?.split(" ")[0] || sessionUser?.name?.split(" ")[0] || "Reader";
 
@@ -87,23 +172,23 @@ export default async function HomePage() {
         </section>
       )}
 
-      {/* ═══ FEATURED BOOKS ═══ */}
+      {/* ═══ YANGI KITOBLAR ═══ */}
       <section>
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-base md:text-lg font-semibold text-foreground">Featured Books</h2>
+          <h2 className="text-base md:text-lg font-semibold text-foreground">🆕 Yangi kitoblar</h2>
           <Link
             href="/books"
             className="flex items-center gap-1 text-sm font-medium text-primary hover:underline"
           >
-            View all <ArrowRight size={14} />
+            Barchasi <ArrowRight size={14} />
           </Link>
         </div>
 
-        {featuredBooks.length > 0 ? (
+        {yangiKitoblar.length > 0 ? (
           <>
             {/* Mobile: horizontal scroll */}
             <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-thin snap-x snap-mandatory md:mx-0 md:px-0 md:overflow-visible md:flex-wrap md:snap-none">
-              {featuredBooks.map((book) => {
+              {yangiKitoblar.map((book) => {
                 const avgRating =
                   (book as any).ratings?.length > 0
                     ? (
@@ -158,6 +243,190 @@ export default async function HomePage() {
             </Link>
           </div>
         )}
+      </section>
+
+      {/* ═══ TOP 10 TALIK ═══ */}
+      <section>
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-base md:text-lg font-semibold text-foreground">🏆 Top 10 talik</h2>
+          <Link
+            href="/books?sort=popular"
+            className="flex items-center gap-1 text-sm font-medium text-primary hover:underline"
+          >
+            Barchasi <ArrowRight size={14} />
+          </Link>
+        </div>
+        {top10Ordered.length > 0 ? (
+          <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-thin snap-x snap-mandatory md:mx-0 md:px-0 md:overflow-visible md:flex-wrap md:snap-none">
+            {top10Ordered.map((book, idx) => {
+              const avgRating =
+                (book as any).ratings?.length > 0
+                  ? (
+                      (book as any).ratings.reduce((s: number, r: { rating: number }) => s + r.rating, 0) /
+                      (book as any).ratings.length
+                    ).toFixed(1)
+                  : "—";
+              return (
+                <Link
+                  key={book.id}
+                  href={`/books/${book.slug}`}
+                  className="group shrink-0 snap-start w-[140px] md:w-[150px] lg:w-[160px] relative"
+                >
+                  <div className="absolute -top-2 -left-2 z-10 flex h-7 w-7 items-center justify-center rounded-full bg-primary text-xs font-bold text-white shadow">
+                    {idx + 1}
+                  </div>
+                  <div className="relative aspect-[3/4] w-full overflow-hidden rounded-xl bg-muted">
+                    {book.coverUrl ? (
+                      <Image
+                        src={book.coverUrl}
+                        alt={book.title}
+                        fill
+                        className="object-cover group-hover:scale-[1.02] transition-transform"
+                        sizes="160px"
+                      />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-primary/10 to-primary/5">
+                        <BookOpen size={28} className="text-primary/30" />
+                      </div>
+                    )}
+                  </div>
+                  <div className="pt-2">
+                    <p className="text-xs md:text-sm font-semibold text-foreground line-clamp-2 leading-tight">
+                      {book.title}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-0.5 truncate">
+                      {book.author?.name ?? "Unknown"}
+                    </p>
+                    <div className="flex items-center gap-1 mt-1">
+                      <Star size={12} className="fill-yellow-400 text-yellow-400" />
+                      <span className="text-xs font-medium">{avgRating}</span>
+                    </div>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        ) : (
+          <p className="text-sm text-muted-foreground text-center py-6">Hali o'qilgan kitoblar yo'q</p>
+        )}
+      </section>
+
+      {/* ═══ ENG ZO'RLARI ═══ */}
+      <section>
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-base md:text-lg font-semibold text-foreground">⭐ Eng zo'rlari</h2>
+          <Link
+            href="/books?sort=rating"
+            className="flex items-center gap-1 text-sm font-medium text-primary hover:underline"
+          >
+            Barchasi <ArrowRight size={14} />
+          </Link>
+        </div>
+        <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-thin snap-x snap-mandatory md:mx-0 md:px-0 md:overflow-visible md:flex-wrap md:snap-none">
+          {engZorlari.map((book) => {
+            const avgRating =
+              (book as any).ratings?.length > 0
+                ? (
+                    (book as any).ratings.reduce((s: number, r: { rating: number }) => s + r.rating, 0) /
+                    (book as any).ratings.length
+                  ).toFixed(1)
+                : "—";
+            return (
+              <Link
+                key={book.id}
+                href={`/books/${book.slug}`}
+                className="group shrink-0 snap-start w-[140px] md:w-[150px] lg:w-[160px]"
+              >
+                <div className="relative aspect-[3/4] w-full overflow-hidden rounded-xl bg-muted">
+                  {book.coverUrl ? (
+                    <Image
+                      src={book.coverUrl}
+                      alt={book.title}
+                      fill
+                      className="object-cover group-hover:scale-[1.02] transition-transform"
+                      sizes="160px"
+                    />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-primary/10 to-primary/5">
+                      <BookOpen size={28} className="text-primary/30" />
+                    </div>
+                  )}
+                  <div className="absolute top-2 right-2 flex items-center gap-1 rounded-full bg-black/70 px-2 py-0.5">
+                    <Star size={10} className="fill-yellow-400 text-yellow-400" />
+                    <span className="text-[11px] font-bold text-white">{avgRating}</span>
+                  </div>
+                </div>
+                <div className="pt-2">
+                  <p className="text-xs md:text-sm font-semibold text-foreground line-clamp-2 leading-tight">
+                    {book.title}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-0.5 truncate">
+                    {book.author?.name ?? "Unknown"}
+                  </p>
+                </div>
+              </Link>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* ═══ SIZGA MOS KITOBLAR ═══ */}
+      <section>
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-base md:text-lg font-semibold text-foreground">💎 Sizga mos kitoblar</h2>
+          <Link
+            href="/books"
+            className="flex items-center gap-1 text-sm font-medium text-primary hover:underline"
+          >
+            Barchasi <ArrowRight size={14} />
+          </Link>
+        </div>
+        <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-thin snap-x snap-mandatory md:mx-0 md:px-0 md:overflow-visible md:flex-wrap md:snap-none">
+          {sizgaMos.map((book) => {
+            const avgRating =
+              (book as any).ratings?.length > 0
+                ? (
+                    (book as any).ratings.reduce((s: number, r: { rating: number }) => s + r.rating, 0) /
+                    (book as any).ratings.length
+                  ).toFixed(1)
+                : "—";
+            return (
+              <Link
+                key={book.id}
+                href={`/books/${book.slug}`}
+                className="group shrink-0 snap-start w-[140px] md:w-[150px] lg:w-[160px]"
+              >
+                <div className="relative aspect-[3/4] w-full overflow-hidden rounded-xl bg-muted">
+                  {book.coverUrl ? (
+                    <Image
+                      src={book.coverUrl}
+                      alt={book.title}
+                      fill
+                      className="object-cover group-hover:scale-[1.02] transition-transform"
+                      sizes="160px"
+                    />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-primary/10 to-primary/5">
+                      <BookOpen size={28} className="text-primary/30" />
+                    </div>
+                  )}
+                </div>
+                <div className="pt-2">
+                  <p className="text-xs md:text-sm font-semibold text-foreground line-clamp-2 leading-tight">
+                    {book.title}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-0.5 truncate">
+                    {book.author?.name ?? "Unknown"}
+                  </p>
+                  <div className="flex items-center gap-1 mt-1">
+                    <Star size={12} className="fill-yellow-400 text-yellow-400" />
+                    <span className="text-xs font-medium">{avgRating}</span>
+                  </div>
+                </div>
+              </Link>
+            );
+          })}
+        </div>
       </section>
     </div>
   );
