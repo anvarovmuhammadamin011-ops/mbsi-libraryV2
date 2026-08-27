@@ -28,6 +28,8 @@ function SearchPageInner() {
   const [books, setBooks] = useState<Book[]>([]);
   const [loading, setLoading] = useState(false);
   const [recents, setRecents] = useState<string[]>(DEFAULT_RECENTS);
+  const [defaultBooks, setDefaultBooks] = useState<Book[]>([]);
+  const [defaultLoading, setDefaultLoading] = useState(true);
 
   const inputRef = useRef<HTMLInputElement>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -89,6 +91,21 @@ function SearchPageInner() {
     setQuery(term);
     inputRef.current?.focus();
   };
+
+  // Load default books when no query
+  useEffect(() => {
+    const q = query.trim();
+    if (q) {
+      setDefaultBooks([]);
+      return;
+    }
+    setDefaultLoading(true);
+    fetch("/api/books?pageSize=20&sort=newest")
+      .then((r) => r.json())
+      .then((json: any) => setDefaultBooks(json.data ?? []))
+      .catch(() => setDefaultBooks([]))
+      .finally(() => setDefaultLoading(false));
+  }, [query]);
 
   // live fetch with debounce
   useEffect(() => {
@@ -152,6 +169,7 @@ function SearchPageInner() {
 
   const showRecents = query.trim() === "";
   const showResults = query.trim() !== "";
+  const showDefault = query.trim() === "";
 
   return (
     <div className="mx-auto max-w-2xl md:max-w-3xl lg:max-w-4xl animate-fade-in pb-6">
@@ -251,6 +269,69 @@ function SearchPageInner() {
                 </li>
               ))}
             </ul>
+          )}
+        </div>
+      )}
+
+      {/* Default books when no query */}
+      {showDefault && (
+        <div className="mt-8">
+          <h2 className="text-base font-semibold text-foreground mb-3">📚 All Books</h2>
+          {defaultLoading ? (
+            <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-3">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="space-y-2">
+                  <div className="aspect-[3/4] w-full rounded-xl bg-muted animate-pulse" />
+                  <div className="h-3 w-3/4 rounded bg-muted animate-pulse" />
+                  <div className="h-3 w-1/2 rounded bg-muted animate-pulse" />
+                </div>
+              ))}
+            </div>
+          ) : defaultBooks.length > 0 ? (
+            <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-3">
+              {defaultBooks.map((book) => {
+                const avg = book.averageRating ? Number(book.averageRating).toFixed(1) : null;
+                return (
+                  <Link
+                    key={book.id}
+                    href={`/books/${book.slug ?? book.id}`}
+                    className="group"
+                  >
+                    <div className="relative aspect-[3/4] w-full overflow-hidden rounded-xl bg-muted">
+                      {book.coverUrl ? (
+                        <Image
+                          src={book.coverUrl}
+                          alt={book.title}
+                          fill
+                          className="object-cover group-hover:scale-[1.02] transition-transform"
+                          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                        />
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-primary/10 to-primary/5">
+                          <BookOpen size={28} className="text-primary/30" />
+                        </div>
+                      )}
+                    </div>
+                    <div className="pt-2">
+                      <p className="text-sm font-semibold text-foreground line-clamp-2 leading-tight">
+                        {book.title}
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-0.5 truncate">
+                        {book.author?.name ?? "Unknown"}
+                      </p>
+                      {avg && (
+                        <div className="flex items-center gap-1 mt-1">
+                          <Star size={12} className="fill-yellow-400 text-yellow-400" />
+                          <span className="text-xs font-medium">{avg}</span>
+                        </div>
+                      )}
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground text-center py-8">No books available</p>
           )}
         </div>
       )}
