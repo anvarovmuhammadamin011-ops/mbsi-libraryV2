@@ -15,16 +15,14 @@ export default async function AdminCategoriesPage() {
     },
   });
 
-  return (
-    <AdminCategoriesView
-      categories={categories.map((c) => ({
-        id: c.id,
-        name: c.name,
-        slug: c.slug,
-        description: c.description,
-        icon: c.icon,
-        bookCount: c._count.books,
-      }))}
-    />
-  );
+  const rows = categories.map((c) => ({
+    id: c.id,
+    name: c.name,
+    slug: c.slug,
+    description: c.description ?? "",
+    icon: c.icon ?? null,
+    bookCount: c._count.books,
+  }));
+
+  return <AdminCategoriesView categories={rows} />;
 }

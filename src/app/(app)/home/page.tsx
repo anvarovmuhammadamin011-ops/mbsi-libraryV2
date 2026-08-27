@@ -7,6 +7,7 @@ import {
   Star,
   ArrowRight,
   Search,
+  LayoutGrid,
 } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -19,13 +20,13 @@ export default async function HomePage() {
     ? await prisma.user.findUnique({ where: { id: userId } })
     : null;
 
-  // Continue Reading — most recent active book
+  // Continue Reading — most recent active books
   const readingProgress = userId
     ? await prisma.readingProgress.findMany({
         where: { userId, completedAt: null },
         include: { book: { include: { author: true } } },
         orderBy: { lastReadAt: "desc" },
-        take: 3,
+        take: 4,
       })
     : [];
 
@@ -53,7 +54,6 @@ export default async function HomePage() {
           include: { author: true, ratings: { select: { rating: true } } },
         })
       : [];
-  // preserve order by count
   const top10Ordered = topIds
     .map((t) => top10Books.find((b) => b.id === t.bookId))
     .filter(Boolean) as typeof yangiKitoblar;
@@ -78,7 +78,6 @@ export default async function HomePage() {
       .map((g) => books.find((b) => b.id === g.bookId))
       .filter(Boolean) as typeof yangiKitoblar;
   }
-  // fallback if not enough rated books
   if (engZorlari.length < 4) {
     const fallback = await prisma.book.findMany({
       where: { isPublished: true },
@@ -89,6 +88,14 @@ export default async function HomePage() {
     const seen = new Set(engZorlari.map((b) => b.id));
     for (const b of fallback) if (!seen.has(b.id) && engZorlari.length < 10) engZorlari.push(b);
   }
+
+  // ── Categories with book counts
+  const categories = await prisma.category.findMany({
+    orderBy: { name: "asc" },
+    include: {
+      _count: { select: { books: true } },
+    },
+  });
 
   // ── Sizga mos kitoblar (personalized)
   let sizgaMos: typeof yangiKitoblar = [];
@@ -139,13 +146,13 @@ export default async function HomePage() {
           </p>
         </div>
 
-        {/* Search bar — navigates to /books */}
+        {/* Search bar — navigates to /search */}
         <Link
-          href="/books"
+          href="/search"
           className="flex items-center gap-3 rounded-2xl border border-border bg-card px-4 py-3 text-sm text-muted-foreground shadow-sm hover:bg-muted/50 transition-colors"
         >
           <Search size={18} className="shrink-0 text-muted-foreground" />
-          <span>Search books...</span>
+          <span>Search books, authors, categories...</span>
         </Link>
       </div>
 
@@ -164,9 +171,43 @@ export default async function HomePage() {
           </div>
 
           {/* Tablet / Desktop: horizontal row of cards */}
-          <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-3 gap-3">
+          <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-4 gap-3">
             {readingProgress.map((p) => (
               <ContinueReadingCard key={p.id} progress={p} compact />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* ═══ CATEGORIES ═══ */}
+      {categories.length > 0 && (
+        <section>
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-base md:text-lg font-semibold text-foreground flex items-center gap-2">
+              <LayoutGrid size={18} className="text-primary" />
+              Categories
+            </h2>
+            <Link
+              href="/categories"
+              className="flex items-center gap-1 text-sm font-medium text-primary hover:underline"
+            >
+              All <ArrowRight size={14} />
+            </Link>
+          </div>
+          <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-thin snap-x snap-mandatory md:mx-0 md:px-0 md:overflow-visible md:flex-wrap md:snap-none">
+            {categories.slice(0, 8).map((cat) => (
+              <Link
+                key={cat.id}
+                href={`/books?categoryId=${cat.id}`}
+                className="shrink-0 snap-start rounded-2xl border border-border bg-card px-4 py-3 hover:bg-muted/50 hover:shadow-sm transition-all min-w-[120px] md:min-w-0 md:flex-1 md:max-w-[160px]"
+              >
+                <p className="text-sm font-semibold text-foreground truncate">
+                  {cat.name}
+                </p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  {cat._count.books} books
+                </p>
+              </Link>
             ))}
           </div>
         </section>
@@ -175,65 +216,62 @@ export default async function HomePage() {
       {/* ═══ YANGI KITOBLAR ═══ */}
       <section>
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-base md:text-lg font-semibold text-foreground">🆕 Yangi kitoblar</h2>
+          <h2 className="text-base md:text-lg font-semibold text-foreground">🆕 Recently Added</h2>
           <Link
             href="/books"
             className="flex items-center gap-1 text-sm font-medium text-primary hover:underline"
           >
-            Barchasi <ArrowRight size={14} />
+            View all <ArrowRight size={14} />
           </Link>
         </div>
 
         {yangiKitoblar.length > 0 ? (
-          <>
-            {/* Mobile: horizontal scroll */}
-            <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-thin snap-x snap-mandatory md:mx-0 md:px-0 md:overflow-visible md:flex-wrap md:snap-none">
-              {yangiKitoblar.map((book) => {
-                const avgRating =
-                  (book as any).ratings?.length > 0
-                    ? (
-                        (book as any).ratings.reduce((s: number, r: { rating: number }) => s + r.rating, 0) /
-                        (book as any).ratings.length
-                      ).toFixed(1)
-                    : "—";
-                return (
-                  <Link
-                    key={book.id}
-                    href={`/books/${book.slug}`}
-                    className="group shrink-0 snap-start w-[140px] md:w-[150px] lg:w-[160px]"
-                  >
-                    <div className="relative aspect-[3/4] w-full overflow-hidden rounded-xl bg-muted">
-                      {book.coverUrl ? (
-                        <Image
-                          src={book.coverUrl}
-                          alt={book.title}
-                          fill
-                          className="object-cover group-hover:scale-[1.02] transition-transform"
-                          sizes="(max-width: 640px) 140px, (max-width: 1024px) 150px, 160px"
-                        />
-                      ) : (
-                        <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-primary/10 to-primary/5">
-                          <BookOpen size={28} className="text-primary/30" />
-                        </div>
-                      )}
-                    </div>
-                    <div className="pt-2">
-                      <p className="text-xs md:text-sm font-semibold text-foreground line-clamp-2 leading-tight">
-                        {book.title}
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-0.5 truncate">
-                        {book.author?.name ?? "Unknown"}
-                      </p>
-                      <div className="flex items-center gap-1 mt-1">
-                        <Star size={12} className="fill-yellow-400 text-yellow-400" />
-                        <span className="text-xs font-medium">{avgRating}</span>
+          <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-thin snap-x snap-mandatory md:mx-0 md:px-0 md:overflow-visible md:flex-wrap md:snap-none">
+            {yangiKitoblar.map((book) => {
+              const avgRating =
+                (book as any).ratings?.length > 0
+                  ? (
+                      (book as any).ratings.reduce((s: number, r: { rating: number }) => s + r.rating, 0) /
+                      (book as any).ratings.length
+                    ).toFixed(1)
+                  : "—";
+              return (
+                <Link
+                  key={book.id}
+                  href={`/books/${book.slug}`}
+                  className="group shrink-0 snap-start w-[140px] md:w-[150px] lg:w-[160px]"
+                >
+                  <div className="relative aspect-[3/4] w-full overflow-hidden rounded-xl bg-muted">
+                    {book.coverUrl ? (
+                      <Image
+                        src={book.coverUrl}
+                        alt={book.title}
+                        fill
+                        className="object-cover group-hover:scale-[1.02] transition-transform"
+                        sizes="(max-width: 640px) 140px, (max-width: 1024px) 150px, 160px"
+                      />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-primary/10 to-primary/5">
+                        <BookOpen size={28} className="text-primary/30" />
                       </div>
+                    )}
+                  </div>
+                  <div className="pt-2">
+                    <p className="text-xs md:text-sm font-semibold text-foreground line-clamp-2 leading-tight">
+                      {book.title}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-0.5 truncate">
+                      {book.author?.name ?? "Unknown"}
+                    </p>
+                    <div className="flex items-center gap-1 mt-1">
+                      <Star size={12} className="fill-yellow-400 text-yellow-400" />
+                      <span className="text-xs font-medium">{avgRating}</span>
                     </div>
-                  </Link>
-                );
-              })}
-            </div>
-          </>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
         ) : (
           <div className="text-center py-10">
             <BookOpen size={32} className="mx-auto text-muted-foreground/50 mb-3" />
@@ -248,12 +286,12 @@ export default async function HomePage() {
       {/* ═══ TOP 10 TALIK ═══ */}
       <section>
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-base md:text-lg font-semibold text-foreground">🏆 Top 10 talik</h2>
+          <h2 className="text-base md:text-lg font-semibold text-foreground">🏆 Most Popular</h2>
           <Link
             href="/books?sort=popular"
             className="flex items-center gap-1 text-sm font-medium text-primary hover:underline"
           >
-            Barchasi <ArrowRight size={14} />
+            View all <ArrowRight size={14} />
           </Link>
         </div>
         {top10Ordered.length > 0 ? (
@@ -314,12 +352,12 @@ export default async function HomePage() {
       {/* ═══ ENG ZO'RLARI ═══ */}
       <section>
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-base md:text-lg font-semibold text-foreground">⭐ Eng zo'rlari</h2>
+          <h2 className="text-base md:text-lg font-semibold text-foreground">⭐ Highest Rated</h2>
           <Link
             href="/books?sort=rating"
             className="flex items-center gap-1 text-sm font-medium text-primary hover:underline"
           >
-            Barchasi <ArrowRight size={14} />
+            View all <ArrowRight size={14} />
           </Link>
         </div>
         <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-thin snap-x snap-mandatory md:mx-0 md:px-0 md:overflow-visible md:flex-wrap md:snap-none">
@@ -373,12 +411,12 @@ export default async function HomePage() {
       {/* ═══ SIZGA MOS KITOBLAR ═══ */}
       <section>
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-base md:text-lg font-semibold text-foreground">💎 Sizga mos kitoblar</h2>
+          <h2 className="text-base md:text-lg font-semibold text-foreground">💎 Recommended for you</h2>
           <Link
             href="/books"
             className="flex items-center gap-1 text-sm font-medium text-primary hover:underline"
           >
-            Barchasi <ArrowRight size={14} />
+            View all <ArrowRight size={14} />
           </Link>
         </div>
         <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-thin snap-x snap-mandatory md:mx-0 md:px-0 md:overflow-visible md:flex-wrap md:snap-none">

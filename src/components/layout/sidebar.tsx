@@ -11,6 +11,8 @@ import {
   ChevronLeft,
   ChevronRight,
   Shield,
+  Search,
+  Library,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -24,10 +26,12 @@ interface NavItem {
   icon: React.ComponentType<{ size?: number; className?: string }>;
 }
 
-// Phase 1 — Student/Teacher sidebar items (mobile → tablet → desktop)
+// Phase 2 — Student/Teacher sidebar: Home, Search, Books, My Library, Profile
 const NAV_ITEMS: NavItem[] = [
   { label: "Home", href: "/home", icon: Home },
+  { label: "Search", href: "/search", icon: Search },
   { label: "Books", href: "/books", icon: BookMarked },
+  { label: "My Library", href: "/library", icon: Library },
   { label: "Profile", href: "/profile", icon: User },
 ];
 
@@ -137,7 +141,7 @@ export function StudentSidebar() {
           </Button>
         </div>
 
-        {/* Navigation — Phase 1: Home, Books, Profile */}
+        {/* Navigation — Phase 2: Home, Search, Books, My Library, Profile */}
         <ScrollArea className="flex-1 py-3 px-2">
           <nav className="flex flex-col gap-0.5">
             {NAV_ITEMS.map((item) => {

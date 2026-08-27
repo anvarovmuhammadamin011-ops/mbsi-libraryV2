@@ -10,6 +10,7 @@ import {
   BookOpenCheck,
   ChevronLeft,
   ChevronRight,
+  Tags,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -23,10 +24,11 @@ interface NavItem {
   icon: React.ComponentType<{ size?: number; className?: string }>;
 }
 
-// Phase 1 — Admin navigation only: Dashboard, Books, Users, Settings
+// Phase 2 — Admin navigation: Dashboard, Books, Categories, Users, Settings
 const NAV_ITEMS: NavItem[] = [
   { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
   { label: "Books", href: "/admin/books", icon: BookMarked },
+  { label: "Categories", href: "/admin/categories", icon: Tags },
   { label: "Users", href: "/admin/users", icon: Users },
   { label: "Settings", href: "/admin/settings", icon: Settings },
 ];

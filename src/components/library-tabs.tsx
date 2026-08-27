@@ -213,7 +213,7 @@ export function LibraryTabs({
             ) : (
               <>
                 <p className="text-sm font-medium text-muted-foreground">Continue reading</p>
-                <div className="space-y-3">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {reading.map((item) => (
                     <ReadingRow key={item.id} item={item} />
                   ))}
@@ -232,7 +232,7 @@ export function LibraryTabs({
                 description="Tap the heart on any book to save it for later. Your saved books will appear here."
               />
             ) : (
-              <div className="space-y-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {saved.map((item) => (
                   <SavedRow key={item.id} item={item} />
                 ))}
@@ -250,7 +250,7 @@ export function LibraryTabs({
                 description="Complete a book to see it here. Keep reading — you're doing great!"
               />
             ) : (
-              <div className="space-y-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {finished.map((item) => (
                   <FinishedRow key={item.id} item={item} />
                 ))}
