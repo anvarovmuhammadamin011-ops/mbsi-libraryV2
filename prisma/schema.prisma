@@ -35,6 +35,8 @@ model User {
   bookmarks   Bookmark[]
   favorites   Favorite[]
   ratings     Rating[]
+  reviews     Review[]
+  readingGoals ReadingGoal[]
   auditLogs   AuditLog[]
 
   @@index([role])
@@ -93,6 +95,7 @@ model Book {
   bookmarks      Bookmark[]
   favorites      Favorite[]
   ratings        Rating[]
+  reviews        Review[]
   recommendations Recommendation[]
 
   @@index([title])
@@ -188,6 +191,39 @@ model Rating {
   @@unique([userId, bookId])
   @@index([bookId])
   @@map("ratings")
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  bookId    String   @map("book_id")
+  rating    Int // 1-5
+  text      String
+  isHidden  Boolean  @default(false) @map("is_hidden")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  book Book @relation(fields: [bookId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, bookId])
+  @@index([bookId])
+  @@index([isHidden])
+  @@map("reviews")
+}
+
+model ReadingGoal {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  type      String // BOOKS_PER_MONTH | MINUTES_PER_DAY
+  target    Int
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, type])
+  @@map("reading_goals")
 }
 
 model Banner {

@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { AdminDashboardCharts } from "@/components/admin-dashboard-charts";
+import { getSmartInsights } from "@/lib/server/insights";
 
 export const dynamic = "force-dynamic";
 
@@ -32,6 +33,9 @@ export default async function AdminDashboard() {
     topTeachers,
     recentSessions,
     activeToday,
+    mostReadAgg,
+    mostSavedAgg,
+    popularCats,
   ] = await Promise.all([
     prisma.user.count(),
     prisma.user.count({ where: { role: "STUDENT" } }),
@@ -70,7 +74,26 @@ export default async function AdminDashboard() {
       select: { userId: true },
       distinct: ["userId"],
     }),
+    prisma.readingProgress.groupBy({
+      by: ["bookId"],
+      _count: { bookId: true },
+      orderBy: { _count: { bookId: "desc" } },
+      take: 5,
+    }),
+    prisma.favorite.groupBy({
+      by: ["bookId"],
+      _count: { bookId: true },
+      orderBy: { _count: { bookId: "desc" } },
+      take: 5,
+    }),
+    prisma.category.findMany({
+      include: { _count: { select: { books: true } } },
+      orderBy: { books: { _count: "desc" } },
+      take: 5,
+    }),
   ]);
+
+  const insights = await getSmartInsights();
 
   // Fetch user names for top students
   const topStudentUsers = await prisma.user.findMany({
@@ -85,6 +108,17 @@ export default async function AdminDashboard() {
     select: { id: true, name: true },
   });
   const teacherMap = new Map(topTeacherUsers.map((u) => [u.id, u.name]));
+
+  const mostReadBooks = await prisma.book.findMany({
+    where: { id: { in: mostReadAgg.map((r) => r.bookId) } },
+    select: { id: true, title: true },
+  });
+  const mostReadMap = new Map(mostReadBooks.map((b) => [b.id, b.title]));
+  const mostSavedBooks = await prisma.book.findMany({
+    where: { id: { in: mostSavedAgg.map((r) => r.bookId) } },
+    select: { id: true, title: true },
+  });
+  const mostSavedMap = new Map(mostSavedBooks.map((b) => [b.id, b.title]));
 
   // Get reading activity data for the chart (last 7 days)
   const sevenDaysAgo = new Date();
@@ -182,6 +216,93 @@ export default async function AdminDashboard() {
 
       {/* Charts */}
       <AdminDashboardCharts data={chartData} />
+
+      {/* Analytics — Phase 4: Most Read / Most Saved / Popular Categories */}
+      <div className="grid gap-6 md:grid-cols-3">
+        <div className="rounded-2xl border border-border bg-card p-5">
+          <h3 className="text-sm font-semibold text-foreground mb-3">📚 Most Read Books</h3>
+          <div className="space-y-2">
+            {mostReadAgg.length === 0 ? (
+              <p className="text-sm text-muted-foreground">Hali ma&apos;lumot yo&apos;q</p>
+            ) : (
+              mostReadAgg.map((r, i) => (
+                <div key={r.bookId} className="flex items-center justify-between text-sm">
+                  <span className="flex items-center gap-2 truncate">
+                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">
+                      {i + 1}
+                    </span>
+                    <span className="truncate max-w-[150px]">{mostReadMap.get(r.bookId) ?? r.bookId}</span>
+                  </span>
+                  <span className="text-xs font-medium text-muted-foreground">{r._count.bookId} reads</span>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+        <div className="rounded-2xl border border-border bg-card p-5">
+          <h3 className="text-sm font-semibold text-foreground mb-3">🔖 Most Saved Books</h3>
+          <div className="space-y-2">
+            {mostSavedAgg.length === 0 ? (
+              <p className="text-sm text-muted-foreground">Hali saqlangan kitob yo&apos;q</p>
+            ) : (
+              mostSavedAgg.map((r, i) => (
+                <div key={r.bookId} className="flex items-center justify-between text-sm">
+                  <span className="flex items-center gap-2 truncate">
+                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-amber-500/10 text-xs font-bold text-amber-600">
+                      {i + 1}
+                    </span>
+                    <span className="truncate max-w-[150px]">{mostSavedMap.get(r.bookId) ?? r.bookId}</span>
+                  </span>
+                  <span className="text-xs font-medium text-muted-foreground">{r._count.bookId} saves</span>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+        <div className="rounded-2xl border border-border bg-card p-5">
+          <h3 className="text-sm font-semibold text-foreground mb-3">🗂️ Popular Categories</h3>
+          <div className="space-y-2">
+            {popularCats.length === 0 ? (
+              <p className="text-sm text-muted-foreground">Hali kategoriya yo&apos;q</p>
+            ) : (
+              popularCats.map((c, i) => (
+                <div key={c.id} className="flex items-center justify-between text-sm">
+                  <span className="flex items-center gap-2 truncate">
+                    <span className="text-base">{c.icon ?? "📁"}</span>
+                    <span className="truncate">{c.name}</span>
+                  </span>
+                  <span className="text-xs font-medium text-muted-foreground">{c._count.books} books</span>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* ✨ Smart Insights — Phase 5 */}
+      <div className="rounded-2xl border border-border bg-gradient-to-br from-violet-50 to-indigo-50 dark:from-violet-950/20 dark:to-indigo-950/20 p-5">
+        <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+          ✨ Smart Insights <span className="text-xs font-normal text-muted-foreground">AI tahlili</span>
+        </h3>
+        <div className="grid gap-3 md:grid-cols-2">
+          {insights.map((ins, i) => (
+            <div key={i} className="rounded-xl bg-card border border-border p-4">
+              <div className="flex items-start gap-3">
+                <span className="text-xl">{ins.icon}</span>
+                <div className="flex-1">
+                  <p className="text-sm font-semibold text-foreground">{ins.title}</p>
+                  <p className="text-xs text-muted-foreground mt-1">{ins.description}</p>
+                  {ins.trend && (
+                    <span className="inline-flex mt-2 rounded-full bg-green-50 dark:bg-green-950/30 px-2 py-0.5 text-xs font-medium text-green-600">
+                      {ins.trend}
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Top Students */}

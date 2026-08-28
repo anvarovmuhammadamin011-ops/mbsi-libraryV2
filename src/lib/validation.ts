@@ -27,6 +27,12 @@ export const ratingSchema = z.object({
   rating: z.number().int().min(1).max(5),
 });
 
+export const reviewSchema = z.object({
+  bookId: z.string().min(1),
+  rating: z.number().int().min(1).max(5),
+  text: z.string().min(3, "Sharh juda qisqa").max(2000, "Sharh juda uzun"),
+});
+
 export const bookmarkSchema = z.object({
   page: z.number().int().min(1),
   note: z.string().max(1000).optional(),

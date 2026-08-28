@@ -8,7 +8,11 @@ import {
   ArrowRight,
   Search,
   LayoutGrid,
+  Flame,
 } from "lucide-react";
+import { getAiRecommendations, getSmartDiscoverySections } from "@/lib/server/ai-recommendations";
+import { ReadingGoalCard } from "@/components/reading-goal-card";
+import { computeStreak } from "@/lib/server/reading";
 
 export const dynamic = "force-dynamic";
 
@@ -133,6 +137,16 @@ export default async function HomePage() {
 
   const displayName = user?.name?.split(" ")[0] || sessionUser?.name?.split(" ")[0] || "Reader";
 
+  const streakSessions = userId
+    ? await prisma.readingSession.findMany({ where: { userId }, select: { startedAt: true } })
+    : [];
+  const streak = computeStreak(streakSessions.map((s) => s.startedAt));
+
+  const aiRecs = userId ? await getAiRecommendations(userId, 6) : [];
+  const smart = userId
+    ? await getSmartDiscoverySections(userId)
+    : { becauseYouRead: null, continueJourney: null, youMayAlsoLike: [] as any[] };
+
   return (
     <div className="space-y-6 md:space-y-8 animate-fade-in pb-20 md:pb-6 max-w-2xl mx-auto md:max-w-4xl lg:max-w-5xl">
       {/* ═══ HERO ═══ */}
@@ -154,7 +168,88 @@ export default async function HomePage() {
           <Search size={18} className="shrink-0 text-muted-foreground" />
           <span>Search books, authors, categories...</span>
         </Link>
+        {streak > 0 && (
+          <div className="inline-flex items-center gap-1.5 rounded-full bg-orange-50 dark:bg-orange-950/20 px-3 py-1 text-xs font-medium text-orange-600 dark:text-orange-400 w-fit">
+            <Flame size={12} /> {streak} Day Streak
+          </div>
+        )}
       </div>
+
+      {/* ═══ READING GOAL — Phase 5 ═══ */}
+      <ReadingGoalCard />
+
+      {/* ═══ AI RECOMMENDATIONS — Phase 5 ═══ */}
+      {aiRecs.length > 0 && (
+        <section>
+          <h2 className="text-base md:text-lg font-semibold text-foreground mb-3 flex items-center gap-2">
+            ✨ Recommended for you
+          </h2>
+          <p className="text-xs text-muted-foreground mb-3">
+            {aiRecs[0]?.reason ?? "Sizning o'qish tarixingiz asosida"}
+          </p>
+          <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-thin snap-x snap-mandatory md:mx-0 md:px-0 md:overflow-visible md:flex-wrap md:snap-none">
+            {aiRecs.map(({ book, reason }) => {
+              const avg = (book as any).averageRating ?? 0;
+              return (
+                <Link
+                  key={book.id}
+                  href={`/books/${book.slug}`}
+                  className="group shrink-0 snap-start w-[140px] md:w-[150px] lg:w-[160px]"
+                >
+                  <div className="relative aspect-[3/4] w-full overflow-hidden rounded-xl bg-muted">
+                    {book.coverUrl ? (
+                      <Image src={book.coverUrl} alt={book.title} fill className="object-cover group-hover:scale-[1.02] transition-transform" sizes="160px" />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-violet-500/10 to-indigo-500/10">
+                        <BookOpen size={28} className="text-violet-500/40" />
+                      </div>
+                    )}
+                  </div>
+                  <div className="pt-2">
+                    <p className="text-xs md:text-sm font-semibold line-clamp-2 leading-tight">{book.title}</p>
+                    <p className="text-xs text-muted-foreground truncate">{book.author?.name}</p>
+                    <p className="text-[11px] text-violet-600 dark:text-violet-400 mt-1 line-clamp-2">{reason}</p>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        </section>
+      )}
+
+      {/* ═══ SMART DISCOVERY — Phase 5 ═══ */}
+      {smart.becauseYouRead && (
+        <section>
+          <h2 className="text-base md:text-lg font-semibold text-foreground mb-3">
+            ✨ Because you read {smart.becauseYouRead.category}
+          </h2>
+          <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-thin snap-x snap-mandatory md:mx-0 md:px-0">
+            {smart.becauseYouRead.books.map(({ book }: any) => (
+              <Link key={book.id} href={`/books/${book.slug}`} className="shrink-0 snap-start w-[140px] group">
+                <div className="relative aspect-[3/4] overflow-hidden rounded-xl bg-muted">
+                  {book.coverUrl ? <Image src={book.coverUrl} alt={book.title} fill className="object-cover" sizes="140px" /> : <div className="flex h-full items-center justify-center bg-muted"><BookOpen size={28} className="text-muted-foreground/30" /></div>}
+                </div>
+                <p className="text-xs font-semibold line-clamp-2 mt-2">{book.title}</p>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+      {smart.youMayAlsoLike && smart.youMayAlsoLike.length > 0 && (
+        <section>
+          <h2 className="text-base md:text-lg font-semibold mb-3">✨ You may also like</h2>
+          <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-thin snap-x snap-mandatory md:mx-0 md:px-0">
+            {smart.youMayAlsoLike.map(({ book }: any) => (
+              <Link key={book.id} href={`/books/${book.slug}`} className="shrink-0 snap-start w-[140px] group">
+                <div className="relative aspect-[3/4] overflow-hidden rounded-xl bg-muted">
+                  {book.coverUrl ? <Image src={book.coverUrl} alt={book.title} fill className="object-cover" sizes="140px" /> : <div className="flex h-full items-center justify-center bg-muted"><BookOpen size={28} className="text-muted-foreground/30" /></div>}
+                </div>
+                <p className="text-xs font-semibold line-clamp-2 mt-2">{book.title}</p>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* ═══ CONTINUE READING ═══ */}
       {readingProgress.length > 0 && (

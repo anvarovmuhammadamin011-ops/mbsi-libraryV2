@@ -10,6 +10,7 @@ import {
   FavoriteHeartButton,
   LibraryToggleButton,
 } from "@/components/book-detail-client";
+import { ReviewSection } from "@/components/review-section";
 
 export const dynamic = "force-dynamic";
 
@@ -53,6 +54,20 @@ export default async function BookDetailPage({
   const avg = book.averageRating ?? 0;
   const readerCount = (book as any).readerCount ?? (book as any).totalReaders ?? 0;
 
+  const hasStarted = !!(await prisma.readingProgress.findUnique({
+    where: { userId_bookId: { userId: user.id, bookId: book.id } },
+  }));
+  const reviews = await prisma.review.findMany({
+    where: { bookId: book.id, isHidden: false },
+    include: { user: { select: { id: true, name: true, avatar: true } } },
+    orderBy: { createdAt: "desc" },
+    take: 50,
+  });
+  const userReview = reviews.find((r) => r.userId === user.id) ?? null;
+  const userRating = await prisma.rating.findUnique({
+    where: { userId_bookId: { userId: user.id, bookId: book.id } },
+  });
+
   return (
     <div className="mx-auto max-w-md md:max-w-3xl lg:max-w-4xl px-4 pb-10 animate-fade-in">
       {/* ═══ MOBILE LAYOUT (md below) ═══ */}
@@ -62,7 +77,11 @@ export default async function BookDetailPage({
           avg={avg}
           readerCount={readerCount}
           fav={fav}
-          ratings={ratings}
+          hasStarted={hasStarted}
+          reviews={reviews}
+          userReview={userReview}
+          userRating={userRating?.rating ?? null}
+          currentUserId={user.id}
         />
       </div>
 
@@ -115,7 +134,7 @@ export default async function BookDetailPage({
               <div className="flex items-center gap-1">
                 <Star size={16} className="fill-yellow-400 text-yellow-400" />
                 <span className="font-semibold text-foreground">
-                  {formatRating(avg)}
+                  {formatRating(avg)} / 5
                 </span>
               </div>
               <span>·</span>
@@ -171,7 +190,7 @@ export default async function BookDetailPage({
                   <p className="text-xs text-muted-foreground">Rating</p>
                   <p className="flex items-center gap-1 text-sm font-medium text-foreground">
                     <Star size={12} className="fill-yellow-400 text-yellow-400" />
-                    {formatRating(avg)}
+                    {formatRating(avg)} / 5
                   </p>
                 </div>
               </div>
@@ -179,51 +198,14 @@ export default async function BookDetailPage({
           </div>
         </div>
 
-        {/* Reviews - below two columns */}
-        <div className="mt-8">
-          <h2 className="text-base font-semibold text-foreground">Reviews</h2>
-          {ratings.length === 0 ? (
-            <p className="mt-3 text-sm text-muted-foreground">
-              Hali sharhlar yo&apos;q.
-            </p>
-          ) : (
-            <div className="mt-3 space-y-3 md:grid md:grid-cols-2 md:gap-3 md:space-y-0">
-              {ratings.map((r) => (
-                <div
-                  key={r.id}
-                  className="flex gap-3 rounded-xl border border-border p-3"
-                >
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-medium text-primary">
-                    {r.user.name?.[0]?.toUpperCase() ?? "?"}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between gap-2">
-                      <p className="truncate text-sm font-medium text-foreground">
-                        {r.user.name}
-                      </p>
-                      <div className="flex shrink-0 items-center gap-0.5">
-                        {Array.from({ length: 5 }).map((_, i) => (
-                          <Star
-                            key={i}
-                            size={12}
-                            className={
-                              i < r.rating
-                                ? "fill-yellow-400 text-yellow-400"
-                                : "text-muted-foreground/30"
-                            }
-                          />
-                        ))}
-                      </div>
-                    </div>
-                    <p className="mt-0.5 text-xs text-muted-foreground">
-                      {new Date(r.createdAt).toLocaleDateString("uz-UZ")}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+        <ReviewSection
+          bookId={book.id}
+          currentUserId={user.id}
+          hasStarted={hasStarted}
+          initialReviews={reviews as any}
+          initialUserReview={userReview as any}
+          initialUserRating={userRating?.rating ?? null}
+        />
       </div>
     </div>
   );
@@ -236,13 +218,21 @@ function MobileBookDetail({
   avg,
   readerCount,
   fav,
-  ratings,
+  hasStarted,
+  reviews,
+  userReview,
+  userRating,
+  currentUserId,
 }: {
   book: any;
   avg: number;
   readerCount: number;
   fav: boolean;
-  ratings: any[];
+  hasStarted: boolean;
+  reviews: any[];
+  userReview: any;
+  userRating: number | null;
+  currentUserId: string;
 }) {
   return (
     <>
@@ -287,7 +277,7 @@ function MobileBookDetail({
         <div className="mt-2 flex items-center gap-1.5 text-sm text-muted-foreground">
           <Star size={14} className="fill-yellow-400 text-yellow-400" />
           <span className="font-medium text-foreground">
-            {formatRating(avg)}
+            {formatRating(avg)} / 5
           </span>
           <span>·</span>
           <span>{formatReaders(readerCount)} readers</span>
@@ -349,51 +339,14 @@ function MobileBookDetail({
         </div>
       </div>
 
-      {/* Reviews */}
-      <div className="mt-6">
-        <h2 className="text-base font-semibold text-foreground">Reviews</h2>
-        {ratings.length === 0 ? (
-          <p className="mt-3 text-sm text-muted-foreground">
-            Hali sharhlar yo&apos;q.
-          </p>
-        ) : (
-          <div className="mt-3 space-y-3">
-            {ratings.map((r) => (
-              <div
-                key={r.id}
-                className="flex gap-3 rounded-xl border border-border p-3"
-              >
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-medium text-primary">
-                  {r.user.name?.[0]?.toUpperCase() ?? "?"}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between gap-2">
-                    <p className="truncate text-sm font-medium text-foreground">
-                      {r.user.name}
-                    </p>
-                    <div className="flex shrink-0 items-center gap-0.5">
-                      {Array.from({ length: 5 }).map((_, i) => (
-                        <Star
-                          key={i}
-                          size={12}
-                          className={
-                            i < r.rating
-                              ? "fill-yellow-400 text-yellow-400"
-                              : "text-muted-foreground/30"
-                          }
-                        />
-                      ))}
-                    </div>
-                  </div>
-                  <p className="mt-0.5 text-xs text-muted-foreground">
-                    {new Date(r.createdAt).toLocaleDateString("uz-UZ")}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+      <ReviewSection
+        bookId={book.id}
+        currentUserId={currentUserId}
+        hasStarted={hasStarted}
+        initialReviews={reviews as any}
+        initialUserReview={userReview as any}
+        initialUserRating={userRating}
+      />
     </>
   );
 }

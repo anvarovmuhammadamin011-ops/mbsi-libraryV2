@@ -2,6 +2,7 @@ import { getSessionUser } from "@/lib/server/auth";
 import { prisma } from "@/lib/db";
 import { LibraryTabs, type ReadingItem, type SavedItem, type FinishedItem } from "@/components/library-tabs";
 import { ReadingJourneyCard } from "@/components/reading-journey-card";
+import { getUserAchievements } from "@/lib/server/achievements";
 
 export const dynamic = "force-dynamic";
 
@@ -9,7 +10,7 @@ export default async function LibraryPage() {
   const user = await getSessionUser();
   if (!user) return null;
 
-  const [readingRows, favoriteRows, finishedRows, sessions, recentSessions] = await Promise.all([
+  const [readingRows, favoriteRows, finishedRows, sessions, recentSessions, achievements, pagesAgg] = await Promise.all([
     prisma.readingProgress.findMany({
       where: { userId: user.id, completedAt: null },
       include: { book: { include: { author: true } } },
@@ -38,6 +39,11 @@ export default async function LibraryPage() {
         },
       },
       select: { duration: true },
+    }),
+    getUserAchievements(user.id),
+    prisma.readingProgress.aggregate({
+      where: { userId: user.id },
+      _sum: { currentPage: true },
     }),
   ]);
 
@@ -121,6 +127,44 @@ export default async function LibraryPage() {
         monthHours={hours}
         monthMinutes={minutes}
       />
+
+      {/* Statistics — Phase 4 */}
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+        <div className="rounded-xl bg-muted/50 p-3 text-center">
+          <p className="text-lg font-bold text-foreground">{readingRows.length + finishedRows.length}</p>
+          <p className="text-xs text-muted-foreground">Books started</p>
+        </div>
+        <div className="rounded-xl bg-muted/50 p-3 text-center">
+          <p className="text-lg font-bold text-foreground">{finishedRows.length}</p>
+          <p className="text-xs text-muted-foreground">Books completed</p>
+        </div>
+        <div className="rounded-xl bg-muted/50 p-3 text-center">
+          <p className="text-lg font-bold text-foreground">{(pagesAgg._sum.currentPage ?? 0).toLocaleString()}</p>
+          <p className="text-xs text-muted-foreground">Pages read</p>
+        </div>
+        <div className="rounded-xl bg-muted/50 p-3 text-center">
+          <p className="text-lg font-bold text-foreground">{Math.floor(sessions.reduce((s, x) => s + (x.duration ?? 0), 0) / 60)}m</p>
+          <p className="text-xs text-muted-foreground">Reading time</p>
+        </div>
+      </div>
+
+      {/* Achievements — Phase 4 */}
+      <div>
+        <h2 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">🏆 Achievements</h2>
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+          {achievements.map((a) => (
+            <div
+              key={a.id}
+              className={`rounded-xl border p-3 text-center ${a.unlocked ? "bg-amber-50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-900" : "bg-muted/30 border-border opacity-60"}`}
+            >
+              <div className="text-2xl mb-1">{a.icon}</div>
+              <p className="text-xs font-semibold text-foreground">{a.title}</p>
+              <p className="text-[11px] text-muted-foreground">{a.description}</p>
+              <p className="text-xs font-medium text-primary mt-1">{a.progress}</p>
+            </div>
+          ))}
+        </div>
+      </div>
 
       <LibraryTabs reading={reading} saved={saved} finished={finished} />
     </div>

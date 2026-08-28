@@ -11,6 +11,8 @@ import {
   ChevronLeft,
   ChevronRight,
   Tags,
+  MessageSquare,
+  Sparkles,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -24,12 +26,14 @@ interface NavItem {
   icon: React.ComponentType<{ size?: number; className?: string }>;
 }
 
-// Phase 2 — Admin navigation: Dashboard, Books, Categories, Users, Settings
+// Phase 5 — Admin navigation: Dashboard, Books, Categories, Users, Reviews, AI Assistant, Settings
 const NAV_ITEMS: NavItem[] = [
   { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
   { label: "Books", href: "/admin/books", icon: BookMarked },
   { label: "Categories", href: "/admin/categories", icon: Tags },
   { label: "Users", href: "/admin/users", icon: Users },
+  { label: "Reviews", href: "/admin/reviews", icon: MessageSquare },
+  { label: "AI Assistant", href: "/admin/ai-assistant", icon: Sparkles },
   { label: "Settings", href: "/admin/settings", icon: Settings },
 ];
 

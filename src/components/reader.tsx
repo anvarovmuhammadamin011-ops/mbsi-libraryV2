@@ -17,6 +17,7 @@ import {
   MoreVertical,
   Type,
 } from "lucide-react";
+import { AiAssistant } from "@/components/ai-assistant";
 
 interface Props {
   bookId: string;
@@ -592,6 +593,7 @@ export function Reader({ bookId, title, totalPages, pdfUrl, initialPage }: Props
           </Button>
         </div>
       </footer>
+      <AiAssistant />
     </div>
   );
 }
