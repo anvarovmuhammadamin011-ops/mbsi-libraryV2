@@ -71,6 +71,11 @@ export async function savePdf(file: File): Promise<SavedFile> {
 }
 
 export async function readPrivate(key: string): Promise<Buffer> {
+  if (key.startsWith("http://") || key.startsWith("https://")) {
+    const res = await fetch(key, { headers: { "User-Agent": "MBSI-Library/1.0", Referer: "https://www.ziyouz.com/" } });
+    if (!res.ok) throw new Error("FETCH_FAILED");
+    return Buffer.from(await res.arrayBuffer());
+  }
   const safe = key.replace(/\\/g, "/").replace(/\.\.+/g, "");
   const full = path.join(PRIVATE_ROOT, safe);
   try {
