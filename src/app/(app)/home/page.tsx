@@ -11,7 +11,6 @@ import {
   Flame,
 } from "lucide-react";
 import { getAiRecommendations, getSmartDiscoverySections } from "@/lib/server/ai-recommendations";
-import { ReadingGoalCard } from "@/components/reading-goal-card";
 import { computeStreak } from "@/lib/server/reading";
 
 export const dynamic = "force-dynamic";
@@ -174,9 +173,6 @@ export default async function HomePage() {
           </div>
         )}
       </div>
-
-      {/* ═══ READING GOAL — Phase 5 ═══ */}
-      <ReadingGoalCard />
 
       {/* ═══ AI RECOMMENDATIONS — Phase 5 ═══ */}
       {aiRecs.length > 0 && (

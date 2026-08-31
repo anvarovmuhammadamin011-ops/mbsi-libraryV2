@@ -2,6 +2,8 @@ import { getSessionUser } from "@/lib/server/auth";
 import { prisma } from "@/lib/db";
 import { computeStreak, getPersonalStats } from "@/lib/server/reading";
 import { getUserAchievements } from "@/lib/server/achievements";
+import { ReadingGoalCard } from "@/components/reading-goal-card";
+import { ReadingJourneyCard } from "@/components/reading-journey-card";
 import {
   User,
   BookOpen,
@@ -52,7 +54,7 @@ export default async function ProfilePage() {
   const user = await getSessionUser();
   if (!user) return null;
 
-  const [completedCount, sessions, ratingAgg, personalStats, achievements] = await Promise.all([
+  const [completedCount, sessions, ratingAgg, personalStats, achievements, monthSessions] = await Promise.all([
     prisma.readingProgress.count({
       where: { userId: user.id, completedAt: { not: null } },
     }),
@@ -66,6 +68,13 @@ export default async function ProfilePage() {
     }),
     getPersonalStats(user.id, user.role),
     getUserAchievements(user.id),
+    prisma.readingSession.findMany({
+      where: {
+        userId: user.id,
+        startedAt: { gte: new Date(new Date().getFullYear(), new Date().getMonth(), 1) },
+      },
+      select: { duration: true },
+    }),
   ]);
 
   const totalBooks = completedCount;
@@ -76,6 +85,9 @@ export default async function ProfilePage() {
   const pagesRead = personalStats.totalPages;
   const readingTimeHours = Math.floor(personalStats.readingTime / 60);
   const readingTimeMins = personalStats.readingTime % 60;
+  const monthSeconds = monthSessions.reduce((sum, s) => sum + (s.duration ?? 0), 0);
+  const monthHours = Math.floor(monthSeconds / 3600);
+  const monthMinutes = Math.floor((monthSeconds % 3600) / 60);
 
   return (
     <div className="max-w-md md:max-w-lg lg:max-w-xl mx-auto animate-fade-in">
@@ -120,6 +132,14 @@ export default async function ProfilePage() {
             <span className="text-xs text-muted-foreground">Avg Rating</span>
           </div>
         </div>
+
+        <div className="h-px bg-border" />
+
+        <div className="px-4 py-4">
+          <ReadingJourneyCard booksCompleted={totalBooks} streak={streak} monthHours={monthHours} monthMinutes={monthMinutes} />
+        </div>
+
+        <div className="h-px bg-border" />
 
         {/* Reading Statistics — Phase 4 */}
         <div className="px-4 py-4">
@@ -177,6 +197,16 @@ export default async function ProfilePage() {
               </div>
             ))}
           </div>
+        </div>
+
+        <div className="h-px bg-border" />
+
+        {/* Personal Plan — Phase 5: o'quvchi o'z planini tuza oladi */}
+        <div className="px-4 py-4">
+          <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+            <TrendingUp size={14} className="text-primary" /> Personal Plan
+          </h3>
+          <ReadingGoalCard />
         </div>
 
         <div className="h-px bg-border" />
