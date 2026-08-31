@@ -210,7 +210,7 @@ function extractImageData(
  * Detect image MIME type from magic bytes.
  */
 function detectImageMime(bytes: Uint8Array): string | null {
-  if (bytes.length < 4) return null;
+  if (bytes.length < 3) return null;
 
   // JPEG: FF D8 FF
   if (bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff) {
@@ -219,6 +219,7 @@ function detectImageMime(bytes: Uint8Array): string | null {
 
   // PNG: 89 50 4E 47
   if (
+    bytes.length >= 4 &&
     bytes[0] === 0x89 &&
     bytes[1] === 0x50 &&
     bytes[2] === 0x4e &&
