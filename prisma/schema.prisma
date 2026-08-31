@@ -37,6 +37,7 @@ model User {
   ratings     Rating[]
   reviews     Review[]
   readingGoals ReadingGoal[]
+  userMissions UserMission[]
   auditLogs   AuditLog[]
 
   @@index([role])
@@ -97,6 +98,7 @@ model Book {
   ratings        Rating[]
   reviews        Review[]
   recommendations Recommendation[]
+  content        BookContent?
 
   @@index([title])
   @@index([authorId])
@@ -226,6 +228,37 @@ model ReadingGoal {
   @@map("reading_goals")
 }
 
+model Mission {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  targetType  String   // PAGES | BOOKS
+  target      Int
+  reward      Int      @default(10)
+  startDate   DateTime @map("start_date")
+  endDate     DateTime @map("end_date")
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  userMissions UserMission[]
+
+  @@map("missions")
+}
+
+model UserMission {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  missionId String   @map("mission_id")
+  claimedAt DateTime @default(now()) @map("claimed_at")
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  mission Mission @relation(fields: [missionId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, missionId])
+  @@map("user_missions")
+}
+
 model Banner {
   id          String   @id @default(cuid())
   title       String
@@ -282,4 +315,25 @@ model StoredFile {
   createdAt DateTime @default(now()) @map("created_at")
 
   @@map("stored_files")
+}
+
+model BookContent {
+  id              String   @id @default(cuid())
+  bookId          String   @unique @map("book_id")
+  extractedText   String?  @map("extracted_text") @db.Text
+  translatedText  String?  @map("translated_text") @db.Text
+  summary         String?  @db.Text
+  keyPoints       Json?    @map("key_points")
+  highlights      Json?
+  tableOfContents Json?    @map("table_of_contents")
+  keyTerms        Json?    @map("key_terms")
+  status          String   @default("pending") // pending | processing | completed | error
+  errorMessage    String?  @map("error_message")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  book Book @relation(fields: [bookId], references: [id], onDelete: Cascade)
+
+  @@index([bookId])
+  @@map("book_contents")
 }

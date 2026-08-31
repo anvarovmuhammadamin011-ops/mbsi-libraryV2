@@ -34,7 +34,9 @@ import {
   Upload,
   Pencil,
   Loader2,
+  Sparkles,
 } from "lucide-react";
+import { BookExtractButton } from "@/components/book-extract-button";
 
 interface BookRow {
   id: string;
@@ -456,6 +458,7 @@ export function AdminBooksTable({ books, categories }: Props) {
                     </td>
                     <td className="px-4 py-3 text-right">
                       <div className="flex items-center justify-end gap-1">
+                        <BookExtractButton bookId={b.id} bookTitle={b.title} />
                         <Button
                           variant="ghost"
                           size="icon"
