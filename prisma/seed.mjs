@@ -60,187 +60,14 @@ const CATEGORIES = [
   { id: "cat-8", name: "Tarix", slug: "tarix", description: "Tarixiy kitoblar", icon: "📜" },
 ];
 
-const BOOKS = [
-  {
-    id: "book-1", title: "Atomic Habits", description: "Atomic Habits by James Clear is a revolutionary book that teaches you how to build good habits and break bad ones. The book explains how habits shape your identity and how you can use the Four Laws of Behavior Change to build better habits that stick.",
-    coverUrl: "/covers/atomic-habits.svg", pdfUrl: "pdfs/book-1.pdf", language: "EN", totalPages: 15, authorId: "author-1", categoryId: "cat-7", isPublished: true,
-  },
-  {
-    id: "book-2", title: "O'tkan Kunlar", description: "Abdulla Qodiriyning 'O'tkan Kunlar' romani o'zbek adabiyotining eng mashhur asarlaridan biri. U 1920-yillardagi O'zbekiston hayotini aks ettiradi.",
-    coverUrl: "/covers/otkan-kunlar.svg", pdfUrl: "pdfs/book-2.pdf", language: "UZ", totalPages: 12, authorId: "author-3", categoryId: "cat-3", isPublished: true,
-  },
-  {
-    id: "book-3", title: "Fizika 9-sinf", description: "O'zbekiston Respublikasi oliy ta'lim, fan va innovatsiyalar vazirligi tomonidan tasdiqlangan darslik.",
-    coverUrl: "/covers/fizika-9.svg", pdfUrl: "pdfs/book-3.pdf", language: "UZ", totalPages: 20, authorId: "author-10", categoryId: "cat-4", isPublished: true,
-  },
-  {
-    id: "book-4", title: "Jismoniy tarbiya 8-sinf", description: "Maktablarda jismoniy tarbiya fani uchun darslik.",
-    coverUrl: "/covers/jismoniy-tarbiya.svg", pdfUrl: "pdfs/book-4.pdf", language: "UZ", totalPages: 15, authorId: "author-10", categoryId: "cat-4", isPublished: true,
-  },
-  {
-    id: "book-5", title: "A Brief History of Time", description: "Stephen Hawking's bestselling book explains complex cosmological concepts to the general reader, covering topics from the Big Bang to black holes.",
-    coverUrl: "/covers/brief-history.svg", pdfUrl: "pdfs/book-5.pdf", language: "EN", totalPages: 18, authorId: "author-5", categoryId: "cat-1", isPublished: true,
-  },
-  {
-    id: "book-6", title: "The Monk Who Sold His Ferrari", description: "A fable about fulfilling your dreams and reaching your destiny. Robin Sharma tells the story of a lawyer who gives up everything to find true happiness.",
-    coverUrl: "/covers/monk-ferrari.svg", pdfUrl: "pdfs/book-6.pdf", language: "EN", totalPages: 16, authorId: "author-6", categoryId: "cat-7", isPublished: true,
-  },
-  {
-    id: "book-7", title: "How to Win Friends and Influence People", description: "Dale Carnegie's timeless guide to interpersonal relationships, communication, and leadership skills.",
-    coverUrl: "/covers/win-friends.svg", pdfUrl: "pdfs/book-7.pdf", language: "EN", totalPages: 857, authorId: "author-7", categoryId: "cat-7", isPublished: true,
-  },
-  {
-    id: "book-8", title: "Word Power Made Easy", description: "Norman Lewis's classic vocabulary builder that has helped millions improve their English vocabulary and communication skills.",
-    coverUrl: "/covers/word-power.svg", pdfUrl: "pdfs/book-8.pdf", language: "EN", totalPages: 22, authorId: "author-8", categoryId: "cat-6", isPublished: true,
-  },
-  {
-    id: "book-9", title: "The Art of War", description: "Sun Tzu's ancient Chinese treatise on military strategy, widely used in business and leadership.",
-    coverUrl: "/covers/alchemist.svg", pdfUrl: "pdfs/book-9.pdf", language: "EN", totalPages: 25, authorId: "author-9", categoryId: "cat-2", isPublished: true,
-  },
-  {
-    id: "book-10", title: "Matematika 7-sinf", description: "O'zbekiston maktablari uchun matematika darslik.",
-    coverUrl: "/covers/matematika-7.svg", pdfUrl: "pdfs/book-10.pdf", language: "UZ", totalPages: 18, authorId: "author-10", categoryId: "cat-5", isPublished: true,
-  },
-  {
-    id: "book-11", title: "Jannatda Ikki Boshli Qush", description: "Chingiz Aytmatovning mashhur asari. Qadimiy urf-odatlar va zamonaviy hayot o'rtasidagi ziddiyat haqida.",
-    coverUrl: "/covers/jannatda-qush.svg", pdfUrl: "pdfs/book-11.pdf", language: "UZ", totalPages: 14, authorId: "author-2", categoryId: "cat-2", isPublished: true,
-  },
-  {
-    id: "book-12", title: "Dunyoning Ishlari", description: "O'tkir Hoshimovning 'Dunyoning Ishlari' romani — o'zbek adabiyotining yorqin namunasi.",
-    coverUrl: "/covers/dunyoning-ishlari.svg", pdfUrl: "pdfs/book-12.pdf", language: "UZ", totalPages: 20, authorId: "author-4", categoryId: "cat-3", isPublished: true,
-  },
-  {
-    id: "book-13", title: "Fizika 8-sinf", description: "O'zbekiston Respublikasi oliy ta'lim, fan va innovatsiyalar vazirligi tomonidan tasdiqlangan 8-sinf fizika darsligi.",
-    coverUrl: "/covers/fizika-8.svg", pdfUrl: "pdfs/book-13.pdf", language: "UZ", totalPages: 17, authorId: "author-10", categoryId: "cat-4", isPublished: true,
-  },
-  {
-    id: "book-14", title: "Matematika 9-sinf", description: "O'zbekiston maktablari uchun 9-sinf matematika darslik.",
-    coverUrl: "/covers/matematika-9.svg", pdfUrl: "pdfs/book-14.pdf", language: "UZ", totalPages: 19, authorId: "author-10", categoryId: "cat-5", isPublished: true,
-  },
-  {
-    id: "book-15", title: "Ingliz tili 5-sinf", description: "Maktablarda ingliz tili fani uchun darslik.",
-    coverUrl: "/covers/ingliz-tili-5.svg", pdfUrl: "pdfs/book-15.pdf", language: "UZ", totalPages: 12, authorId: "author-10", categoryId: "cat-6", isPublished: true,
-  },
-  {
-    id: "book-16", title: "Deep Work", description: "Cal Newport explores how focused work can lead to professional success and personal fulfillment in an increasingly distracted world.",
-    coverUrl: "/covers/deep-work.svg", pdfUrl: "pdfs/book-16.pdf", language: "EN", totalPages: 20, authorId: "author-6", categoryId: "cat-7", isPublished: true,
-  },
-  {
-    id: "book-17", title: "O'zbekiston Tarixi", description: "O'zbekistonning boy tarixi haqida batafsil kitob.",
-    coverUrl: "/covers/ozbek-tarixi.svg", pdfUrl: "pdfs/book-17.pdf", language: "UZ", totalPages: 25, authorId: "author-10", categoryId: "cat-8", isPublished: true,
-  },
-  {
-    id: "book-18", title: "Think and Grow Rich", description: "Napoleon Hill's classic personal development and self-help book that has helped millions achieve financial success.",
-    coverUrl: "/covers/think-grow-rich.svg", pdfUrl: "pdfs/book-18.pdf", language: "EN", totalPages: 1268, authorId: "author-7", categoryId: "cat-7", isPublished: true,
-  },
-  {
-    id: "book-19", title: "Rus tili 6-sinf", description: "Maktablarda rus tili fani uchun darslik.",
-    coverUrl: "/covers/rus-tili-6.svg", pdfUrl: "pdfs/book-19.pdf", language: "RU", totalPages: 16, authorId: "author-10", categoryId: "cat-6", isPublished: true,
-  },
-  {
-    id: "book-20", title: "Biologiya 7-sinf", description: "O'zbekiston maktablari uchun biologiya darslik.",
-    coverUrl: "/covers/biologiya-7.svg", pdfUrl: "pdfs/book-20.pdf", language: "UZ", totalPages: 18, authorId: "author-10", categoryId: "cat-1", isPublished: true,
-  },
-  {
-    id: "book-21", title: "8-sinf O'zbekiston tarixi", description: "O'zbekiston Respublikasi maktablari uchun 8-sinf tarix darsligi. 2019-yil nashri.",
-    coverUrl: "/covers/ozbek-tarixi.svg", pdfUrl: "pdfs/book-21.pdf", language: "UZ", totalPages: 160, authorId: "author-10", categoryId: "cat-8", isPublished: true,
-  },
-  {
-    id: "book-22", title: "9-sinf O'zbekiston tarixi", description: "O'zbekiston Respublikasi maktablari uchun 9-sinf tarix darsligi. 2019-yil nashri.",
-    coverUrl: "/covers/ozbek-tarixi.svg", pdfUrl: "pdfs/book-22.pdf", language: "UZ", totalPages: 120, authorId: "author-10", categoryId: "cat-8", isPublished: true,
-  },
-  {
-    id: "book-23", title: "8-sinf Jahon tarixi", description: "O'zbekiston Respublikasi maktablari uchun 8-sinf jahon tarixi darsligi. 2019-yil nashri.",
-    coverUrl: "/covers/ozbek-tarixi.svg", pdfUrl: "pdfs/book-23.pdf", language: "UZ", totalPages: 160, authorId: "author-10", categoryId: "cat-8", isPublished: true,
-  },
-  {
-    id: "book-24", title: "5-sinf Tarixdan hikoyalar", description: "Maktabgacha va boshlang'ich ta'lim uchun tarixdan hikoyalar.",
-    coverUrl: "/covers/ozbek-tarixi.svg", pdfUrl: "pdfs/book-24.pdf", language: "UZ", totalPages: 90, authorId: "author-10", categoryId: "cat-8", isPublished: true,
-  },
-];
+// Demo kitoblar o'chirildi - faqat real kitoblar qo'shilishi kerak
+const BOOKS = [];
 
-const READING_PROGRESS = [
-  { userId: "user-1", bookId: "book-1", currentPage: 2, progress: 33, startedAt: "2025-09-10T08:00:00Z", lastReadAt: "2025-09-20T14:30:00Z", completedAt: null },
-  { userId: "user-1", bookId: "book-2", currentPage: 3, progress: 60, startedAt: "2025-09-05T10:00:00Z", lastReadAt: "2025-09-19T16:00:00Z", completedAt: null },
-  { userId: "user-1", bookId: "book-3", currentPage: 1, progress: 20, startedAt: "2025-09-15T09:00:00Z", lastReadAt: "2025-09-18T11:00:00Z", completedAt: null },
-  { userId: "user-2", bookId: "book-1", currentPage: 4, progress: 67, startedAt: "2025-09-08T12:00:00Z", lastReadAt: "2025-09-20T18:00:00Z", completedAt: null },
-  { userId: "user-3", bookId: "book-9", currentPage: 5, progress: 100, startedAt: "2025-09-01T10:00:00Z", lastReadAt: "2025-09-15T20:00:00Z", completedAt: "2025-09-15T20:00:00Z" },
-  { userId: "user-2", bookId: "book-5", currentPage: 2, progress: 40, startedAt: "2025-09-12T08:00:00Z", lastReadAt: "2025-09-20T10:00:00Z", completedAt: null },
-  { userId: "user-3", bookId: "book-7", currentPage: 2, progress: 50, startedAt: "2025-09-14T09:00:00Z", lastReadAt: "2025-09-19T15:00:00Z", completedAt: null },
-  { userId: "user-4", bookId: "book-6", currentPage: 5, progress: 100, startedAt: "2025-09-03T07:00:00Z", lastReadAt: "2025-09-10T20:00:00Z", completedAt: "2025-09-10T20:00:00Z" },
-  { userId: "user-4", bookId: "book-11", currentPage: 3, progress: 60, startedAt: "2025-09-11T10:00:00Z", lastReadAt: "2025-09-18T12:00:00Z", completedAt: null },
-  { userId: "user-5", bookId: "book-16", currentPage: 3, progress: 60, startedAt: "2025-09-07T08:00:00Z", lastReadAt: "2025-09-20T16:00:00Z", completedAt: null },
-  { userId: "user-6", bookId: "book-8", currentPage: 1, progress: 25, startedAt: "2025-09-09T14:00:00Z", lastReadAt: "2025-09-19T09:00:00Z", completedAt: null },
-  { userId: "user-7", bookId: "book-18", currentPage: 2, progress: 40, startedAt: "2025-09-13T11:00:00Z", lastReadAt: "2025-09-18T17:00:00Z", completedAt: null },
-];
-
-const BOOKMARKS = [
-  { userId: "user-1", bookId: "book-1", page: 50, note: "Asosiy g'oya", createdAt: "2025-09-12T10:00:00Z" },
-  { userId: "user-1", bookId: "book-1", page: 100, note: "4 qonun", createdAt: "2025-09-15T14:00:00Z" },
-  { userId: "user-1", bookId: "book-2", page: 45, note: null, createdAt: "2025-09-08T09:00:00Z" },
-  { userId: "user-2", bookId: "book-5", page: 30, note: "Big Bang", createdAt: "2025-09-13T08:00:00Z" },
-  { userId: "user-3", bookId: "book-7", page: 75, note: "Communication tips", createdAt: "2025-09-15T10:00:00Z" },
-  { userId: "user-4", bookId: "book-11", page: 40, note: null, createdAt: "2025-09-12T11:00:00Z" },
-  { userId: "user-5", bookId: "book-16", page: 100, note: "Deep work rules", createdAt: "2025-09-09T10:00:00Z" },
-];
-
-const FAVORITES = [
-  { userId: "user-1", bookId: "book-1", createdAt: "2025-09-10T08:00:00Z" },
-  { userId: "user-1", bookId: "book-2", createdAt: "2025-09-05T10:00:00Z" },
-  { userId: "user-1", bookId: "book-9", createdAt: "2025-09-16T09:00:00Z" },
-  { userId: "user-2", bookId: "book-9", createdAt: "2025-09-08T12:00:00Z" },
-  { userId: "user-2", bookId: "book-5", createdAt: "2025-09-12T08:00:00Z" },
-  { userId: "user-3", bookId: "book-7", createdAt: "2025-09-14T09:00:00Z" },
-  { userId: "user-3", bookId: "book-9", createdAt: "2025-09-01T10:00:00Z" },
-  { userId: "user-4", bookId: "book-6", createdAt: "2025-09-03T07:00:00Z" },
-  { userId: "user-5", bookId: "book-16", createdAt: "2025-09-07T08:00:00Z" },
-  { userId: "user-5", bookId: "book-18", createdAt: "2025-09-10T11:00:00Z" },
-];
-
-const RATINGS = [
-  { userId: "user-1", bookId: "book-1", rating: 5 },
-  { userId: "user-1", bookId: "book-2", rating: 5 },
-  { userId: "user-1", bookId: "book-3", rating: 4 },
-  { userId: "user-2", bookId: "book-1", rating: 4 },
-  { userId: "user-2", bookId: "book-5", rating: 5 },
-  { userId: "user-3", bookId: "book-9", rating: 5 },
-  { userId: "user-3", bookId: "book-7", rating: 4 },
-  { userId: "user-4", bookId: "book-6", rating: 5 },
-  { userId: "user-4", bookId: "book-11", rating: 4 },
-  { userId: "user-5", bookId: "book-16", rating: 4 },
-  { userId: "user-5", bookId: "book-18", rating: 5 },
-  { userId: "user-6", bookId: "book-8", rating: 4 },
-  { userId: "user-7", bookId: "book-18", rating: 4 },
-];
-
-// Reading sessions — generate realistic session data for ranking
-// Each user gets multiple sessions across different books/days
-const SESSIONS_DATA = [
-  // user-1
-  { userId: "user-1", bookId: "book-1", startPage: 1, endPage: 2, pagesRead: 2, duration: 720, startedAt: "2025-09-10T08:00:00Z" },
-  { userId: "user-1", bookId: "book-2", startPage: 1, endPage: 3, pagesRead: 3, duration: 1080, startedAt: "2025-09-05T10:00:00Z" },
-  { userId: "user-1", bookId: "book-3", startPage: 1, endPage: 1, pagesRead: 1, duration: 300, startedAt: "2025-09-15T09:00:00Z" },
-  { userId: "user-1", bookId: "book-7", startPage: 1, endPage: 4, pagesRead: 4, duration: 1200, startedAt: "2025-08-01T08:00:00Z" },
-  // user-2
-  { userId: "user-2", bookId: "book-1", startPage: 1, endPage: 4, pagesRead: 4, duration: 1440, startedAt: "2025-09-08T12:00:00Z" },
-  { userId: "user-2", bookId: "book-5", startPage: 1, endPage: 2, pagesRead: 2, duration: 600, startedAt: "2025-09-12T08:00:00Z" },
-  { userId: "user-2", bookId: "book-9", startPage: 1, endPage: 5, pagesRead: 5, duration: 1500, startedAt: "2025-08-05T10:00:00Z" },
-  // user-3
-  { userId: "user-3", bookId: "book-9", startPage: 1, endPage: 5, pagesRead: 5, duration: 1500, startedAt: "2025-09-01T10:00:00Z" },
-  { userId: "user-3", bookId: "book-7", startPage: 1, endPage: 2, pagesRead: 2, duration: 900, startedAt: "2025-09-14T09:00:00Z" },
-  { userId: "user-3", bookId: "book-2", startPage: 1, endPage: 5, pagesRead: 5, duration: 1500, startedAt: "2025-08-01T10:00:00Z" },
-  // user-4
-  { userId: "user-4", bookId: "book-6", startPage: 1, endPage: 5, pagesRead: 5, duration: 1200, startedAt: "2025-09-03T07:00:00Z" },
-  { userId: "user-4", bookId: "book-11", startPage: 1, endPage: 3, pagesRead: 3, duration: 480, startedAt: "2025-09-11T10:00:00Z" },
-  // user-5
-  { userId: "user-5", bookId: "book-16", startPage: 1, endPage: 3, pagesRead: 3, duration: 600, startedAt: "2025-09-07T08:00:00Z" },
-  { userId: "user-5", bookId: "book-18", startPage: 1, endPage: 2, pagesRead: 2, duration: 400, startedAt: "2025-09-10T11:00:00Z" },
-  // user-6
-  { userId: "user-6", bookId: "book-8", startPage: 1, endPage: 1, pagesRead: 1, duration: 300, startedAt: "2025-09-09T14:00:00Z" },
-  { userId: "user-6", bookId: "book-7", startPage: 1, endPage: 2, pagesRead: 2, duration: 600, startedAt: "2025-08-15T08:00:00Z" },
-  // user-7
-  { userId: "user-7", bookId: "book-18", startPage: 1, endPage: 2, pagesRead: 2, duration: 400, startedAt: "2025-09-13T11:00:00Z" },
-];
+const READING_PROGRESS = [];
+const BOOKMARKS = [];
+const FAVORITES = [];
+const RATINGS = [];
+const SESSIONS_DATA = [];
 
 const BANNERS = [
   { title: "Xush kelibsiz!", description: "MBSI Library — bilimga yo'l oching", imageUrl: "/covers/atomic-habits.svg", link: "/", order: 1, isActive: true },
@@ -248,12 +75,7 @@ const BANNERS = [
   { title: "O'qishni boshlang", description: "3 ta kitobni bir vaqtda o'qishingiz mumkin", imageUrl: "/covers/deep-work.svg", link: "/books", order: 3, isActive: true },
 ];
 
-const RECOMMENDATIONS = [
-  { title: "Haftaning tavsiyasi", description: "Bu hafta eng ko'p o'qilgan kitob", bookId: "book-1", order: 1, isActive: true },
-  { title: "Yangi kitoblar", description: "Yangi qo'shilgan kitoblar", bookId: "book-16", order: 2, isActive: true },
-  { title: "O'quvchilar uchun", description: "O'quvchilarga tavsiya etilgan kitoblar", bookId: "book-9", order: 3, isActive: true },
-  { title: "O'qituvchilar uchun", description: "O'qituvchilarga tavsiya etilgan kitoblar", bookId: "book-7", order: 4, isActive: true },
-];
+const RECOMMENDATIONS = [];
 
 // ─── Seed Function ────────────────────────────────────────
 async function main() {
@@ -448,13 +270,7 @@ async function main() {
   // 12. Audit Logs (sample admin actions, delete existing to stay idempotent)
   console.log("📝 Seeding audit logs...");
   await prisma.auditLog.deleteMany();
-  const auditEntries = [
-    { userId: "user-8", action: "CREATE_BOOK", entity: "Book", entityId: "book-1", metadata: { title: "Atomic Habits", published: true } },
-    { userId: "user-8", action: "CREATE_BOOK", entity: "Book", entityId: "book-2", metadata: { title: "O'tkan Kunlar", published: true } },
-    { userId: "user-8", action: "PUBLISH_BOOK", entity: "Book", entityId: "book-16", metadata: { title: "Deep Work" } },
-    { userId: "user-8", action: "CREATE_USER", entity: "User", entityId: "user-1", metadata: { name: "Muhammadamin Toshtemirov", role: "STUDENT" } },
-    { userId: "user-8", action: "UPDATE_BOOK", entity: "Book", entityId: "book-3", metadata: { title: "Fizika 9-sinf" } },
-  ];
+  const auditEntries = [];
   for (const a of auditEntries) {
     await prisma.auditLog.create({
       data: {
