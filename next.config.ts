@@ -4,6 +4,9 @@ const nextConfig: NextConfig = {
   images: {
     unoptimized: true,
   },
+  experimental: {
+    proxyClientMaxBodySize: 30, // 30 MB — allows 25 MB PDF uploads
+  },
   devIndicators: false,
 
   // Keep pdfjs as a plain Node dependency so the legacy build

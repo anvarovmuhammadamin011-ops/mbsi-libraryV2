@@ -93,6 +93,6 @@ Qoidalar:
     originalText: text,
     translatedText: translatedChunks.join("\n\n"),
     sourceLanguage: "uz",
-    targetLanguage,
+    targetLanguage: targetLang,
   };
 }

@@ -13,10 +13,13 @@ import {
   BookOpen,
   List,
   Tag,
+  ImageIcon,
 } from "lucide-react";
 
 interface BookContent {
   status: string;
+  hasImages?: boolean;
+  imageCount?: number;
   summary?: string;
   keyPoints?: string[];
   highlights?: {
@@ -38,12 +41,58 @@ interface Props {
   isAdmin?: boolean;
 }
 
+/**
+ * Parse translated text for [IMAGE:P:i] markers and render them as
+ * inline images alongside the text segments.
+ */
+function renderTranslatedText(
+  text: string,
+  extractedImages: { page: number; index: number; dataUrl?: string }[],
+  bookId: string
+) {
+  // Split on [IMAGE:P:i] markers
+  const parts = text.split(/(\[IMAGE:\d+:\d+\])/g);
+
+  return parts.map((part, i) => {
+    const match = part.match(/\[IMAGE:(\d+):(\d+)\]/);
+    if (match) {
+      const page = parseInt(match[1], 10);
+      const index = parseInt(match[2], 10);
+      const img = extractedImages.find((e) => e.page === page && e.index === index);
+      const src = img?.dataUrl;
+
+      if (src) {
+        return (
+          <div key={i} className="my-3 flex justify-center">
+            <img
+              src={src}
+              alt={`Sahifa ${page}, rasm ${index + 1}`}
+              className="max-w-full max-h-48 object-contain rounded-lg border border-border"
+            />
+          </div>
+        );
+      }
+      // Placeholder when image not loaded yet
+      return (
+        <div key={i} className="my-2 flex items-center gap-2 text-xs text-muted-foreground">
+          <ImageIcon size={12} />
+          <span>[Rasm: sahifa {page}]</span>
+        </div>
+      );
+    }
+    return <span key={i}>{part}</span>;
+  });
+}
+
 export function BookContentView({ bookId, isAdmin = false }: Props) {
   const [loading, setLoading] = useState(false);
   const [content, setContent] = useState<BookContent | null>(null);
   const [fullText, setFullText] = useState<string>("");
   const [translation, setTranslation] = useState<string>("");
   const [activeTab, setActiveTab] = useState("summary");
+  const [images, setImages] = useState<
+    { page: number; index: number; width: number; height: number; dataUrl?: string }[]
+  >([]);
 
   useEffect(() => {
     loadContent();
@@ -88,6 +137,36 @@ export function BookContentView({ bookId, isAdmin = false }: Props) {
     }
   }
 
+  async function loadImages() {
+    if (images.length > 0) return;
+    try {
+      const res = await fetch(`/api/books/${bookId}/extract`);
+      const data = await res.json();
+      if (data.success && data.data?.images) {
+        // Load each image's dataUrl
+        const loaded = await Promise.all(
+          data.data.images.map(async (meta: any) => {
+            try {
+              const imgRes = await fetch(
+                `/api/books/${bookId}/images?page=${meta.page}&index=${meta.index}`
+              );
+              const imgData = await imgRes.json();
+              return {
+                ...meta,
+                dataUrl: imgData.success ? imgData.data?.dataUrl : undefined,
+              };
+            } catch {
+              return { ...meta, dataUrl: undefined };
+            }
+          })
+        );
+        setImages(loaded);
+      }
+    } catch (e) {
+      toast.error("Rasmlarni yuklashda xatolik");
+    }
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center p-8">
@@ -126,7 +205,7 @@ export function BookContentView({ bookId, isAdmin = false }: Props) {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="summary" className="gap-1.5">
             <FileText size={14} />
             Xulosa
@@ -138,6 +217,10 @@ export function BookContentView({ bookId, isAdmin = false }: Props) {
           <TabsTrigger value="highlights" className="gap-1.5">
             <Sparkles size={14} />
             Muhim joylar
+          </TabsTrigger>
+          <TabsTrigger value="images" className="gap-1.5">
+            <ImageIcon size={14} />
+            Rasmlar
           </TabsTrigger>
           <TabsTrigger value="content" className="gap-1.5">
             <BookOpen size={14} />
@@ -243,6 +326,51 @@ export function BookContentView({ bookId, isAdmin = false }: Props) {
           )}
         </TabsContent>
 
+        {/* Images Tab */}
+        <TabsContent value="images" className="space-y-4">
+          <Button
+            variant="outline"
+            onClick={loadImages}
+            disabled={images.length > 0}
+            className="gap-2"
+          >
+            <ImageIcon size={14} />
+            {images.length > 0 ? `${images.length} ta rasm yuklandi` : "Rasmlarni yuklash"}
+          </Button>
+
+          {images.length > 0 ? (
+            <div className="grid grid-cols-2 gap-3">
+              {images.map((img, i) => (
+                <div key={i} className="rounded-lg bg-muted/50 overflow-hidden border border-border">
+                  {img.dataUrl ? (
+                    <img
+                      src={img.dataUrl}
+                      alt={`Sahifa ${img.page}, rasm ${i + 1}`}
+                      className="w-full h-auto object-contain max-h-48"
+                    />
+                  ) : (
+                    <div className="flex items-center justify-center h-24">
+                      <Loader2 className="size-4 animate-spin text-muted-foreground" />
+                    </div>
+                  )}
+                  <div className="px-3 py-1.5 flex items-center justify-between">
+                    <Badge variant="secondary" className="text-[10px]">
+                      Sahifa {img.page}
+                    </Badge>
+                    <span className="text-[10px] text-muted-foreground">
+                      {img.width}×{img.height}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground text-center py-4">
+              Rasmlarni ko'rish uchun "Rasmlarni yuklash" tugmasini bosing
+            </p>
+          )}
+        </TabsContent>
+
         {/* Content Tab */}
         <TabsContent value="content" className="space-y-4">
           <div className="grid grid-cols-2 gap-2">
@@ -278,9 +406,9 @@ export function BookContentView({ bookId, isAdmin = false }: Props) {
           {translation && (
             <div className="rounded-lg bg-muted/50 p-4 max-h-96 overflow-y-auto">
               <h4 className="text-sm font-medium mb-2">O'zbekcha tarjima</h4>
-              <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">
-                {translation}
-              </p>
+              <div className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">
+                {renderTranslatedText(translation, images, bookId)}
+              </div>
             </div>
           )}
 

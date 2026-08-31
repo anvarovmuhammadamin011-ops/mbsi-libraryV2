@@ -327,6 +327,7 @@ model BookContent {
   highlights      Json?
   tableOfContents Json?    @map("table_of_contents")
   keyTerms        Json?    @map("key_terms")
+  extractedImages Json?    @map("extracted_images") // [{page, index, dataUrl, width, height, offsetX, offsetY, caption?}]
   status          String   @default("pending") // pending | processing | completed | error
   errorMessage    String?  @map("error_message")
   createdAt       DateTime @default(now()) @map("created_at")

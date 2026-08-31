@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -10,23 +11,125 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Loader2, FileText, Languages, Sparkles, ChevronDown, ChevronUp } from "lucide-react";
+import { Loader2, FileText, Languages, Sparkles, ChevronDown, ChevronUp, ImageIcon } from "lucide-react";
+
+interface ExtractedImageMeta {
+  page: number;
+  index: number;
+  width: number;
+  height: number;
+  caption?: string;
+}
 
 interface BookContent {
   status: string;
   hasText: boolean;
   hasTranslation: boolean;
   hasAnalysis: boolean;
+  hasImages?: boolean;
+  imageCount?: number;
   summary?: string;
   keyPoints?: string[];
   highlights?: any[];
   tableOfContents?: { title: string; page: number }[];
   keyTerms?: string[];
+  images?: ExtractedImageMeta[];
 }
 
 interface Props {
   bookId: string;
   bookTitle: string;
+}
+
+/**
+ * Thumbnail that lazily loads an extracted image from the API
+ * and shows it with optional AI-generated caption.
+ */
+function ImageThumbnail({
+  bookId,
+  page,
+  index,
+  caption,
+  width,
+  height,
+}: {
+  bookId: string;
+  page: number;
+  index: number;
+  caption?: string;
+  width: number;
+  height: number;
+}) {
+  const [src, setSrc] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [loaded, setLoaded] = useState(false);
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const loadedRef = useRef(false);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !loadedRef.current) {
+          loadedRef.current = true;
+          setLoading(true);
+          fetch(`/api/books/${bookId}/images?page=${page}&index=${index}`)
+            .then((r) => r.json())
+            .then((data) => {
+              if (data.success && data.data?.dataUrl) {
+                setSrc(data.data.dataUrl);
+              }
+            })
+            .catch(() => {})
+            .finally(() => setLoading(false));
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.1 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [bookId, page, index]);
+
+  return (
+    <div
+      ref={containerRef}
+      className="relative overflow-hidden rounded-lg bg-muted border border-border group"
+    >
+      {loading && (
+        <div className="flex items-center justify-center h-20">
+          <Loader2 className="size-4 animate-spin text-muted-foreground" />
+        </div>
+      )}
+      {src && (
+        <img
+          src={src}
+          alt={caption || `Sahifa ${page}, rasm ${index + 1}`}
+          className="w-full h-auto max-h-32 object-contain"
+          onLoad={() => setLoaded(true)}
+        />
+      )}
+      {!loading && !src && (
+        <div className="flex items-center justify-center h-20">
+          <ImageIcon size={16} className="text-muted-foreground/50" />
+        </div>
+      )}
+      {caption && loaded && (
+        <div className="px-2 py-1 bg-background/80 backdrop-blur-sm">
+          <p className="text-[10px] text-muted-foreground line-clamp-2">
+            {caption}
+          </p>
+        </div>
+      )}
+      <div className="absolute top-1 right-1">
+        <Badge variant="secondary" className="text-[9px] px-1 py-0">
+          {page}
+        </Badge>
+      </div>
+    </div>
+  );
 }
 
 export function BookExtractButton({ bookId, bookTitle }: Props) {
@@ -47,7 +150,7 @@ export function BookExtractButton({ bookId, bookTitle }: Props) {
     }
   }
 
-  async function runExtraction(action: "extract" | "translate" | "analyze" | "all") {
+  async function runExtraction(action: "extract" | "translate" | "analyze" | "images" | "all") {
     setLoading(true);
     try {
       const res = await fetch(`/api/books/${bookId}/extract`, {
@@ -122,7 +225,7 @@ export function BookExtractButton({ bookId, bookTitle }: Props) {
             )}
 
             {/* Action Buttons */}
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-2 gap-2">
               <Button
                 variant="outline"
                 className="gap-2"
@@ -150,6 +253,15 @@ export function BookExtractButton({ bookId, bookTitle }: Props) {
                 {loading ? <Loader2 className="size-4 animate-spin" /> : <Sparkles size={16} />}
                 Tahlil qilish
               </Button>
+              <Button
+                variant="outline"
+                className="gap-2"
+                onClick={() => runExtraction("images")}
+                disabled={loading}
+              >
+                {loading ? <Loader2 className="size-4 animate-spin" /> : <ImageIcon size={16} />}
+                Rasmlarni ajratish
+              </Button>
             </div>
 
             <Button
@@ -169,6 +281,37 @@ export function BookExtractButton({ bookId, bookTitle }: Props) {
                   <div className="rounded-lg bg-muted/50 p-3">
                     <h4 className="text-sm font-medium mb-2">Xulosa</h4>
                     <p className="text-sm text-muted-foreground">{content.summary}</p>
+                  </div>
+                )}
+
+                {/* Images */}
+                {content.images && content.images.length > 0 && (
+                  <div className="rounded-lg bg-muted/50 p-3">
+                    <button
+                      className="flex items-center justify-between w-full text-sm font-medium mb-2"
+                      onClick={() => setExpanded(expanded === "images" ? null : "images")}
+                    >
+                      <span className="flex items-center gap-2">
+                        <ImageIcon size={14} />
+                        Ajratilgan rasmlar ({content.images.length})
+                      </span>
+                      {expanded === "images" ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                    </button>
+                    {expanded === "images" && (
+                      <div className="grid grid-cols-2 gap-2">
+                        {content.images.map((img, i) => (
+                          <ImageThumbnail
+                            key={i}
+                            bookId={bookId}
+                            page={img.page}
+                            index={img.index}
+                            caption={img.caption}
+                            width={img.width}
+                            height={img.height}
+                          />
+                        ))}
+                      </div>
+                    )}
                   </div>
                 )}
 

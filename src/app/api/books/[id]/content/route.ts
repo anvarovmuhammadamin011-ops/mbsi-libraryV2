@@ -36,10 +36,14 @@ export const GET = route(async (req, ctx) => {
     });
   }
 
+  const images = (content as any).extractedImages as any[] | null;
+
   return json({
     success: true,
     data: {
       status: content.status,
+      hasImages: !!images && images.length > 0,
+      imageCount: images?.length || 0,
       summary: content.summary,
       keyPoints: content.keyPoints,
       highlights: content.highlights,
