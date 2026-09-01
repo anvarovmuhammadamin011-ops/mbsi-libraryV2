@@ -92,6 +92,7 @@ export function BooksBrowser({ categories, authors, initial }: Props) {
   const [data, setData] = useState<Book[]>([]);
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   // Add book dialog state
   const [addOpen, setAddOpen] = useState(false);
@@ -124,7 +125,7 @@ export function BooksBrowser({ categories, authors, initial }: Props) {
     return () => {
       cancelled = true;
     };
-  }, [q, language, categoryId, authorId, sort, page]);
+  }, [q, language, categoryId, authorId, sort, page, refreshKey]);
 
   function resetPage(setter: (v: string) => void) {
     return (v: string | null) => {
@@ -178,6 +179,7 @@ export function BooksBrowser({ categories, authors, initial }: Props) {
       // Refresh the book list
       setPage(1);
       setSort("newest");
+      setRefreshKey((k) => k + 1);
     } catch (e: any) {
       toast.error(e.message || "Kitobni qo'shishda xatolik");
     } finally {
