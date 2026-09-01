@@ -60,8 +60,22 @@ const CATEGORIES = [
   { id: "cat-8", name: "Tarix", slug: "tarix", description: "Tarixiy kitoblar", icon: "📜" },
 ];
 
-// Demo kitoblar o'chirildi - faqat real kitoblar qo'shilishi kerak
-const BOOKS = [];
+// Faqat "Ali" kitobi - demo
+const BOOKS = [
+  {
+    id: "book-ali",
+    title: "Ali va uning sarguzashtlari",
+    description: "Ali — injiq va bilimga chanqoq bola. U kutubxonada topgan g'alati kitob orqali hayotini butunlay o'zgartiradi. Qat'iyat va mehnat bilan orzusiga erishadi.",
+    coverUrl: "/covers/ali-kitobi.svg",
+    pdfUrl: "pdfs/ali-kitobi.pdf",
+    language: "UZ",
+    totalPages: 5,
+    authorId: "author-10",
+    categoryId: "cat-2",
+    isPublished: true,
+    coinReward: 10,
+  },
+];
 
 const READING_PROGRESS = [];
 const BOOKMARKS = [];
