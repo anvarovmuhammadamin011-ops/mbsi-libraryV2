@@ -15,7 +15,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Plus, Pencil, Trash2, Tags } from "lucide-react";
+import { Plus, Pencil, Trash2, Tags, Loader2 } from "lucide-react";
 
 interface CategoryItem {
   id: string;
@@ -32,6 +32,7 @@ export function AdminCategoriesView({ categories }: { categories: CategoryItem[]
   const [editing, setEditing] = useState<CategoryItem | null>(null);
   const [form, setForm] = useState({ name: "", description: "", icon: "" });
   const [busy, setBusy] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState<{ id: string; name: string } | null>(null);
 
   async function addCategory() {
     if (!form.name.trim()) {
@@ -75,14 +76,17 @@ export function AdminCategoriesView({ categories }: { categories: CategoryItem[]
     }
   }
 
-  async function deleteCategory(id: string, name: string) {
-    if (!confirm(`"${name}" kategoriyasi o'chirilsinmi? Bu kategoriyadagi kitoblar o'chirilmaydi.`)) return;
+  async function deleteCategory(id: string) {
+    setDeleteConfirm(null);
+    setBusy(true);
     try {
       await api.delete(`/api/admin/categories/${id}`);
       toast.success("Kategoriya o'chirildi");
       router.refresh();
     } catch (e: any) {
       toast.error(e.message || "Kategoriyani o'chirishda xatolik");
+    } finally {
+      setBusy(false);
     }
   }
 
@@ -119,7 +123,7 @@ export function AdminCategoriesView({ categories }: { categories: CategoryItem[]
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
                     {c.icon && <span className="text-lg">{c.icon}</span>}
-                    <h3 className="font-semibold text-foreground">{c.name}</h3>
+                    <h2 className="font-semibold text-foreground">{c.name}</h2>
                   </div>
                   {c.description && (
                     <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{c.description}</p>
@@ -134,6 +138,7 @@ export function AdminCategoriesView({ categories }: { categories: CategoryItem[]
                       setForm({ name: c.name, description: c.description ?? "", icon: c.icon ?? "" });
                       setEditing(c);
                     }}
+                    aria-label="Tahrirlash"
                   >
                     <Pencil size={13} />
                   </Button>
@@ -141,14 +146,15 @@ export function AdminCategoriesView({ categories }: { categories: CategoryItem[]
                     variant="ghost"
                     size="icon"
                     className="h-7 w-7 text-destructive"
-                    onClick={() => deleteCategory(c.id, c.name)}
+                    onClick={() => setDeleteConfirm({ id: c.id, name: c.name })}
+                    aria-label="O'chirish"
                   >
                     <Trash2 size={13} />
                   </Button>
                 </div>
               </div>
               <div className="mt-3 pt-3 border-t border-border">
-                <Badge variant="secondary" className="text-[10px]">
+                <Badge variant="secondary" className="text-[10px] font-medium tracking-wide">
                   {c.bookCount} kitob
                 </Badge>
               </div>
@@ -178,6 +184,30 @@ export function AdminCategoriesView({ categories }: { categories: CategoryItem[]
             </div>
             <Button onClick={addCategory} disabled={busy} className="w-full">
               {busy ? "Yaratilmoqda..." : "Kategoriyani yaratish"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete confirmation */}
+      <Dialog open={deleteConfirm !== null} onOpenChange={(open) => !open && setDeleteConfirm(null)}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Kategoriyani o&apos;chirish</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">
+            &quot;{deleteConfirm?.name}&quot; kategoriyasi o&apos;chirilsinmi? Bu kategoriyadagi kitoblar o&apos;chirilmaydi.
+          </p>
+          <div className="flex justify-end gap-2 mt-4">
+            <Button variant="outline" onClick={() => setDeleteConfirm(null)}>Bekor qilish</Button>
+            <Button
+              variant="destructive"
+              disabled={busy}
+              onClick={() => deleteConfirm && deleteCategory(deleteConfirm.id)}
+              className="gap-2"
+            >
+              {busy && <Loader2 className="size-4 animate-spin" />}
+              O&apos;chirish
             </Button>
           </div>
         </DialogContent>

@@ -8,7 +8,7 @@ interface StatProps {
 
 export function Stat({ label, value, icon }: StatProps) {
   return (
-    <div className="flex items-center gap-4 rounded-2xl border border-border bg-card p-5">
+    <div className="flex items-center gap-4 rounded-2xl border border-border bg-card p-5 transition-all hover:shadow-md hover:border-primary/20 hover:-translate-y-0.5">
       {icon && (
         <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
           {icon}

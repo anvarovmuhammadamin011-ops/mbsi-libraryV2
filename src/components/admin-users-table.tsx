@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { api } from "@/lib/api-client";
@@ -56,6 +56,8 @@ export function AdminUsersTable({ users, currentUserId, stats }: Props) {
   const [role, setRole] = useState("all");
   const [status, setStatus] = useState("all");
   const [busy, setBusy] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
+  const PAGE_SIZE = 10;
 
   const filtered = useMemo(() => {
     // Teachers are managed on their own page — never shown here.
@@ -69,6 +71,18 @@ export function AdminUsersTable({ users, currentUserId, stats }: Props) {
     if (status === "inactive") result = result.filter((u) => !u.isActive);
     return result;
   }, [users, q, role, status]);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const safePage = Math.min(page, totalPages);
+  const paged = filtered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
+
+  // Reset page when filters change
+  const filterKey = `${q}-${role}-${status}`;
+  const prevFilterKey = useRef(filterKey);
+  if (prevFilterKey.current !== filterKey) {
+    prevFilterKey.current = filterKey;
+    setPage(1);
+  }
 
   async function toggleActive(id: string, current: boolean) {
     setBusy(id);
@@ -169,7 +183,7 @@ export function AdminUsersTable({ users, currentUserId, stats }: Props) {
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
-                {filtered.map((u) => (
+                {paged.map((u) => (
                   <tr key={u.id} className="hover:bg-muted/30 transition-colors">
                     <td className="px-4 py-3">
                       <Link href={`/admin/users/${u.id}`} className="flex items-center gap-3 group">
@@ -226,7 +240,7 @@ export function AdminUsersTable({ users, currentUserId, stats }: Props) {
                             className="h-7 w-7"
                             disabled={busy === u.id}
                             onClick={() => toggleActive(u.id, u.isActive)}
-                            title={u.isActive ? "Bloklash" : "Faollashtirish"}
+                            aria-label={u.isActive ? "Bloklash" : "Faollashtirish"}
                           >
                             {u.isActive ? <UserX size={13} /> : <UserCheck size={13} />}
                           </Button>
@@ -243,6 +257,35 @@ export function AdminUsersTable({ users, currentUserId, stats }: Props) {
                 ))}
               </tbody>
             </table>
+          </div>
+        </div>
+      )}
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between">
+          <p className="text-xs text-muted-foreground">
+            {(safePage - 1) * PAGE_SIZE + 1}–{Math.min(safePage * PAGE_SIZE, filtered.length)} / {filtered.length}
+          </p>
+          <div className="flex items-center gap-1">
+            <Button variant="outline" size="sm" disabled={safePage <= 1} onClick={() => setPage((p) => Math.max(1, p - 1))}>Oldingi</Button>
+            {Array.from({ length: totalPages }, (_, i) => i + 1)
+              .filter((p) => p === 1 || p === totalPages || Math.abs(p - safePage) <= 2)
+              .reduce<(number | "dots")[]>((acc, p, i, arr) => {
+                if (i > 0 && p - (arr[i - 1] as number) > 1) acc.push("dots");
+                acc.push(p);
+                return acc;
+              }, [])
+              .map((item, i) =>
+                item === "dots" ? (
+                  <span key={`dots-${i}`} className="px-1 text-xs text-muted-foreground">…</span>
+                ) : (
+                  <Button key={item} variant={item === safePage ? "default" : "outline"} size="sm" className="h-8 w-8 p-0 text-xs" onClick={() => setPage(item)}>
+                    {item}
+                  </Button>
+                )
+              )}
+            <Button variant="outline" size="sm" disabled={safePage >= totalPages} onClick={() => setPage((p) => Math.min(totalPages, p + 1))}>Keyingi</Button>
           </div>
         </div>
       )}
