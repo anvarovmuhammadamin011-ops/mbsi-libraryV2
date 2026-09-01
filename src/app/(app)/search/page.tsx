@@ -204,7 +204,8 @@ function SearchPageInner() {
             }
           }}
           placeholder="Search books, authors..."
-          className="h-12 w-full rounded-2xl border border-border bg-card pl-11 pr-10 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/20 transition-colors"
+          aria-label="Kitob, muallif qidirish"
+          className="h-12 w-full rounded-2xl border border-border bg-white dark:bg-card pl-11 pr-10 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-colors"
           autoFocus
         />
         {query && (
@@ -227,6 +228,8 @@ function SearchPageInner() {
               <button
                 key={f.value}
                 onClick={() => setFilter(f.value)}
+                aria-label={`Filter by ${f.label}`}
+                aria-pressed={active}
                 className={
                   active
                     ? "shrink-0 rounded-full bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition-colors"
@@ -276,7 +279,7 @@ function SearchPageInner() {
       {/* Default books when no query */}
       {showDefault && (
         <div className="mt-8">
-          <h2 className="text-base font-semibold text-foreground mb-3">📚 All Books</h2>
+          <h2 className="text-base font-semibold text-foreground mb-3"><span role="img" aria-label="Books">📚</span> All Books</h2>
           {defaultLoading ? (
             <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-3">
               {Array.from({ length: 6 }).map((_, i) => (
