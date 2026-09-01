@@ -71,8 +71,8 @@ export function ReadingGoalCard() {
                   <span>{g.progress.current} / {g.progress.target}</span>
                   <span>{g.progress.percent}%</span>
                 </div>
-                <div className="h-2 rounded-full bg-muted overflow-hidden">
-                  <div className="h-full bg-primary" style={{ width: `${g.progress.percent}%` }} />
+                <div className="h-2.5 rounded-full bg-muted overflow-hidden">
+                  <div className="h-full bg-primary" role="progressbar" aria-valuenow={g.progress.percent} aria-valuemin={0} aria-valuemax={100} style={{ width: `${g.progress.percent}%` }} />
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">{g.progress.percent >= 100 ? "🎉 Maqsad bajarildi!" : "Davom eting..."}</p>
               </div>
@@ -97,7 +97,7 @@ export function ReadingGoalCard() {
         </div>
         <Button onClick={create} className="h-9 gap-1"><Plus size={14} /> Qo'shish</Button>
       </div>
-      <p className="text-xs text-muted-foreground">Masalan: March Reading Goal — 4 / 5 books — 80% complete</p>
+      <p className="text-[11px] text-muted-foreground/70">Masalan: 5 kitob / oy</p>
     </div>
   );
 }

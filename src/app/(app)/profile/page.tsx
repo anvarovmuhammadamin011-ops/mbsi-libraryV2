@@ -93,9 +93,9 @@ export default async function ProfilePage() {
   const monthMinutes = Math.floor((monthSeconds % 3600) / 60);
 
   return (
-    <div className="max-w-md md:max-w-lg lg:max-w-xl mx-auto animate-fade-in">
-      <div className="rounded-2xl border border-border bg-card overflow-hidden">
-        {/* Top centered */}
+    <div className="max-w-md md:max-w-lg lg:max-w-xl mx-auto animate-fade-in space-y-4">
+      {/* Hero Card */}
+      <div className="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
         <div className="flex flex-col items-center px-6 py-8 text-center">
           <div className="flex h-20 w-20 items-center justify-center rounded-full bg-muted text-muted-foreground">
             {user.avatar ? (
@@ -113,10 +113,8 @@ export default async function ProfilePage() {
           <p className="mt-1 text-sm text-muted-foreground">{roleLabel(user.role)}</p>
         </div>
 
-        <div className="h-px bg-border" />
-
         {/* Stats row 3 cols centered */}
-        <div className="grid grid-cols-3 divide-x divide-border">
+        <div className="grid grid-cols-3 divide-x divide-border border-t border-border">
           <div className="flex flex-col items-center gap-1 px-2 py-4 text-center">
             <BookOpen size={18} className="text-muted-foreground" />
             <span className="text-lg font-bold text-foreground">{totalBooks}</span>
@@ -135,71 +133,33 @@ export default async function ProfilePage() {
             <span className="text-xs text-muted-foreground">Avg Rating</span>
           </div>
         </div>
+      </div>
 
-        <div className="h-px bg-border" />
+      {/* Ball Display */}
+      <div className="rounded-2xl border border-border bg-card shadow-sm px-4 py-4 flex justify-center">
+        <BallDisplay initialBalls={(user as any).balls ?? 0} />
+      </div>
 
-        {/* Ball Display */}
-        <div className="px-4 py-4 flex justify-center">
-          <BallDisplay initialBalls={(user as any).balls ?? 0} />
-        </div>
+      {/* Reading Journey — most important section, prominently placed */}
+      <ReadingJourneyCard booksCompleted={totalBooks} streak={streak} monthHours={monthHours} monthMinutes={monthMinutes} />
 
-        <div className="h-px bg-border" />
-
-        <div className="px-4 py-4">
-          <ReadingJourneyCard booksCompleted={totalBooks} streak={streak} monthHours={monthHours} monthMinutes={monthMinutes} />
-        </div>
-
-        <div className="h-px bg-border" />
-
-        {/* Reading Statistics — Phase 4 */}
-        <div className="px-4 py-4">
-          <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
-            <TrendingUp size={14} className="text-primary" /> Reading Statistics
-          </h3>
-          <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-            <div className="rounded-xl bg-muted/50 p-3 text-center">
-              <BookOpen size={16} className="mx-auto text-primary mb-1" />
-              <p className="text-lg font-bold text-foreground">{booksStarted}</p>
-              <p className="text-xs text-muted-foreground">Books started</p>
-            </div>
-            <div className="rounded-xl bg-muted/50 p-3 text-center">
-              <Award size={16} className="mx-auto text-green-600 mb-1" />
-              <p className="text-lg font-bold text-foreground">{totalBooks}</p>
-              <p className="text-xs text-muted-foreground">Books completed</p>
-            </div>
-            <div className="rounded-xl bg-muted/50 p-3 text-center">
-              <TrendingUp size={16} className="mx-auto text-blue-500 mb-1" />
-              <p className="text-lg font-bold text-foreground">{pagesRead.toLocaleString()}</p>
-              <p className="text-xs text-muted-foreground">Pages read</p>
-            </div>
-            <div className="rounded-xl bg-muted/50 p-3 text-center">
-              <Clock size={16} className="mx-auto text-orange-500 mb-1" />
-              <p className="text-lg font-bold text-foreground">
-                {readingTimeHours}h {readingTimeMins}m
-              </p>
-              <p className="text-xs text-muted-foreground">Reading time</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="h-px bg-border" />
-
-        {/* Achievements — Phase 4 */}
-        <div className="px-4 py-4">
-          <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
-            <Award size={14} className="text-amber-500" /> Achievements
-          </h3>
-          <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+      {/* Achievements — horizontal scroll for compact display */}
+      <div className="rounded-2xl border border-border bg-card shadow-sm px-4 py-4">
+        <h2 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+          <Award size={14} className="text-amber-500" /> Achievements
+        </h2>
+        {achievements.length > 0 ? (
+          <div className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1 snap-x snap-mandatory scrollbar-hide">
             {achievements.map((a) => (
               <div
                 key={a.id}
-                className={`rounded-xl border p-3 text-center transition-all ${
+                className={`snap-start shrink-0 w-36 rounded-xl border p-3 text-center transition-all ${
                   a.unlocked
                     ? "bg-amber-50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-900 shadow-sm"
                     : "bg-muted/30 border-border opacity-60"
                 }`}
               >
-                <div className="text-2xl mb-1">{a.icon}</div>
+                <div className="text-2xl mb-1" role="img" aria-label={a.title}>{a.icon}</div>
                 <p className="text-xs font-semibold text-foreground line-clamp-1">{a.title}</p>
                 <p className="text-[11px] text-muted-foreground line-clamp-1">{a.description}</p>
                 <p className="mt-1 text-xs font-medium text-primary">{a.progress}</p>
@@ -207,37 +167,68 @@ export default async function ProfilePage() {
               </div>
             ))}
           </div>
-        </div>
-
-        <div className="h-px bg-border" />
-
-        {/* Personal Plan — Phase 5: o'quvchi o'z planini tuza oladi */}
-        <div className="px-4 py-4">
-          <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
-            <TrendingUp size={14} className="text-primary" /> Personal Plan
-          </h3>
-          <ReadingGoalCard />
-        </div>
-
-        <div className="h-px bg-border" />
-
-        {/* Theme toggle */}
-        <div className="px-4 py-4">
-          <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
-            <Sun size={14} className="text-primary" /> Ko'rinish (Theme)
-          </h3>
-          <ThemeToggle />
-        </div>
-
-        <div className="h-px bg-border" />
-
-        {/* Phase 1 menu items */}
-        <nav className="flex flex-col divide-y divide-border/50">
-          <MenuRow icon={<History size={18} />} label="Reading History" href="/history" />
-          <MenuRow icon={<Settings size={18} />} label="Settings" href="/settings" />
-          <ProfileLogoutButton />
-        </nav>
+        ) : (
+          <div className="flex flex-col items-center justify-center py-6 text-center">
+            <Award size={32} className="text-muted-foreground mb-2" />
+            <p className="text-sm text-muted-foreground">Hali yutuqlar yo'q</p>
+            <p className="text-xs text-muted-foreground mt-1">Kitoblar o'qish orqali yutuqlar qo'lga kiriting!</p>
+          </div>
+        )}
       </div>
+
+      {/* Reading Statistics — compact 2x2 grid */}
+      <div className="rounded-2xl border border-border bg-card shadow-sm px-4 py-4">
+        <h2 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+          <TrendingUp size={14} className="text-primary" /> Reading Statistics
+        </h2>
+        <div className="grid grid-cols-2 gap-3">
+          <div className="rounded-xl bg-muted/50 p-3 text-center">
+            <BookOpen size={16} className="mx-auto text-primary mb-1" />
+            <p className="text-lg font-bold text-foreground">{booksStarted}</p>
+            <p className="text-xs text-muted-foreground">Books started</p>
+          </div>
+          <div className="rounded-xl bg-muted/50 p-3 text-center">
+            <Award size={16} className="mx-auto text-green-600 mb-1" />
+            <p className="text-lg font-bold text-foreground">{totalBooks}</p>
+            <p className="text-xs text-muted-foreground">Books completed</p>
+          </div>
+          <div className="rounded-xl bg-muted/50 p-3 text-center">
+            <TrendingUp size={16} className="mx-auto text-blue-500 mb-1" />
+            <p className="text-lg font-bold text-foreground">{pagesRead.toLocaleString()}</p>
+            <p className="text-xs text-muted-foreground">Pages read</p>
+          </div>
+          <div className="rounded-xl bg-muted/50 p-3 text-center">
+            <Clock size={16} className="mx-auto text-orange-500 mb-1" />
+            <p className="text-lg font-bold text-foreground">
+              {readingTimeHours}h {readingTimeMins}m
+            </p>
+            <p className="text-xs text-muted-foreground">Reading time</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Personal Plan — CTA moved higher for visibility */}
+      <div className="rounded-2xl border border-border bg-card shadow-sm px-4 py-4">
+        <h2 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+          <TrendingUp size={14} className="text-primary" /> Personal Plan
+        </h2>
+        <ReadingGoalCard />
+      </div>
+
+      {/* Theme toggle */}
+      <div className="rounded-2xl border border-border bg-card shadow-sm px-4 py-4">
+        <h2 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+          <Sun size={14} className="text-primary" /> Ko'rinish (Theme)
+        </h2>
+        <ThemeToggle />
+      </div>
+
+      {/* Menu items */}
+      <nav className="rounded-2xl border border-border bg-card shadow-sm flex flex-col divide-y divide-border/50 overflow-hidden">
+        <MenuRow icon={<History size={18} />} label="Reading History" href="/history" />
+        <MenuRow icon={<Settings size={18} />} label="Settings" href="/settings" />
+        <ProfileLogoutButton />
+      </nav>
     </div>
   );
 }
