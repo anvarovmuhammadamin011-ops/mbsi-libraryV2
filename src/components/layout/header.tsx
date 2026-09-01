@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { Moon, Sun, Search, Menu, LogOut, User, Bell } from "lucide-react";
 import { useTheme } from "next-themes";
@@ -26,7 +27,7 @@ const pageTitles: Record<string, string> = {
   "/profile": "Profil",
   "/settings": "Sozlamalar",
   "/search": "Qidiruv",
-  "/admin": "Admin panel",
+  "/admin": "Admin paneli",
   "/admin/books": "Kitoblar boshqaruvi",
   "/admin/categories": "Kategoriyalar",
   "/admin/users": "Foydalanuvchilar",
@@ -54,9 +55,13 @@ export function Header() {
       {/* Mobile logo */}
       <div className="md:hidden">
         <Link href="/home" className="flex items-center gap-2">
-          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary">
-            <span className="text-xs font-bold text-white">M</span>
-          </div>
+          <Image
+            src="/logo/school-logo.svg"
+            alt="MBSI Logo"
+            width={32}
+            height={32}
+            className="rounded-lg"
+          />
         </Link>
       </div>
 

@@ -69,7 +69,7 @@
   --secondary: #F1F5F9;
   --secondary-foreground: #334155;
   --muted: #F1F5F9;
-  --muted-foreground: #64748B;
+  --muted-foreground: #475569;
   --accent: #EFF6FF;
   --accent-foreground: #1D4ED8;
   --destructive: #EF4444;
@@ -193,6 +193,40 @@
 @keyframes scaleIn {
   from { opacity: 0; transform: scale(0.96); }
   to { opacity: 1; transform: scale(1); }
+}
+
+/* ─── Fullscreen Mobile Styles ──────────────────────────────── */
+@supports (padding: env(safe-area-inset-top)) {
+  html {
+    padding-top: env(safe-area-inset-top);
+  }
+  body {
+    padding-left: env(safe-area-inset-left, 0px);
+    padding-right: env(safe-area-inset-right, 0px);
+  }
+}
+
+/* Prevent overscroll bounce on iOS */
+html, body {
+  overscroll-behavior: none;
+  -webkit-overflow-scrolling: touch;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* Fullscreen feel on mobile */
+@media (max-width: 767px) {
+  html, body {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    overflow: hidden;
+  }
+  #__next {
+    height: 100%;
+  }
 }
 
 /* ─── Telegram Mini App Styles ──────────────────────────────── */

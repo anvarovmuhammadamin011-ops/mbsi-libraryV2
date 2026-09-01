@@ -152,10 +152,10 @@ export default async function HomePage() {
       <div className="space-y-3">
         <div>
           <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">
-            Hello, {displayName} 👋
+            Salom, {displayName} 👋
           </h1>
           <p className="text-sm md:text-base text-muted-foreground mt-1">
-            What do you want to read today?
+            Bugun nima o'qimoqchisiz?
           </p>
         </div>
 
@@ -165,11 +165,11 @@ export default async function HomePage() {
           className="flex items-center gap-3 rounded-2xl border border-border bg-card px-4 py-3 text-sm text-muted-foreground shadow-sm hover:bg-muted/50 transition-colors"
         >
           <Search size={18} className="shrink-0 text-muted-foreground" />
-          <span>Search books, authors, categories...</span>
+          <span>Kitoblar, mualliflar, kategoriyalar qidirish...</span>
         </Link>
         {streak > 0 && (
           <div className="inline-flex items-center gap-1.5 rounded-full bg-orange-50 dark:bg-orange-950/20 px-3 py-1 text-xs font-medium text-orange-600 dark:text-orange-400 w-fit">
-            <Flame size={12} /> {streak} Day Streak
+            <Flame size={12} /> {streak} kunlik streak
           </div>
         )}
       </div>
@@ -178,7 +178,7 @@ export default async function HomePage() {
       {aiRecs.length > 0 && (
         <section>
           <h2 className="text-base md:text-lg font-semibold text-foreground mb-3 flex items-center gap-2">
-            ✨ Recommended for you
+            ✨ Sizga tavsiya etiladi
           </h2>
           <p className="text-xs text-muted-foreground mb-3">
             {aiRecs[0]?.reason ?? "Sizning o'qish tarixingiz asosida"}
@@ -217,7 +217,7 @@ export default async function HomePage() {
       {smart.becauseYouRead && (
         <section>
           <h2 className="text-base md:text-lg font-semibold text-foreground mb-3">
-            ✨ Because you read {smart.becauseYouRead.category}
+            ✨ {smart.becauseYouRead.category} o'qiganingiz uchun
           </h2>
           <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-thin snap-x snap-mandatory md:mx-0 md:px-0">
             {smart.becauseYouRead.books.map(({ book }: any) => (
@@ -233,7 +233,7 @@ export default async function HomePage() {
       )}
       {smart.youMayAlsoLike && smart.youMayAlsoLike.length > 0 && (
         <section>
-          <h2 className="text-base md:text-lg font-semibold mb-3">✨ You may also like</h2>
+          <h2 className="text-base md:text-lg font-semibold mb-3">✨ Sizga yoqishi mumkin</h2>
           <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-thin snap-x snap-mandatory md:mx-0 md:px-0">
             {smart.youMayAlsoLike.map(({ book }: any) => (
               <Link key={book.id} href={`/books/${book.slug}`} className="shrink-0 snap-start w-[140px] group">
@@ -251,7 +251,7 @@ export default async function HomePage() {
       {readingProgress.length > 0 && (
         <section>
           <h2 className="text-base md:text-lg font-semibold text-foreground mb-3 flex items-center gap-2">
-            Continue Reading
+            Davom ettirish
           </h2>
 
           {/* Mobile: single large card */}
@@ -276,13 +276,13 @@ export default async function HomePage() {
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-base md:text-lg font-semibold text-foreground flex items-center gap-2">
               <LayoutGrid size={18} className="text-primary" />
-              Categories
+              Kategoriyalar
             </h2>
             <Link
               href="/categories"
               className="flex items-center gap-1 text-sm font-medium text-primary hover:underline"
             >
-              All <ArrowRight size={14} />
+              Hammasi <ArrowRight size={14} />
             </Link>
           </div>
           <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-thin snap-x snap-mandatory md:mx-0 md:px-0 md:overflow-visible md:flex-wrap md:snap-none">
@@ -296,7 +296,7 @@ export default async function HomePage() {
                   {cat.name}
                 </p>
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  {cat._count.books} books
+                  {cat._count.books} kitob
                 </p>
               </Link>
             ))}
@@ -307,12 +307,12 @@ export default async function HomePage() {
       {/* ═══ YANGI KITOBLAR ═══ */}
       <section>
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-base md:text-lg font-semibold text-foreground">🆕 Recently Added</h2>
+          <h2 className="text-base md:text-lg font-semibold text-foreground">🆕 Yangi kitoblar</h2>
           <Link
             href="/books"
             className="flex items-center gap-1 text-sm font-medium text-primary hover:underline"
           >
-            View all <ArrowRight size={14} />
+            Hammasi <ArrowRight size={14} />
           </Link>
         </div>
 
@@ -352,7 +352,7 @@ export default async function HomePage() {
                       {book.title}
                     </p>
                     <p className="text-xs text-muted-foreground mt-0.5 truncate">
-                      {book.author?.name ?? "Unknown"}
+                      {book.author?.name ?? "Noma'lum"}
                     </p>
                     <div className="flex items-center gap-1 mt-1">
                       <Star size={12} className="fill-yellow-400 text-yellow-400" />
@@ -366,9 +366,9 @@ export default async function HomePage() {
         ) : (
           <div className="text-center py-10">
             <BookOpen size={32} className="mx-auto text-muted-foreground/50 mb-3" />
-            <p className="text-sm text-muted-foreground">No books yet.</p>
+            <p className="text-sm text-muted-foreground">Hali kitoblar yo'q.</p>
             <Link href="/books" className="text-sm text-primary hover:underline mt-2 inline-block">
-              Browse books →
+              Kitoblarni ko'rish →
             </Link>
           </div>
         )}
@@ -377,12 +377,12 @@ export default async function HomePage() {
       {/* ═══ TOP 10 TALIK ═══ */}
       <section>
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-base md:text-lg font-semibold text-foreground">🏆 Most Popular</h2>
+          <h2 className="text-base md:text-lg font-semibold text-foreground">🏆 Eng mashhur</h2>
           <Link
             href="/books?sort=popular"
             className="flex items-center gap-1 text-sm font-medium text-primary hover:underline"
           >
-            View all <ArrowRight size={14} />
+            Hammasi <ArrowRight size={14} />
           </Link>
         </div>
         {top10Ordered.length > 0 ? (
@@ -424,7 +424,7 @@ export default async function HomePage() {
                       {book.title}
                     </p>
                     <p className="text-xs text-muted-foreground mt-0.5 truncate">
-                      {book.author?.name ?? "Unknown"}
+                      {book.author?.name ?? "Noma'lum"}
                     </p>
                     <div className="flex items-center gap-1 mt-1">
                       <Star size={12} className="fill-yellow-400 text-yellow-400" />
@@ -443,12 +443,12 @@ export default async function HomePage() {
       {/* ═══ ENG ZO'RLARI ═══ */}
       <section>
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-base md:text-lg font-semibold text-foreground">⭐ Highest Rated</h2>
+          <h2 className="text-base md:text-lg font-semibold text-foreground">⭐ Eng yuqori reyting</h2>
           <Link
             href="/books?sort=rating"
             className="flex items-center gap-1 text-sm font-medium text-primary hover:underline"
           >
-            View all <ArrowRight size={14} />
+            Hammasi <ArrowRight size={14} />
           </Link>
         </div>
         <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-thin snap-x snap-mandatory md:mx-0 md:px-0 md:overflow-visible md:flex-wrap md:snap-none">
@@ -490,7 +490,7 @@ export default async function HomePage() {
                     {book.title}
                   </p>
                   <p className="text-xs text-muted-foreground mt-0.5 truncate">
-                    {book.author?.name ?? "Unknown"}
+                    {book.author?.name ?? "Noma'lum"}
                   </p>
                 </div>
               </Link>
@@ -502,12 +502,12 @@ export default async function HomePage() {
       {/* ═══ SIZGA MOS KITOBLAR ═══ */}
       <section>
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-base md:text-lg font-semibold text-foreground">💎 Recommended for you</h2>
+          <h2 className="text-base md:text-lg font-semibold text-foreground">💎 Sizga mos kitoblar</h2>
           <Link
             href="/books"
             className="flex items-center gap-1 text-sm font-medium text-primary hover:underline"
           >
-            View all <ArrowRight size={14} />
+            Hammasi <ArrowRight size={14} />
           </Link>
         </div>
         <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-thin snap-x snap-mandatory md:mx-0 md:px-0 md:overflow-visible md:flex-wrap md:snap-none">
@@ -545,7 +545,7 @@ export default async function HomePage() {
                     {book.title}
                   </p>
                   <p className="text-xs text-muted-foreground mt-0.5 truncate">
-                    {book.author?.name ?? "Unknown"}
+                    {book.author?.name ?? "Noma'lum"}
                   </p>
                   <div className="flex items-center gap-1 mt-1">
                     <Star size={12} className="fill-yellow-400 text-yellow-400" />
@@ -603,7 +603,7 @@ function ContinueReadingCard({
               {p.book.title}
             </h3>
             <p className="text-xs text-muted-foreground mt-0.5">
-              {p.book.author?.name ?? "Unknown author"}
+              {p.book.author?.name ?? "Noma'lum muallif"}
             </p>
           </div>
           <div className="space-y-1.5 mt-2">
@@ -649,7 +649,7 @@ function ContinueReadingCard({
               {p.book.title}
             </h3>
             <p className="text-xs text-muted-foreground mt-1">
-              {p.book.author?.name ?? "Unknown author"}
+              {p.book.author?.name ?? "Noma'lum muallif"}
             </p>
           </div>
           <div className="space-y-3 mt-3">
@@ -673,7 +673,7 @@ function ContinueReadingCard({
               href={`/reader/${p.book.slug}`}
               className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors"
             >
-              Continue <ArrowRight size={16} />
+              Davom ettirish <ArrowRight size={16} />
             </Link>
           </div>
         </div>

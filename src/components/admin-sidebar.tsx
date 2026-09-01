@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
@@ -29,14 +30,14 @@ interface NavItem {
 
 // Phase 5 — Admin navigation: Dashboard, Books, Categories, Users, Reviews, AI Assistant, Settings
 const NAV_ITEMS: NavItem[] = [
-  { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
-  { label: "Books", href: "/admin/books", icon: BookMarked },
-  { label: "Categories", href: "/admin/categories", icon: Tags },
-  { label: "Users", href: "/admin/users", icon: Users },
-  { label: "Reviews", href: "/admin/reviews", icon: MessageSquare },
-  { label: "Balls", href: "/admin/balls", icon: Star },
-  { label: "AI Assistant", href: "/admin/ai-assistant", icon: Sparkles },
-  { label: "Settings", href: "/admin/settings", icon: Settings },
+  { label: "Boshqaruv paneli", href: "/admin", icon: LayoutDashboard },
+  { label: "Kitoblar", href: "/admin/books", icon: BookMarked },
+  { label: "Kategoriyalar", href: "/admin/categories", icon: Tags },
+  { label: "Foydalanuvchilar", href: "/admin/users", icon: Users },
+  { label: "Sharhlar", href: "/admin/reviews", icon: MessageSquare },
+  { label: "Ballar", href: "/admin/balls", icon: Star },
+  { label: "AI Yordamchi", href: "/admin/ai-assistant", icon: Sparkles },
+  { label: "Sozlamalar", href: "/admin/settings", icon: Settings },
 ];
 
 export function AdminSidebar() {
@@ -57,15 +58,19 @@ export function AdminSidebar() {
       <div className="flex h-16 items-center justify-between px-4 border-b border-border">
         {!collapsed && (
           <Link href="/admin" className="flex items-center gap-2.5">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-              <BookOpenCheck className="h-4 w-4 text-white" />
-            </div>
+            <Image
+              src="/logo/school-logo.svg"
+              alt="MBSI Logo"
+              width={32}
+              height={32}
+              className="rounded-lg"
+            />
             <div className="flex flex-col">
               <span className="text-sm font-bold tracking-tight text-foreground leading-none">
                 MBSI LIBRARY
               </span>
               <span className="text-[10px] font-medium text-primary leading-none mt-0.5">
-                Admin panel
+                Admin paneli
               </span>
             </div>
           </Link>

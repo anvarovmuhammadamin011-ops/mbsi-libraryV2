@@ -127,11 +127,6 @@ export async function POST(req: NextRequest) {
     userId: user.id,
   });
 
-  // Background: auto-extract text, translate, analyze
-  runExtractionBackground(book.id, saved.urlOrKey).catch((e) =>
-    console.error("Auto-extract failed for", book.id, e)
-  );
-
   return success(book, 201);
 }
 

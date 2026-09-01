@@ -6,10 +6,10 @@ import { Home, Search, Library, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
-  { label: "Home", href: "/home", icon: Home },
-  { label: "Search", href: "/search", icon: Search },
-  { label: "Library", href: "/library", icon: Library },
-  { label: "Profile", href: "/profile", icon: User },
+  { label: "Bosh sahifa", href: "/home", icon: Home },
+  { label: "Qidiruv", href: "/search", icon: Search },
+  { label: "Kutubxona", href: "/library", icon: Library },
+  { label: "Profil", href: "/profile", icon: User },
 ];
 
 export function MobileNav() {

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import {
   Home,
@@ -28,11 +29,11 @@ interface NavItem {
 
 // Phase 2 — Student/Teacher sidebar: Home, Search, Books, My Library, Profile
 const NAV_ITEMS: NavItem[] = [
-  { label: "Home", href: "/home", icon: Home },
-  { label: "Search", href: "/search", icon: Search },
-  { label: "Books", href: "/books", icon: BookMarked },
-  { label: "My Library", href: "/library", icon: Library },
-  { label: "Profile", href: "/profile", icon: User },
+  { label: "Bosh sahifa", href: "/home", icon: Home },
+  { label: "Qidiruv", href: "/search", icon: Search },
+  { label: "Kitoblar", href: "/books", icon: BookMarked },
+  { label: "Kutubxonam", href: "/library", icon: Library },
+  { label: "Profil", href: "/profile", icon: User },
 ];
 
 export function StudentSidebar() {
@@ -51,9 +52,13 @@ export function StudentSidebar() {
         {/* Logo */}
         <div className="flex h-16 items-center justify-center border-b border-border">
           <Link href="/home" className="flex items-center justify-center">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary">
-              <BookOpen className="h-5 w-5 text-white" />
-            </div>
+            <Image
+              src="/logo/school-logo.svg"
+              alt="MBSI Logo"
+              width={36}
+              height={36}
+              className="rounded-lg"
+            />
           </Link>
         </div>
 
@@ -118,9 +123,13 @@ export function StudentSidebar() {
         <div className="flex h-16 items-center justify-between px-4 border-b border-border">
           {!collapsed && (
             <Link href="/home" className="flex items-center gap-2.5">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-                <BookOpen className="h-4 w-4 text-white" />
-              </div>
+              <Image
+                src="/logo/school-logo.svg"
+                alt="MBSI Logo"
+                width={32}
+                height={32}
+                className="rounded-lg"
+              />
               <div className="flex flex-col">
                 <span className="text-sm font-bold tracking-tight text-foreground leading-none">
                   MBSI
@@ -180,7 +189,7 @@ export function StudentSidebar() {
               className="flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-all"
             >
               <Shield size={18} className="shrink-0" />
-              <span>Admin panel</span>
+              <span>Admin paneli</span>
             </Link>
           </div>
         )}

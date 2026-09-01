@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none">
+  <rect width="200" height="200" rx="40" fill="#2563EB"/>
+  <path d="M100 30L160 65V135L100 170L40 135V65L100 30Z" fill="white" fill-opacity="0.15"/>
+  <path d="M100 45L148 72V128L100 155L52 128V72L100 45Z" stroke="white" stroke-width="3" fill="none"/>
+  <path d="M75 90L90 105L125 70" stroke="white" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <circle cx="100" cy="135" r="12" fill="white" fill-opacity="0.2"/>
+  <text x="100" y="138" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" font-weight="bold" fill="white">STEM</text>
+</svg>

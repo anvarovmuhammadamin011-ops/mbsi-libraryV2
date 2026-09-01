@@ -76,13 +76,6 @@ export const PATCH = route(async (req, ctx) => {
 
   const book = await updateBook(id, data);
 
-  // Background: re-extract if new PDF uploaded
-  if (newPdfKey) {
-    runExtractionBackground(id, newPdfKey).catch((e) =>
-      console.error("Auto-extract failed for", id, e)
-    );
-  }
-
   return json({ success: true, data: book });
 });
 
