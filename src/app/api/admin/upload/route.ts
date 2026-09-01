@@ -127,5 +127,59 @@ export async function POST(req: NextRequest) {
     userId: user.id,
   });
 
+  // Background: auto-extract text, translate, analyze
+  runExtractionBackground(book.id, saved.urlOrKey).catch((e) =>
+    console.error("Auto-extract failed for", book.id, e)
+  );
+
   return success(book, 201);
+}
+
+async function runExtractionBackground(bookId: string, pdfKey: string) {
+  const { extractTextFromPdf } = await import("@/lib/server/text-extraction");
+  const { translateToUzbek } = await import("@/lib/server/translation");
+  const { analyzeBookContent, extractKeyTerms } = await import("@/lib/server/book-analysis");
+
+  await prisma.bookContent.create({
+    data: { bookId, status: "processing" },
+  });
+
+  try {
+    const extraction = await extractTextFromPdf(pdfKey);
+    await prisma.bookContent.update({
+      where: { bookId },
+      data: { extractedText: extraction.fullText },
+    });
+
+    const translation = await translateToUzbek(extraction.fullText);
+    await prisma.bookContent.update({
+      where: { bookId },
+      data: { translatedText: translation.translatedText },
+    });
+
+    const [analysis, keyTerms] = await Promise.all([
+      analyzeBookContent(extraction.fullText, extraction.pages),
+      extractKeyTerms(extraction.fullText),
+    ]);
+
+    await prisma.bookContent.update({
+      where: { bookId },
+      data: {
+        summary: analysis.summary,
+        keyPoints: analysis.keyPoints,
+        highlights: analysis.highlights,
+        tableOfContents: analysis.tableOfContents,
+        keyTerms: keyTerms,
+        status: "completed",
+      },
+    });
+  } catch (error: any) {
+    await prisma.bookContent.update({
+      where: { bookId },
+      data: {
+        status: "error",
+        errorMessage: error.message || "Noma'lum xato",
+      },
+    });
+  }
 }

@@ -62,6 +62,7 @@ export const PATCH = route(async (req, ctx) => {
   }
 
   const pdfFile = form.get("pdf");
+  let newPdfKey: string | undefined;
   if (pdfFile instanceof File && pdfFile.size > 0) {
     const buf = Buffer.from(await pdfFile.arrayBuffer());
     validatePdf(buf, pdfFile.type, pdfFile.name);
@@ -69,10 +70,19 @@ export const PATCH = route(async (req, ctx) => {
     data.pdfUrl = pdf.urlOrKey;
     data.totalPages = countPdfPages(buf);
     data.fileSize = pdf.size;
+    newPdfKey = pdf.urlOrKey;
     if (existing.pdfUrl) await deletePrivate(existing.pdfUrl);
   }
 
   const book = await updateBook(id, data);
+
+  // Background: re-extract if new PDF uploaded
+  if (newPdfKey) {
+    runExtractionBackground(id, newPdfKey).catch((e) =>
+      console.error("Auto-extract failed for", id, e)
+    );
+  }
+
   return json({ success: true, data: book });
 });
 
@@ -85,3 +95,55 @@ export const DELETE = route(async (req, ctx) => {
   if (existing?.pdfUrl) await deletePrivate(existing.pdfUrl);
   return json({ success: true, data: { id } });
 });
+
+async function runExtractionBackground(bookId: string, pdfKey: string) {
+  const { extractTextFromPdf } = await import("@/lib/server/text-extraction");
+  const { translateToUzbek } = await import("@/lib/server/translation");
+  const { analyzeBookContent, extractKeyTerms } = await import("@/lib/server/book-analysis");
+
+  const existing = await prisma.bookContent.findUnique({ where: { bookId } });
+  if (!existing) {
+    await prisma.bookContent.create({ data: { bookId, status: "processing" } });
+  } else {
+    await prisma.bookContent.update({ where: { bookId }, data: { status: "processing" } });
+  }
+
+  try {
+    const extraction = await extractTextFromPdf(pdfKey);
+    await prisma.bookContent.update({
+      where: { bookId },
+      data: { extractedText: extraction.fullText },
+    });
+
+    const translation = await translateToUzbek(extraction.fullText);
+    await prisma.bookContent.update({
+      where: { bookId },
+      data: { translatedText: translation.translatedText },
+    });
+
+    const [analysis, keyTerms] = await Promise.all([
+      analyzeBookContent(extraction.fullText, extraction.pages),
+      extractKeyTerms(extraction.fullText),
+    ]);
+
+    await prisma.bookContent.update({
+      where: { bookId },
+      data: {
+        summary: analysis.summary,
+        keyPoints: analysis.keyPoints,
+        highlights: analysis.highlights,
+        tableOfContents: analysis.tableOfContents,
+        keyTerms: keyTerms,
+        status: "completed",
+      },
+    });
+  } catch (error: any) {
+    await prisma.bookContent.update({
+      where: { bookId },
+      data: {
+        status: "error",
+        errorMessage: error.message || "Noma'lum xato",
+      },
+    });
+  }
+}
