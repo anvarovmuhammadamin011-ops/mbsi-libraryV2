@@ -146,7 +146,7 @@ export default async function ProfilePage() {
       {/* Achievements — horizontal scroll for compact display */}
       <div className="rounded-2xl border border-border bg-card shadow-sm px-4 py-4">
         <h2 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
-          <Award size={14} className="text-amber-500" /> Achievements
+          <Award size={14} className="text-amber-500" /> Yutuqlar
         </h2>
         {achievements.length > 0 ? (
           <div className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1 snap-x snap-mandatory scrollbar-hide">
@@ -163,7 +163,7 @@ export default async function ProfilePage() {
                 <p className="text-xs font-semibold text-foreground line-clamp-1">{a.title}</p>
                 <p className="text-[11px] text-muted-foreground line-clamp-1">{a.description}</p>
                 <p className="mt-1 text-xs font-medium text-primary">{a.progress}</p>
-                {a.unlocked && <p className="mt-1 text-[11px] font-bold text-green-600">✓ Unlocked</p>}
+                {a.unlocked &&                 <p className="mt-1 text-[11px] font-bold text-green-600">✓ Ochildi</p>}
               </div>
             ))}
           </div>
@@ -179,30 +179,30 @@ export default async function ProfilePage() {
       {/* Reading Statistics — compact 2x2 grid */}
       <div className="rounded-2xl border border-border bg-card shadow-sm px-4 py-4">
         <h2 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
-          <TrendingUp size={14} className="text-primary" /> Reading Statistics
+          <TrendingUp size={14} className="text-primary" /> O'qish statistikasi
         </h2>
         <div className="grid grid-cols-2 gap-3">
           <div className="rounded-xl bg-muted/50 p-3 text-center">
             <BookOpen size={16} className="mx-auto text-primary mb-1" />
             <p className="text-lg font-bold text-foreground">{booksStarted}</p>
-            <p className="text-xs text-muted-foreground">Books started</p>
+            <p className="text-xs text-muted-foreground">Boshlangan kitoblar</p>
           </div>
           <div className="rounded-xl bg-muted/50 p-3 text-center">
             <Award size={16} className="mx-auto text-green-600 mb-1" />
             <p className="text-lg font-bold text-foreground">{totalBooks}</p>
-            <p className="text-xs text-muted-foreground">Books completed</p>
+            <p className="text-xs text-muted-foreground">Tugatilgan kitoblar</p>
           </div>
           <div className="rounded-xl bg-muted/50 p-3 text-center">
             <TrendingUp size={16} className="mx-auto text-blue-500 mb-1" />
             <p className="text-lg font-bold text-foreground">{pagesRead.toLocaleString()}</p>
-            <p className="text-xs text-muted-foreground">Pages read</p>
+            <p className="text-xs text-muted-foreground">O'qilgan sahifalar</p>
           </div>
           <div className="rounded-xl bg-muted/50 p-3 text-center">
             <Clock size={16} className="mx-auto text-orange-500 mb-1" />
             <p className="text-lg font-bold text-foreground">
               {readingTimeHours}h {readingTimeMins}m
             </p>
-            <p className="text-xs text-muted-foreground">Reading time</p>
+            <p className="text-xs text-muted-foreground">O'qish vaqti</p>
           </div>
         </div>
       </div>
@@ -210,7 +210,7 @@ export default async function ProfilePage() {
       {/* Personal Plan — CTA moved higher for visibility */}
       <div className="rounded-2xl border border-border bg-card shadow-sm px-4 py-4">
         <h2 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
-          <TrendingUp size={14} className="text-primary" /> Personal Plan
+          <TrendingUp size={14} className="text-primary" /> Shaxsiy reja
         </h2>
         <ReadingGoalCard />
       </div>
@@ -218,15 +218,15 @@ export default async function ProfilePage() {
       {/* Theme toggle */}
       <div className="rounded-2xl border border-border bg-card shadow-sm px-4 py-4">
         <h2 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
-          <Sun size={14} className="text-primary" /> Ko'rinish (Theme)
+          <Sun size={14} className="text-primary" /> Ko'rinish
         </h2>
         <ThemeToggle />
       </div>
 
       {/* Menu items */}
       <nav className="rounded-2xl border border-border bg-card shadow-sm flex flex-col divide-y divide-border/50 overflow-hidden">
-        <MenuRow icon={<History size={18} />} label="Reading History" href="/history" />
-        <MenuRow icon={<Settings size={18} />} label="Settings" href="/settings" />
+        <MenuRow icon={<History size={18} />} label="O'qish tarixi" href="/history" />
+        <MenuRow icon={<Settings size={18} />} label="Sozlamalar" href="/settings" />
         <ProfileLogoutButton />
       </nav>
     </div>

@@ -211,9 +211,9 @@ export default function NotificationsPage() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <h3 className="text-sm font-semibold text-foreground">
+                    <h2 className="text-sm font-semibold text-foreground">
                       {n.title}
-                    </h3>
+                    </h2>
                     {!n.read && (
                       <span className="h-2 w-2 rounded-full bg-primary shrink-0" />
                     )}
@@ -230,11 +230,11 @@ export default function NotificationsPage() {
           <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-muted mb-4">
             <Bell size={24} className="text-muted-foreground" />
           </div>
-          <h3 className="text-sm font-semibold text-foreground">
+          <h2 className="text-sm font-semibold text-foreground">
             {filter === "unread"
               ? "O'qilmagan xabar yo'q"
               : "Bildirishnomalar yo'q"}
-          </h3>
+          </h2>
           <p className="text-xs text-muted-foreground mt-1 max-w-xs">
             {filter === "unread"
               ? "Barcha xabarlar o'qilgan"

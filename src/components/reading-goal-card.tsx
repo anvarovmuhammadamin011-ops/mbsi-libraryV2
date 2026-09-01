@@ -62,7 +62,7 @@ export function ReadingGoalCard() {
                   {g.type === "BOOKS_PER_MONTH" ? <Target size={14} /> : <Clock size={14} />}
                   {g.type === "BOOKS_PER_MONTH" ? `${g.target} books / month` : `${g.target} minutes / day`}
                 </p>
-                <Button size="sm" variant="ghost" className="h-6 w-6 p-0" onClick={() => remove(g.type)}>
+                <Button size="sm" variant="ghost" className="h-6 w-6 p-0" onClick={() => remove(g.type)} aria-label="Maqsadni o'chirish">
                   <Trash2 size={12} />
                 </Button>
               </div>

@@ -57,7 +57,7 @@ export function AiAssistant({ initialText }: { initialText?: string }) {
         <h3 className="text-sm font-semibold flex items-center gap-2">
           <Sparkles size={14} className="text-violet-600" /> ✨ AI Assistant
         </h3>
-        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setOpen(false)}>
+        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setOpen(false)} aria-label="Yopish">
           <X size={14} />
         </Button>
       </div>

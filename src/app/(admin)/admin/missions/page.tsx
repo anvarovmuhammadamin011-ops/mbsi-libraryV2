@@ -107,7 +107,7 @@ export default function AdminMissionsPage() {
 
       {showForm && (
         <div className="rounded-2xl border border-border bg-card p-5 space-y-4">
-          <h3 className="font-semibold">{editing ? "Tahrirlash" : "Yangi missiya"}</h3>
+          <h2 className="font-semibold">{editing ? "Tahrirlash" : "Yangi missiya"}</h2>
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="sm:col-span-2 space-y-1">
               <Label>Sarlavha</Label>
@@ -154,7 +154,7 @@ export default function AdminMissionsPage() {
                   <Target size={18} />
                 </div>
                 <div>
-                  <h3 className="text-sm font-semibold">{m.title}</h3>
+                  <h2 className="text-sm font-semibold">{m.title}</h2>
                   <p className="text-xs text-muted-foreground flex items-center gap-1"><Calendar size={10} /> {m.startDate.slice(0,10)} → {m.endDate.slice(0,10)}</p>
                 </div>
               </div>

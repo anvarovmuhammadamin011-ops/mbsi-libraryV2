@@ -145,6 +145,7 @@ export function StudentSidebar() {
             size="icon"
             onClick={() => setCollapsed(!collapsed)}
             className="h-7 w-7 shrink-0 text-muted-foreground hover:text-foreground"
+            aria-label={collapsed ? "Kengaytirish" : "Kichraytirish"}
           >
             {collapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
           </Button>
@@ -215,6 +216,7 @@ export function StudentSidebar() {
                   size="icon"
                   onClick={logout}
                   className="h-7 w-7 shrink-0 text-muted-foreground hover:text-destructive"
+                  aria-label="Chiqish"
                 >
                   <LogOut size={14} />
                 </Button>
