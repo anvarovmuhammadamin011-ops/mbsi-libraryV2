@@ -35,13 +35,19 @@ export function BookCard({
     >
       {/* Cover */}
       <div className="relative aspect-[3/4] overflow-hidden bg-muted">
-        <Image
-          src={book.coverUrl}
-          alt={book.title}
-          fill
-          className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
-          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-        />
+        {book.coverUrl ? (
+          <Image
+            src={book.coverUrl}
+            alt={book.title}
+            fill
+            className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+          />
+        ) : (
+          <div className="flex h-full items-center justify-center">
+            <BookOpen size={32} className="text-muted-foreground/30" />
+          </div>
+        )}
 
         {/* Gradient overlay on hover */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 transition-opacity duration-200 group-hover:opacity-100" />

@@ -11,20 +11,15 @@ import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "sonner";
 import {
-  Sun,
-  Moon,
-  Monitor,
   Globe,
   Bell,
   BookOpen,
   Lock,
   Eye,
   EyeOff,
-  User,
   LogOut,
 } from "lucide-react";
 
-type Theme = "light" | "dark" | "system";
 type Language = "uz" | "en";
 
 export default function SettingsPage() {
@@ -33,7 +28,7 @@ export default function SettingsPage() {
   const [name, setName] = useState("");
   const [avatar, setAvatar] = useState("");
   const [saving, setSaving] = useState(false);
-  const [theme, setTheme] = useState<Theme>("light");
+
   const [language, setLanguage] = useState<Language>("uz");
   const [notifications, setNotifications] = useState(true);
   const [fontSize, setFontSize] = useState(16);
@@ -47,25 +42,9 @@ export default function SettingsPage() {
       setName(user.name ?? "");
       setAvatar(user.avatar ?? "");
     }
-    // Load theme from localStorage
-    const saved = localStorage.getItem("mbsi-theme") as Theme | null;
-    if (saved) setTheme(saved);
     const savedLang = localStorage.getItem("mbsi-lang") as Language | null;
     if (savedLang) setLanguage(savedLang);
   }, [user]);
-
-  function applyTheme(t: Theme) {
-    setTheme(t);
-    localStorage.setItem("mbsi-theme", t);
-    if (t === "dark") {
-      document.documentElement.classList.add("dark");
-    } else if (t === "light") {
-      document.documentElement.classList.remove("dark");
-    } else {
-      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-      document.documentElement.classList.toggle("dark", prefersDark);
-    }
-  }
 
   function applyLanguage(l: Language) {
     setLanguage(l);
@@ -127,41 +106,7 @@ export default function SettingsPage() {
         </p>
       </div>
 
-      {/* Appearance */}
-      <Card>
-        <CardContent className="p-5 space-y-4">
-          <div className="flex items-center gap-2 mb-1">
-            <Sun size={16} className="text-primary" />
-            <h2 className="text-sm font-semibold text-foreground">🎨 Ko'rinish</h2>
-          </div>
 
-          <div className="grid grid-cols-3 gap-3">
-            {([
-              { value: "light" as Theme, label: "🌞 Yorug'", icon: Sun },
-              { value: "dark" as Theme, label: "🌙 Qorong'u", icon: Moon },
-              { value: "system" as Theme, label: "🖥 Tizim", icon: Monitor },
-            ]).map((opt) => {
-              const Icon = opt.icon;
-              return (
-                <button
-                  key={opt.value}
-                  onClick={() => applyTheme(opt.value)}
-                  className={`flex flex-col items-center gap-2 rounded-xl border p-4 transition-all ${
-                    theme === opt.value
-                      ? "border-primary bg-primary/5 text-primary"
-                      : "border-border bg-card text-muted-foreground hover:bg-muted"
-                  }`}
-                >
-                  <Icon size={20} />
-                  <span className="text-xs font-medium">{opt.label}</span>
-                </button>
-              );
-            })}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Language */}
       <Card>
         <CardContent className="p-5 space-y-4">
           <div className="flex items-center gap-2 mb-1">

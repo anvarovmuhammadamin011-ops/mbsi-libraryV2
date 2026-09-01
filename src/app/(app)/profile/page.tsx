@@ -15,9 +15,11 @@ import {
   Clock,
   Award,
   TrendingUp,
+  Sun,
 } from "lucide-react";
 import Link from "next/link";
 import { ProfileLogoutButton } from "@/components/profile-logout-button";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export const dynamic = "force-dynamic";
 
@@ -207,6 +209,16 @@ export default async function ProfilePage() {
             <TrendingUp size={14} className="text-primary" /> Personal Plan
           </h3>
           <ReadingGoalCard />
+        </div>
+
+        <div className="h-px bg-border" />
+
+        {/* Theme toggle */}
+        <div className="px-4 py-4">
+          <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+            <Sun size={14} className="text-primary" /> Ko'rinish (Theme)
+          </h3>
+          <ThemeToggle />
         </div>
 
         <div className="h-px bg-border" />

@@ -1,22 +1,20 @@
 "use client";
 
-import { useEffect, useRef, useState, useCallback, useMemo } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { api } from "@/lib/api-client";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   ArrowLeft,
-  BookmarkPlus,
-  BookmarkCheck,
+  ArrowRight,
   Loader2,
   ZoomIn,
   ZoomOut,
   Moon,
   Sun,
-  MoreVertical,
   Type,
 } from "lucide-react";
+import { useTheme } from "next-themes";
 
 interface Props {
   bookId: string;
@@ -26,24 +24,13 @@ interface Props {
   initialPage: number;
 }
 
-interface BookmarkData {
-  id: string;
-  page: number;
-}
-
-type ThemeMode = "light" | "dark";
-
 export function Reader({ bookId, title, totalPages, pdfUrl, initialPage }: Props) {
   const [page, setPage] = useState(Math.min(Math.max(initialPage, 1), totalPages || 1));
   const [totalPdfPages, setTotalPdfPages] = useState(totalPages || 1);
-  const [theme, setTheme] = useState<ThemeMode>("light");
+  const { theme, setTheme } = useTheme();
+  const isDark = theme === "dark";
   const [saving, setSaving] = useState(false);
-  const [bookmarks, setBookmarks] = useState<BookmarkData[]>([]);
-  const [isBookmarked, setIsBookmarked] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [showMenu, setShowMenu] = useState(false);
-  const [showPageInput, setShowPageInput] = useState(false);
-  const [pageInput, setPageInput] = useState("");
 
   // canvas state
   const pdfDocRef = useRef<any>(null);
@@ -60,8 +47,6 @@ export function Reader({ bookId, title, totalPages, pdfUrl, initialPage }: Props
   const lastSavePageRef = useRef(initialPage);
   const touchStartRef = useRef<{ x: number; y: number } | null>(null);
   const pinchRef = useRef<{ dist: number; zoom: number } | null>(null);
-
-  const isDark = theme === "dark";
 
   // ─── Load PDF ───────────────────────────────────────────────
   useEffect(() => {
@@ -192,21 +177,6 @@ export function Reader({ bookId, title, totalPages, pdfUrl, initialPage }: Props
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // ─── Bookmarks ──────────────────────────────────────────────
-  useEffect(() => {
-    fetch(`/api/bookmarks?bookId=${bookId}`)
-      .then((r) => r.json())
-      .then((json: any) => {
-        const items = Array.isArray(json?.data) ? json.data : [];
-        setBookmarks(items.map((b: any) => ({ id: b.id, page: b.page })));
-      })
-      .catch(() => {});
-  }, [bookId]);
-
-  useEffect(() => {
-    setIsBookmarked(bookmarks.some((b) => b.page === page));
-  }, [page, bookmarks]);
-
   const saveProgress = useCallback(
     (p: number) => {
       if (p === lastSavePageRef.current) return;
@@ -230,10 +200,17 @@ export function Reader({ bookId, title, totalPages, pdfUrl, initialPage }: Props
     saveProgress(next);
   }
 
+  function prevPage() {
+    goto(page - 1);
+  }
+
+  function nextPage() {
+    goto(page + 1);
+  }
+
   // ─── Keyboard ───────────────────────────────────────────────
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      if (showPageInput) return;
       switch (e.key) {
         case "ArrowLeft":
           e.preventDefault();
@@ -252,21 +229,12 @@ export function Reader({ bookId, title, totalPages, pdfUrl, initialPage }: Props
           e.preventDefault();
           setZoom((z) => Math.max(0.6, +(z - 0.2).toFixed(2)));
           break;
-        case "b":
-        case "B":
-          e.preventDefault();
-          toggleBookmark();
-          break;
-        case "Escape":
-          if (showMenu) setShowMenu(false);
-          if (showPageInput) setShowPageInput(false);
-          break;
       }
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, totalPdfPages, showMenu, showPageInput]);
+  }, [page, totalPdfPages]);
 
   // ─── Touch ──────────────────────────────────────────────────
   const handleTouchStart = useCallback(
@@ -312,43 +280,6 @@ export function Reader({ bookId, title, totalPages, pdfUrl, initialPage }: Props
     [page]
   );
 
-  function toggleBookmark() {
-    if (isBookmarked) {
-      const bm = bookmarks.find((b) => b.page === page);
-      if (bm) {
-        api
-          .delete(`/api/bookmarks/${bm.id}`)
-          .then(() => {
-            setBookmarks((prev) => prev.filter((b) => b.page !== page));
-            setIsBookmarked(false);
-            toast.success("Xatcho'p o'chirildi");
-          })
-          .catch((e: any) => toast.error(e.message));
-      }
-    } else {
-      api
-        .post("/api/bookmarks", { bookId, page })
-        .then((res: any) => {
-          const id = res?.id || Date.now().toString();
-          setBookmarks((prev) => [...prev, { id, page }]);
-          setIsBookmarked(true);
-          toast.success(`Sahifa ${page} xatcho'pga qo'shildi`);
-        })
-        .catch((e: any) => toast.error(e.message));
-    }
-  }
-
-  function handlePageInputSubmit() {
-    const num = parseInt(pageInput, 10);
-    if (isNaN(num) || num < 1 || num > totalPdfPages) {
-      toast.error("Bu sahifa mavjud emas.");
-      return;
-    }
-    goto(num);
-    setShowPageInput(false);
-    setPageInput("");
-  }
-
   // ─── Colors ─────────────────────────────────────────────────
   const bgClass = isDark ? "bg-[#0B1220]" : "bg-[#F5F7FA]";
   const headerBg = isDark ? "bg-[#0F172A]" : "bg-white";
@@ -387,93 +318,23 @@ export function Reader({ bookId, title, totalPages, pdfUrl, initialPage }: Props
           </h1>
         </div>
 
-        {/* right: bookmark + more */}
-        <div className="flex items-center gap-1 shrink-0">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={toggleBookmark}
-            className="h-8 w-8"
-            aria-label={isBookmarked ? "Xatcho'pni o'chirish" : "Xatcho'p qo'shish"}
-          >
-            {isBookmarked ? (
-              <BookmarkCheck className="size-5 text-yellow-500 fill-yellow-500" />
-            ) : (
-              <BookmarkPlus className="size-5" />
-            )}
-          </Button>
-
-          <div className="relative">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setShowMenu((v) => !v)}
-              className="h-8 w-8"
-              aria-label="Menyu"
-            >
-              <MoreVertical className="size-5" />
-            </Button>
-
-            {/* dropdown menu */}
-            {showMenu && (
-              <div
-                className={`absolute right-0 top-10 w-48 rounded-xl border shadow-lg py-2 z-40 ${isDark ? "bg-slate-800 border-slate-700" : "bg-white border-slate-200"}`}
-              >
-                <button
-                  onClick={() => {
-                    setTheme(isDark ? "light" : "dark");
-                  }}
-                  className={`w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-black/5 dark:hover:bg-white/10 ${textClass}`}
-                >
-                  {isDark ? <Sun className="size-4" /> : <Moon className="size-4" />}
-                  {isDark ? "Yorug' rejim" : "Tungi rejim"}
-                </button>
-                <button
-                  onClick={() => {
-                    setShowMenu(false);
-                    toggleBookmark();
-                  }}
-                  className={`w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-black/5 dark:hover:bg-white/10 ${textClass}`}
-                >
-                  {isBookmarked ? (
-                    <BookmarkCheck className="size-4 text-yellow-500" />
-                  ) : (
-                    <BookmarkPlus className="size-4" />
-                  )}
-                  {isBookmarked ? "Xatcho'pni o'chirish" : "Xatcho'p qo'shish"}
-                </button>
-                <div className={`mx-2 my-1 border-t ${headerBorder}`} />
-                <div className={`px-3 py-1 text-xs ${mutedClass}`}>
-                  Sahifa {page} / {totalPdfPages}
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
+        {/* right: theme toggle */}
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => setTheme(isDark ? "light" : "dark")}
+          className="h-8 w-8 shrink-0"
+          aria-label={isDark ? "Yorug' rejim" : "Tungi rejim"}
+        >
+          {isDark ? <Sun className="size-5" /> : <Moon className="size-5" />}
+        </Button>
       </header>
 
-      {/* overlay to close menu */}
-      {showMenu && (
-        <div className="fixed inset-0 z-30" style={{ top: 48 }} onClick={() => setShowMenu(false)} />
-      )}
-
-      {/* ═══ Content area: centered max-w-2xl ═══ */}
+      {/* ═══ Content area ═══ */}
       <div
         ref={contentRef}
         className={`flex-1 relative overflow-hidden flex flex-col items-center ${canvasWrapBg}`}
       >
-        {/* tap zones for navigation (invisible) */}
-        <div
-          className="absolute left-0 top-0 bottom-0 w-[25%] z-10"
-          onClick={() => goto(page - 1)}
-          aria-label="Oldingi sahifa"
-        />
-        <div
-          className="absolute right-0 top-0 bottom-0 w-[25%] z-10"
-          onClick={() => goto(page + 1)}
-          aria-label="Keyingi sahifa"
-        />
-
         {/* centered reader card */}
         <div className="w-full max-w-2xl md:max-w-[720px] flex-1 flex flex-col items-center px-3 sm:px-6 py-4 sm:py-6 overflow-hidden">
           {/* chapter title */}
@@ -519,6 +380,32 @@ export function Reader({ bookId, title, totalPages, pdfUrl, initialPage }: Props
         </div>
       </div>
 
+      {/* ═══ Desktop nav buttons (visible only on md+) ═══ */}
+      <div className="hidden md:flex absolute left-2 top-1/2 -translate-y-1/2 z-20">
+        <Button
+          variant="outline"
+          size="icon"
+          className="h-12 w-12 rounded-full shadow-lg bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border-slate-200 dark:border-slate-700"
+          onClick={prevPage}
+          disabled={page <= 1}
+          aria-label="Oldingi sahifa"
+        >
+          <ArrowLeft className="size-5" />
+        </Button>
+      </div>
+      <div className="hidden md:flex absolute right-2 top-1/2 -translate-y-1/2 z-20">
+        <Button
+          variant="outline"
+          size="icon"
+          className="h-12 w-12 rounded-full shadow-lg bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border-slate-200 dark:border-slate-700"
+          onClick={nextPage}
+          disabled={page >= totalPdfPages}
+          aria-label="Keyingi sahifa"
+        >
+          <ArrowRight className="size-5" />
+        </Button>
+      </div>
+
       {/* ═══ Bottom bar: Page indicator + zoom controls ═══ */}
       <footer
         className={`shrink-0 border-t ${headerBorder} ${headerBg} flex flex-col items-center justify-center py-2 px-3`}
@@ -526,34 +413,9 @@ export function Reader({ bookId, title, totalPages, pdfUrl, initialPage }: Props
       >
         {/* Page indicator centered */}
         <div className="flex items-center justify-center">
-          {showPageInput ? (
-            <div className="flex items-center gap-1">
-              <Input
-                type="number"
-                value={pageInput}
-                onChange={(e) => setPageInput(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handlePageInputSubmit()}
-                className="h-7 w-20 text-center text-xs"
-                min={1}
-                max={totalPdfPages}
-                autoFocus
-                onBlur={() => setTimeout(() => setShowPageInput(false), 200)}
-              />
-              <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={handlePageInputSubmit}>
-                OK
-              </Button>
-            </div>
-          ) : (
-            <button
-              onClick={() => {
-                setShowPageInput(true);
-                setPageInput(String(page));
-              }}
-              className={`text-sm font-medium tabular-nums hover:underline underline-offset-4 ${mutedClass} hover:text-foreground`}
-            >
-              Page {page} / {totalPdfPages}
-            </button>
-          )}
+          <span className={`text-sm font-medium tabular-nums ${mutedClass}`}>
+            Sahifa {page} / {totalPdfPages}
+          </span>
         </div>
 
         {/* controls row: −  A  + */}
