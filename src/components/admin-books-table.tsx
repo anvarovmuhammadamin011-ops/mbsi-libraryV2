@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { api } from "@/lib/api-client";
@@ -100,6 +100,10 @@ export function AdminBooksTable({ books, categories }: Props) {
   const [saving, setSaving] = useState(false);
   const [editing, setEditing] = useState<BookRow | null>(null);
   const [editSaving, setEditSaving] = useState(false);
+  const [page, setPage] = useState(1);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+  const [uploadProgress, setUploadProgress] = useState<number | null>(null);
+  const PAGE_SIZE = 10;
 
   // Filter & sort
   const filtered = useMemo(() => {
@@ -122,6 +126,18 @@ export function AdminBooksTable({ books, categories }: Props) {
     if (sort === "rating") result.sort((a, b) => (b.averageRating ?? 0) - (a.averageRating ?? 0));
     return result;
   }, [books, q, language, category, status, sort]);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const safePage = Math.min(page, totalPages);
+  const paged = filtered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
+
+  // Reset page when filters change
+  const filterKey = `${q}-${language}-${category}-${status}-${sort}`;
+  const prevFilterKey = useRef(filterKey);
+  if (prevFilterKey.current !== filterKey) {
+    prevFilterKey.current = filterKey;
+    setPage(1);
+  }
 
   async function submitAdd(e: React.FormEvent) {
     e.preventDefault();
@@ -147,7 +163,17 @@ export function AdminBooksTable({ books, categories }: Props) {
       fd.append("file", form.file);
       if (form.cover && form.cover.size > 0) fd.append("cover", form.cover);
 
-      const r = await fetch("/api/admin/upload", { method: "POST", body: fd });
+      const r = await new Promise<Response>((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open("POST", "/api/admin/upload");
+        xhr.upload.onprogress = (e) => {
+          if (e.lengthComputable) setUploadProgress(Math.round((e.loaded / e.total) * 100));
+        };
+        xhr.onload = () => resolve(new Response(xhr.responseText, { status: xhr.status }));
+        xhr.onerror = () => reject(new Error("Network error"));
+        xhr.send(fd);
+      });
+      setUploadProgress(null);
       if (!r.ok) {
         const err = await r.json().catch(() => ({}));
         throw new Error(err?.error?.message || err?.error || "Yuklashda xatolik");
@@ -190,7 +216,7 @@ export function AdminBooksTable({ books, categories }: Props) {
   }
 
   async function deleteBook(id: string) {
-    if (!confirm("Bu kitobni o'chirishni xohlaysizmi? Bu amalni bekor qilib bo'lmaydi.")) return;
+    setDeleteConfirmId(null);
     setDeleting(id);
     try {
       await api.delete(`/api/admin/books/${id}`);
@@ -333,6 +359,20 @@ export function AdminBooksTable({ books, categories }: Props) {
                 />
                 Darhol nashr etish
               </label>
+              {uploadProgress !== null && (
+                <div className="space-y-1">
+                  <div className="flex justify-between text-xs text-muted-foreground">
+                    <span>Yuklanmoqda...</span>
+                    <span>{uploadProgress}%</span>
+                  </div>
+                  <div className="h-2 rounded-full bg-muted overflow-hidden">
+                    <div
+                      className="h-full bg-primary rounded-full transition-all duration-300"
+                      style={{ width: `${uploadProgress}%` }}
+                    />
+                  </div>
+                </div>
+              )}
               <Button type="submit" disabled={saving} className="gap-2">
                 {saving ? <Loader2 className="size-4 animate-spin" /> : <Upload className="size-4" />}
                 Yuklash
@@ -409,7 +449,7 @@ export function AdminBooksTable({ books, categories }: Props) {
                   <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground hidden md:table-cell">Kategoriya</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground hidden lg:table-cell">Til</th>
                   <th className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground">Sahifalar</th>
-                  <th className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground">🪙</th>
+                  <th className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground"><span role="img" aria-label="Coin">🪙</span></th>
                   <th className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground hidden sm:table-cell">O&apos;quvchilar</th>
                   <th className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground hidden md:table-cell">Reyting</th>
                   <th className="px-4 py-3 text-center text-xs font-semibold text-muted-foreground">Holat</th>
@@ -417,7 +457,7 @@ export function AdminBooksTable({ books, categories }: Props) {
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
-                {filtered.map((b) => (
+                {paged.map((b) => (
                   <tr key={b.id} className="hover:bg-muted/30 transition-colors">
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
@@ -464,6 +504,7 @@ export function AdminBooksTable({ books, categories }: Props) {
                           size="icon"
                           className="h-8 w-8"
                           onClick={() => setEditing(b)}
+                          aria-label="Tahrirlash"
                         >
                           <Pencil size={14} className="text-muted-foreground" />
                         </Button>
@@ -472,6 +513,7 @@ export function AdminBooksTable({ books, categories }: Props) {
                           size="icon"
                           className="h-8 w-8"
                           onClick={() => togglePublish(b.id, b.isPublished)}
+                          aria-label={b.isPublished ? "Yashirish" : "Nashr etish"}
                         >
                           {b.isPublished ? (
                             <Eye size={14} className="text-muted-foreground" />
@@ -483,8 +525,9 @@ export function AdminBooksTable({ books, categories }: Props) {
                           variant="ghost"
                           size="icon"
                           className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                          onClick={() => deleteBook(b.id)}
+                          onClick={() => setDeleteConfirmId(b.id)}
                           disabled={deleting === b.id}
+                          aria-label="O'chirish"
                         >
                           <Trash2 size={14} />
                         </Button>
@@ -497,6 +540,79 @@ export function AdminBooksTable({ books, categories }: Props) {
           </div>
         </div>
       )}
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between">
+          <p className="text-xs text-muted-foreground">
+            {(safePage - 1) * PAGE_SIZE + 1}–{Math.min(safePage * PAGE_SIZE, filtered.length)} / {filtered.length}
+          </p>
+          <div className="flex items-center gap-1">
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={safePage <= 1}
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+            >
+              Oldingi
+            </Button>
+            {Array.from({ length: totalPages }, (_, i) => i + 1)
+              .filter((p) => p === 1 || p === totalPages || Math.abs(p - safePage) <= 2)
+              .reduce<(number | "dots")[]>((acc, p, i, arr) => {
+                if (i > 0 && p - (arr[i - 1] as number) > 1) acc.push("dots");
+                acc.push(p);
+                return acc;
+              }, [])
+              .map((item, i) =>
+                item === "dots" ? (
+                  <span key={`dots-${i}`} className="px-1 text-xs text-muted-foreground">…</span>
+                ) : (
+                  <Button
+                    key={item}
+                    variant={item === safePage ? "default" : "outline"}
+                    size="sm"
+                    className="h-8 w-8 p-0 text-xs"
+                    onClick={() => setPage(item)}
+                  >
+                    {item}
+                  </Button>
+                )
+              )}
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={safePage >= totalPages}
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+            >
+              Keyingi
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Delete confirmation dialog */}
+      <Dialog open={deleteConfirmId !== null} onOpenChange={(open) => !open && setDeleteConfirmId(null)}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Kitobni o&apos;chirish</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">
+            Bu kitobni o&apos;chirishni xohlaysizmi? Bu amalni bekor qilib bo&apos;lmaydi.
+          </p>
+          <div className="flex justify-end gap-2 mt-4">
+            <Button variant="outline" onClick={() => setDeleteConfirmId(null)}>Bekor qilish</Button>
+            <Button
+              variant="destructive"
+              disabled={deleting !== null}
+              onClick={() => deleteConfirmId && deleteBook(deleteConfirmId)}
+              className="gap-2"
+            >
+              {deleting && <Loader2 className="size-4 animate-spin" />}
+              O&apos;chirish
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Edit dialog */}
       <Dialog open={editing !== null} onOpenChange={(open) => !open && setEditing(null)}>
