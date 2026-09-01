@@ -4,6 +4,7 @@ import { computeStreak, getPersonalStats } from "@/lib/server/reading";
 import { getUserAchievements } from "@/lib/server/achievements";
 import { ReadingGoalCard } from "@/components/reading-goal-card";
 import { ReadingJourneyCard } from "@/components/reading-journey-card";
+import { BallDisplay } from "@/components/ball-display";
 import {
   User,
   BookOpen,
@@ -133,6 +134,13 @@ export default async function ProfilePage() {
             </span>
             <span className="text-xs text-muted-foreground">Avg Rating</span>
           </div>
+        </div>
+
+        <div className="h-px bg-border" />
+
+        {/* Ball Display */}
+        <div className="px-4 py-4 flex justify-center">
+          <BallDisplay initialBalls={(user as any).balls ?? 0} />
         </div>
 
         <div className="h-px bg-border" />

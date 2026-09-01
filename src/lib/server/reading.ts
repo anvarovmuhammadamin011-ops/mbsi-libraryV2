@@ -138,6 +138,9 @@ export async function upsertProgress(
         where: { id: userId },
         data: { coins: { increment: (book as any).coinReward ?? 10 } },
       });
+      // Ball reward for book completion
+      const { awardBookRead } = await import("./balls");
+      await awardBookRead(userId, bookId);
     }
     return toApiProgress(updated, book);
   }
@@ -164,6 +167,9 @@ export async function upsertProgress(
       where: { id: userId },
       data: { coins: { increment: (book as any).coinReward ?? 10 } },
     });
+    // Ball reward for book completion
+    const { awardBookRead } = await import("./balls");
+    await awardBookRead(userId, bookId);
   }
   return toApiProgress(created, book);
 }

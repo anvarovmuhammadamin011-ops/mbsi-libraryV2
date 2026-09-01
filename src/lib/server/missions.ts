@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db";
+import { awardMissionComplete } from "./balls";
 
 export type MissionWithProgress = {
   id: string;
@@ -91,5 +92,8 @@ export async function claimMission(userId: string, missionId: string) {
     prisma.user.update({ where: { id: userId }, data: { coins: { increment: mission.reward } } }),
   ]);
 
-  return { reward: mission.reward };
+  // Ball bonus for mission completion
+  const newBallBalance = await awardMissionComplete(userId, missionId, mission.title);
+
+  return { reward: mission.reward, ballBalance: newBallBalance };
 }

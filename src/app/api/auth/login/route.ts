@@ -11,6 +11,7 @@ function toUser(u: {
   role: string;
   avatar: string | null;
   coins: number;
+  balls: number;
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -21,6 +22,7 @@ function toUser(u: {
     role: u.role as User["role"],
     avatar: u.avatar ?? undefined,
     coins: u.coins ?? 0,
+    balls: u.balls ?? 0,
     isActive: u.isActive,
     createdAt: u.createdAt.toISOString(),
     updatedAt: u.updatedAt.toISOString(),
@@ -43,7 +45,7 @@ export const POST = route(async (req) => {
   if (!user) {
     throw new ApiError(ERROR_CODES.NOT_FOUND, "Foydalanuvchi topilmadi", 404);
   }
-  const res = json({ success: true, data: toUser(user) });
+  const res = json({ success: true, data: toUser(user as any) });
   setSessionCookie(res, user.id);
   return res;
 });

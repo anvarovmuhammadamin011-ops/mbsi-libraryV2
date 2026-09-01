@@ -39,6 +39,7 @@ export interface User {
   role: UserRole;
   avatar?: string;
   coins?: number;
+  balls?: number;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;

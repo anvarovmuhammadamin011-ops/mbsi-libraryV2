@@ -13,6 +13,7 @@ import {
   Tags,
   MessageSquare,
   Sparkles,
+  Star,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -33,6 +34,7 @@ const NAV_ITEMS: NavItem[] = [
   { label: "Categories", href: "/admin/categories", icon: Tags },
   { label: "Users", href: "/admin/users", icon: Users },
   { label: "Reviews", href: "/admin/reviews", icon: MessageSquare },
+  { label: "Balls", href: "/admin/balls", icon: Star },
   { label: "AI Assistant", href: "/admin/ai-assistant", icon: Sparkles },
   { label: "Settings", href: "/admin/settings", icon: Settings },
 ];

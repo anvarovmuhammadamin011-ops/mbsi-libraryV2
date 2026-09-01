@@ -26,19 +26,21 @@ model User {
   externalUserId  String?  @map("external_user_id") // future MBSI SSO link
   telegramId      String?  @unique @map("telegram_id") // Telegram bot link
   coins           Int      @default(0)
+  balls           Float    @default(0) // Ball system (0-12)
   isActive        Boolean  @default(true) @map("is_active")
   createdAt       DateTime @default(now()) @map("created_at")
   updatedAt       DateTime @updatedAt @map("updated_at")
 
-  progress    ReadingProgress[]
-  sessions    ReadingSession[]
-  bookmarks   Bookmark[]
-  favorites   Favorite[]
-  ratings     Rating[]
-  reviews     Review[]
-  readingGoals ReadingGoal[]
-  userMissions UserMission[]
-  auditLogs   AuditLog[]
+  progress          ReadingProgress[]
+  sessions          ReadingSession[]
+  bookmarks         Bookmark[]
+  favorites         Favorite[]
+  ratings           Rating[]
+  reviews           Review[]
+  readingGoals      ReadingGoal[]
+  userMissions      UserMission[]
+  auditLogs         AuditLog[]
+  ballTransactions  BallTransaction[]
 
   @@index([role])
   @@index([isActive])
@@ -337,4 +339,22 @@ model BookContent {
 
   @@index([bookId])
   @@map("book_contents")
+}
+
+// Ball transaction history - tracks all +/− ball changes
+model BallTransaction {
+  id          String   @id @default(cuid())
+  userId      String   @map("user_id")
+  amount      Float    // +0.3, -0.5, +1, -2 etc.
+  balance     Float    // balance after this transaction
+  type        String   // BOOK_READ | MISSION_COMPLETE | MISSION_PENALTY | ADMIN_GIVE | ADMIN_TAKE | MANUAL
+  description String?
+  referenceId String?  @map("reference_id") // bookId, missionId etc.
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([createdAt])
+  @@map("ball_transactions")
 }
