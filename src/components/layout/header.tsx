@@ -67,10 +67,10 @@ export function Header() {
       {/* Search — clickable, navigates to /search */}
       <Link
         href="/search"
-        className="relative max-w-sm flex-1 flex items-center h-10 rounded-lg bg-muted/50 border border-transparent hover:border-primary/20 hover:bg-card transition-colors cursor-text"
+        className="relative flex items-center h-10 rounded-lg bg-muted/50 border border-transparent hover:border-primary/20 hover:bg-card transition-colors"
       >
-        <Search className="absolute left-3 h-4 w-4 text-muted-foreground" />
-        <span className="pl-9 text-sm text-muted-foreground">Kitob, muallif qidiring...</span>
+        <Search className="h-4 w-4 text-muted-foreground mx-3" />
+        <span className="hidden md:inline text-sm text-muted-foreground pr-3">Kitob, muallif qidiring...</span>
       </Link>
 
       <div className="flex items-center gap-1">
