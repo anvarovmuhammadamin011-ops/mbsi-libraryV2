@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Target, Clock, CheckCircle, XCircle, Trophy, Coins, Gift } from "lucide-react";
+import { Target, Clock, CheckCircle, XCircle, Trophy, Coins, Gift, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { api } from "@/lib/api-client";
@@ -13,12 +13,21 @@ type Mission = {
   targetType: string;
   target: number;
   reward: number;
+  difficulty: string;
+  ballReward: number;
   startDate: string;
   endDate: string;
   isActive: boolean;
   progress: number;
   claimed: boolean;
   status: "active" | "completed" | "claimable" | "expired";
+};
+
+const DIFFICULTY_CONFIG: Record<string, { label: string; color: string; bg: string }> = {
+  EASY: { label: "Oson", color: "text-green-600", bg: "bg-green-100 dark:bg-green-950/30" },
+  MEDIUM: { label: "O'rtacha", color: "text-blue-600", bg: "bg-blue-100 dark:bg-blue-950/30" },
+  HARD: { label: "Qiyin", color: "text-orange-600", bg: "bg-orange-100 dark:bg-orange-950/30" },
+  EPIC: { label: "Epik", color: "text-purple-600", bg: "bg-purple-100 dark:bg-purple-950/30" },
 };
 
 export default function MissionsPage() {
@@ -84,17 +93,27 @@ export default function MissionsPage() {
                         <p className="text-xs text-muted-foreground">{m.description}</p>
                       </div>
                     </div>
-                    <span className="text-sm font-bold text-amber-600">{pct}%</span>
+                    <div className="flex items-center gap-2">
+                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${DIFFICULTY_CONFIG[m.difficulty]?.bg ?? ''} ${DIFFICULTY_CONFIG[m.difficulty]?.color ?? ''}`}>
+                        {DIFFICULTY_CONFIG[m.difficulty]?.label ?? m.difficulty}
+                      </span>
+                      <span className="text-sm font-bold text-amber-600">{pct}%</span>
+                    </div>
                   </div>
                   <div className="w-full h-2.5 rounded-full bg-amber-100 dark:bg-amber-950 overflow-hidden mb-3">
                     <div className="h-full rounded-full bg-amber-500" style={{ width: `${pct}%` }} />
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="flex items-center gap-1 text-xs font-medium text-green-600">
-                      <Coins size={12} /> +{m.reward} coin
-                    </span>
+                    <div className="flex items-center gap-3">
+                      <span className="flex items-center gap-1 text-xs font-medium text-green-600">
+                        <Coins size={12} /> +{m.reward} coin
+                      </span>
+                      <span className="flex items-center gap-1 text-xs font-medium text-yellow-600">
+                        <Star size={12} /> +{m.ballReward} ball
+                      </span>
+                    </div>
                     <Button size="sm" onClick={() => claim(m.id)} className="bg-amber-500 hover:bg-amber-600 text-white">
-                      Topshirish — +{m.reward} coin
+                      Topshirish
                     </Button>
                   </div>
                 </div>
@@ -125,7 +144,12 @@ export default function MissionsPage() {
                         <p className="text-xs text-muted-foreground">{m.description}</p>
                       </div>
                     </div>
-                    <span className="text-sm font-bold text-primary">{pct}%</span>
+                    <div className="flex items-center gap-2">
+                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${DIFFICULTY_CONFIG[m.difficulty]?.bg ?? ''} ${DIFFICULTY_CONFIG[m.difficulty]?.color ?? ''}`}>
+                        {DIFFICULTY_CONFIG[m.difficulty]?.label ?? m.difficulty}
+                      </span>
+                      <span className="text-sm font-bold text-primary">{pct}%</span>
+                    </div>
                   </div>
                   <div className="w-full h-2.5 rounded-full bg-muted overflow-hidden mb-3">
                     <div className="h-full rounded-full bg-primary transition-all duration-500" style={{ width: `${pct}%` }} />
@@ -135,9 +159,14 @@ export default function MissionsPage() {
                       {m.progress} / {m.target} {m.targetType === "PAGES" ? "sahifa" : "kitob"}
                     </span>
                     <div className="flex items-center gap-3">
-                      <span className="flex items-center gap-1 text-green-600">
-                        <Coins size={12} /> +{m.reward} coin
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className="flex items-center gap-1 text-green-600">
+                          <Coins size={12} /> +{m.reward} coin
+                        </span>
+                        <span className="flex items-center gap-1 text-yellow-600">
+                          <Star size={12} /> +{m.ballReward} ball
+                        </span>
+                      </div>
                       <span className="flex items-center gap-1 text-orange-600">
                         <Clock size={12} /> {new Date(m.endDate).toLocaleDateString("uz-UZ")}
                       </span>
@@ -166,7 +195,7 @@ export default function MissionsPage() {
                   <p className="text-sm font-medium text-foreground">{m.title}</p>
                   <p className="text-xs text-muted-foreground">{m.description}</p>
                 </div>
-                <span className="text-xs font-medium text-green-600">+{m.reward} coin</span>
+                <span className="text-xs font-medium text-green-600">+{m.reward} coin +{m.ballReward} ball</span>
               </div>
             ))}
           </div>

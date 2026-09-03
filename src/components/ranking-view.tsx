@@ -51,12 +51,12 @@ function LeaderboardCard({ entry, rank, currentUserId }: { entry: RankingEntry; 
         </p>
       </div>
 
-      {/* Stats */}
+      {/* Ball stats */}
       <div className="text-right">
-        <p className="text-sm font-semibold text-foreground">
-          {entry.totalPages.toLocaleString()}
+        <p className="text-sm font-semibold text-yellow-600">
+          {(entry as any).balls?.toFixed(1) ?? '0.0'}
         </p>
-        <p className="text-[11px] text-muted-foreground">sahifa</p>
+        <p className="text-[11px] text-muted-foreground">ball</p>
       </div>
     </div>
   );

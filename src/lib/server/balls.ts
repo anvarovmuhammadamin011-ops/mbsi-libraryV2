@@ -3,9 +3,17 @@ import { prisma } from "@/lib/db";
 export const MAX_BALLS = 12;
 export const MIN_BALLS = 0;
 
-export const BOOK_READ_REWARDS = [0.1, 0.15, 0.2, 0.25, 0.3] as const;
-export const MISSION_COMPLETE_REWARD = 0.5;
-export const MISSION_PENALTY = -1;
+// Kitob o'qish uchun juda kam ball beriladi - asosiy ball olish yo'li missiyalar
+export const BOOK_READ_REWARDS = [0.02, 0.03, 0.05, 0.05, 0.08] as const;
+
+// Missiya qiyinlik darajasiga qar ball miqdori
+export const DIFFICULTY_BALL_REWARDS: Record<string, number> = {
+  EASY: 0.3,    // Oson - kam ball
+  MEDIUM: 0.6,  // O'rtacha - o'rtacha ball
+  HARD: 1.0,    // Qiyin - ko'p ball
+  EPIC: 1.5,    // Epik - juda ko'p ball
+};
+export const MISSION_PENALTY = -0.5; // Jazo ham kamroq
 export const ADMIN_GIVE_AMOUNT = 1;
 export const ADMIN_TAKE_AMOUNT = -1;
 
@@ -101,13 +109,15 @@ export async function awardBookRead(userId: string, bookId: string): Promise<num
 export async function awardMissionComplete(
   userId: string,
   missionId: string,
-  missionTitle: string
+  missionTitle: string,
+  difficulty?: string
 ): Promise<number> {
+  const ballReward = DIFFICULTY_BALL_REWARDS[difficulty ?? "MEDIUM"] ?? DIFFICULTY_BALL_REWARDS.MEDIUM;
   const { newBalance } = await addBalls(
     userId,
-    MISSION_COMPLETE_REWARD,
+    ballReward,
     "MISSION_COMPLETE",
-    `Missiya bajarildi: ${missionTitle} (+${MISSION_COMPLETE_REWARD} ball)`,
+    `Missiya bajarildi: ${missionTitle} (+${ballReward} ball)`,
     missionId
   );
 

@@ -449,17 +449,19 @@ async function buildRankData(role: string): Promise<RankAgg[]> {
 }
 
 export async function getRanking(role: "STUDENT" | "TEACHER") {
-  const data = await buildRankData(role);
-  data.sort((a, b) => b.pages - a.pages);
+  // Reyting endi ballar (0-12) bo'yicha hisoblanadi
   const users = await prisma.user.findMany({
-    where: { id: { in: data.map((d) => d.userId) } },
+    where: { role, isActive: true },
+    select: { id: true, name: true, role: true, avatar: true, coins: true, balls: true, isActive: true, createdAt: true, updatedAt: true },
   });
-  const userMap = new Map(users.map((u) => [u.id, u]));
-  const entries: RankingEntry[] = data.map((d, i) => {
-    const u = userMap.get(d.userId)!;
+
+  // Ball bo'yicha saralash (kattadan kichikga)
+  const sorted = users.sort((a, b) => (b.balls ?? 0) - (a.balls ?? 0));
+
+  const entries: RankingEntry[] = sorted.map((u, i) => {
     return {
       rank: i + 1,
-      userId: d.userId,
+      userId: u.id,
       user: {
         id: u.id,
         name: u.name,
@@ -470,10 +472,11 @@ export async function getRanking(role: "STUDENT" | "TEACHER") {
         createdAt: u.createdAt.toISOString(),
         updatedAt: u.updatedAt.toISOString(),
       },
-      totalPages: d.pages,
-      totalBooks: d.books,
-      readingTime: Math.round(d.time / 60),
+      totalPages: 0,
+      totalBooks: 0,
+      readingTime: 0,
       streak: 0,
+      balls: (u as any).balls ?? 0,
     };
   });
   return entries;

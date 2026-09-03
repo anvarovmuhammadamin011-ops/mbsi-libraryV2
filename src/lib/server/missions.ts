@@ -8,6 +8,8 @@ export type MissionWithProgress = {
   targetType: string;
   target: number;
   reward: number;
+  difficulty: string;
+  ballReward: number;
   startDate: Date;
   endDate: Date;
   isActive: boolean;
@@ -54,6 +56,8 @@ export async function getMissionsForUser(userId: string): Promise<MissionWithPro
       targetType: m.targetType,
       target: m.target,
       reward: m.reward,
+      difficulty: (m as any).difficulty ?? "MEDIUM",
+      ballReward: (m as any).ballReward ?? 0.5,
       startDate: m.startDate,
       endDate: m.endDate,
       isActive: m.isActive,
@@ -92,8 +96,9 @@ export async function claimMission(userId: string, missionId: string) {
     prisma.user.update({ where: { id: userId }, data: { coins: { increment: mission.reward } } }),
   ]);
 
-  // Ball bonus for mission completion
-  const newBallBalance = await awardMissionComplete(userId, missionId, mission.title);
+  // Ball bonus for mission completion (based on difficulty)
+  const difficulty = (mission as any).difficulty ?? "MEDIUM";
+  const newBallBalance = await awardMissionComplete(userId, missionId, mission.title, difficulty);
 
   return { reward: mission.reward, ballBalance: newBallBalance };
 }

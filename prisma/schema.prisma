@@ -237,6 +237,8 @@ model Mission {
   targetType  String   // PAGES | BOOKS
   target      Int
   reward      Int      @default(10)
+  difficulty  String   @default("MEDIUM") // EASY | MEDIUM | HARD | EPIC
+  ballReward  Float    @default(0.5) @map("ball_reward") // ball bonus for this mission
   startDate   DateTime @map("start_date")
   endDate     DateTime @map("end_date")
   isActive    Boolean  @default(true) @map("is_active")

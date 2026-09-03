@@ -211,6 +211,7 @@ export interface RankingEntry {
   totalBooks: number;
   readingTime: number;
   streak: number;
+  balls?: number;
 }
 
 // ─── API Response ───────────────────────────────────────────

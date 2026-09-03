@@ -10,6 +10,13 @@ export const GET = route(async () => {
   return json({ success: true, data: missions });
 });
 
+const DIFFICULTY_BALL_REWARDS: Record<string, number> = {
+  EASY: 0.3,
+  MEDIUM: 0.6,
+  HARD: 1.0,
+  EPIC: 1.5,
+};
+
 export const POST = route(async (req) => {
   const admin = await requireRole("ADMIN");
   if (!admin) throw new ApiError(ERROR_CODES.FORBIDDEN, "Ruxsat yo'q", 403);
@@ -19,6 +26,7 @@ export const POST = route(async (req) => {
     targetType: string;
     target: number;
     reward: number;
+    difficulty?: string;
     startDate: string;
     endDate: string;
   }>(req);
@@ -28,6 +36,9 @@ export const POST = route(async (req) => {
   }
   if (!["PAGES", "BOOKS"].includes(body.targetType)) throw new ApiError(ERROR_CODES.VALIDATION, "targetType PAGES yoki BOOKS bo'lishi kerak", 400);
 
+  const difficulty = body.difficulty && ["EASY", "MEDIUM", "HARD", "EPIC"].includes(body.difficulty) ? body.difficulty : "MEDIUM";
+  const ballReward = DIFFICULTY_BALL_REWARDS[difficulty] ?? 0.6;
+
   const mission = await prisma.mission.create({
     data: {
       title: body.title.trim(),
@@ -35,6 +46,8 @@ export const POST = route(async (req) => {
       targetType: body.targetType,
       target: Number(body.target),
       reward: Number(body.reward),
+      difficulty,
+      ballReward,
       startDate: new Date(body.startDate),
       endDate: new Date(body.endDate),
     },

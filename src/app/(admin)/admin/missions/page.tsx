@@ -16,6 +16,7 @@ type Mission = {
   targetType: string;
   target: number;
   reward: number;
+  difficulty: string;
   startDate: string;
   endDate: string;
   isActive: boolean;
@@ -31,6 +32,7 @@ export default function AdminMissionsPage() {
     targetType: "PAGES",
     target: 50,
     reward: 20,
+    difficulty: "MEDIUM",
     startDate: new Date().toISOString().slice(0, 10),
     endDate: new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10),
   });
@@ -61,7 +63,7 @@ export default function AdminMissionsPage() {
         await api.post("/api/admin/missions", form);
         toast.success("Missiya yaratildi — o'quvchilar coin oladi");
       }
-      setForm({ title: "", description: "", targetType: "PAGES", target: 50, reward: 20, startDate: new Date().toISOString().slice(0,10), endDate: new Date(Date.now()+7*86400000).toISOString().slice(0,10) });
+      setForm({ title: "", description: "", targetType: "PAGES", target: 50, reward: 20, difficulty: "MEDIUM", startDate: new Date().toISOString().slice(0,10), endDate: new Date(Date.now()+7*86400000).toISOString().slice(0,10) });
       setShowForm(false);
       setEditing(null);
       load();
@@ -85,6 +87,7 @@ export default function AdminMissionsPage() {
       targetType: m.targetType,
       target: m.target,
       reward: m.reward,
+      difficulty: (m as any).difficulty ?? "MEDIUM",
       startDate: m.startDate.slice(0,10),
       endDate: m.endDate.slice(0,10),
     });
@@ -122,6 +125,15 @@ export default function AdminMissionsPage() {
               <select value={form.targetType} onChange={(e) => setForm({ ...form, targetType: e.target.value })} className="h-9 w-full rounded-md border border-input bg-transparent px-2 text-sm">
                 <option value="PAGES">Sahifalar (PAGES)</option>
                 <option value="BOOKS">Kitoblar (BOOKS)</option>
+              </select>
+            </div>
+            <div className="space-y-1">
+              <Label>Qiyinlik</Label>
+              <select value={form.difficulty} onChange={(e) => setForm({ ...form, difficulty: e.target.value })} className="h-9 w-full rounded-md border border-input bg-transparent px-2 text-sm">
+                <option value="EASY">🟢 Oson (0.3 ball)</option>
+                <option value="MEDIUM">🔵 O'rtacha (0.6 ball)</option>
+                <option value="HARD">🟠 Qiyin (1.0 ball)</option>
+                <option value="EPIC">🟣 Epik (1.5 ball)</option>
               </select>
             </div>
             <div className="space-y-1">
@@ -164,7 +176,7 @@ export default function AdminMissionsPage() {
             <div className="grid grid-cols-3 gap-2 text-xs mb-4">
               <div className="rounded-lg bg-muted p-2 text-center"><p className="text-muted-foreground">Maqsad</p><p className="font-bold">{m.target} {m.targetType === "PAGES" ? "sahifa" : "kitob"}</p></div>
               <div className="rounded-lg bg-yellow-50 dark:bg-yellow-950/20 p-2 text-center"><p className="text-muted-foreground">Mukofot</p><p className="font-bold text-yellow-600 flex items-center justify-center gap-1"><Coins size={12} />{m.reward}</p></div>
-              <div className="rounded-lg bg-muted p-2 text-center"><p className="text-muted-foreground">Turi</p><p className="font-bold">{m.targetType}</p></div>
+              <div className="rounded-lg bg-muted p-2 text-center"><p className="text-muted-foreground">Qiyinlik</p><p className="font-bold">{m.difficulty ?? 'MEDIUM'}</p></div>
             </div>
             <div className="flex gap-1.5">
               <Button variant="ghost" size="sm" className="h-7 text-xs gap-1" onClick={() => startEdit(m)}><Pencil size={12} /> Tahrirlash</Button>
