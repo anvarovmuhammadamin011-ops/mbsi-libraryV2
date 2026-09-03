@@ -36,7 +36,7 @@ function ymd(d: Date): string {
 export function computeStreak(sessionDates: Date[]): number {
   if (sessionDates.length === 0) return 0;
   const days = new Set(sessionDates.map((d) => ymd(d)));
-  let cursor = new Date();
+  const cursor = new Date();
   // If no activity today, allow streak to still count if active yesterday.
   if (!days.has(ymd(cursor))) {
     cursor.setDate(cursor.getDate() - 1);

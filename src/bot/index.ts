@@ -91,7 +91,7 @@ bot.callbackQuery(/^login_(.+)$/, async (ctx) => {
   const telegramId = ctx.from.id;
 
   // Check if user exists with this role
-  let user = await prisma.user.findFirst({
+  const user = await prisma.user.findFirst({
     where: { role: role as any, isActive: true },
     orderBy: { createdAt: "asc" },
   });

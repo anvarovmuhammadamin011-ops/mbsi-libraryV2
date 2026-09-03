@@ -68,7 +68,7 @@ export async function getAiRecommendations(userId: string, limit = 6): Promise<A
     take: limit * 2,
   });
 
-  let recommendations: AiRecommendation[] = candidates.slice(0, limit).map((b) => ({
+  const recommendations: AiRecommendation[] = candidates.slice(0, limit).map((b) => ({
     book: toApiBook(b as BookRow),
     reason: getCategoryReason(topCategory!),
   }));

@@ -44,7 +44,7 @@ function toIndexed(book: BookRow): IndexedBook {
 async function getClient() {
   if (!env.meiliHost) return null;
   try {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
+     
     const mod = await import(/* webpackIgnore: true */ "meilisearch" as string);
     const MeiliSearch = (mod as any).MeiliSearch ?? (mod as any).default;
     return new MeiliSearch({
