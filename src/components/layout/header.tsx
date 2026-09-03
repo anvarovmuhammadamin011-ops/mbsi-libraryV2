@@ -52,6 +52,8 @@ export function Header() {
             width={32}
             height={32}
             className="rounded-lg"
+            loading="eager"
+            priority
           />
         </Link>
       </div>

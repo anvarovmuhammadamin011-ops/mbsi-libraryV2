@@ -66,6 +66,8 @@ export function StudentSidebar() {
               width={36}
               height={36}
               className="rounded-lg"
+              loading="eager"
+              priority
             />
           </Link>
         </div>
@@ -148,6 +150,8 @@ export function StudentSidebar() {
                 width={32}
                 height={32}
                 className="rounded-lg"
+                loading="eager"
+                priority
               />
               <div className="flex flex-col">
                 <span className="text-sm font-bold tracking-tight text-foreground leading-none">

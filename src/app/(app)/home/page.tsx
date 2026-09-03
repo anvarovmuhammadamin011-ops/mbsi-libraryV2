@@ -635,6 +635,7 @@ function ContinueReadingCard({
                 fill
                 className="object-cover"
                 sizes="80px"
+                priority
               />
             ) : (
               <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-primary/20 to-primary/5">
