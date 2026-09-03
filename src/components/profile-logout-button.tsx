@@ -18,11 +18,11 @@ export function ProfileLogoutButton() {
     <button
       type="button"
       onClick={handleLogout}
-      className="flex w-full items-center justify-between px-4 py-3.5 text-sm font-medium text-red-600 transition-colors hover:bg-muted/50 dark:text-red-400"
+      className="flex w-full items-center justify-between px-5 py-4 text-sm font-medium text-red-600 transition-colors hover:bg-muted/50 dark:text-red-400"
     >
-      <span className="flex items-center gap-3">
-        <LogOut size={18} className="text-red-500" />
-        Log out
+      <span className="flex items-center gap-4">
+        <LogOut size={20} className="text-red-500" />
+        Chiqish
       </span>
     </button>
   );

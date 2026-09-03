@@ -3,6 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
+import { useTheme } from "next-themes";
 import {
   Home,
   BookMarked,
@@ -14,12 +15,15 @@ import {
   Shield,
   Search,
   Library,
+  Target,
+  Sun,
+  Moon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useAuthStore } from "@/lib/auth-store";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface NavItem {
   label: string;
@@ -27,19 +31,23 @@ interface NavItem {
   icon: React.ComponentType<{ size?: number; className?: string }>;
 }
 
-// Phase 2 — Student/Teacher sidebar: Home, Search, Books, My Library, Profile
 const NAV_ITEMS: NavItem[] = [
   { label: "Bosh sahifa", href: "/home", icon: Home },
   { label: "Qidiruv", href: "/search", icon: Search },
   { label: "Kitoblar", href: "/books", icon: BookMarked },
   { label: "Kutubxonam", href: "/library", icon: Library },
+  { label: "Shaxsiy reja", href: "/plan", icon: Target },
   { label: "Profil", href: "/profile", icon: User },
 ];
 
 export function StudentSidebar() {
   const pathname = usePathname();
   const { user, logout } = useAuthStore();
+  const { theme, setTheme } = useTheme();
   const [collapsed, setCollapsed] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => setMounted(true), []);
 
   if (!user) return null;
 
@@ -91,12 +99,23 @@ export function StudentSidebar() {
           })}
         </nav>
 
+        {/* Theme toggle */}
+        <div className="px-1.5 pb-2">
+          <button
+            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+            className="flex h-12 w-12 items-center justify-center rounded-xl text-muted-foreground hover:bg-muted hover:text-foreground transition-all"
+            aria-label="Mavzuni almashtirish"
+          >
+            {mounted && theme === "dark" ? <Sun size={22} /> : <Moon size={22} />}
+          </button>
+        </div>
+
         {/* Admin link (if admin) */}
         {isAdmin && (
           <div className="px-1.5 pb-2">
             <Link
               href="/admin"
-              title="Admin panel"
+              title="Admin paneli"
               className="flex h-12 w-12 items-center justify-center rounded-xl text-muted-foreground hover:bg-muted hover:text-foreground transition-all"
             >
               <Shield size={22} />
@@ -151,7 +170,7 @@ export function StudentSidebar() {
           </Button>
         </div>
 
-        {/* Navigation — Phase 2: Home, Search, Books, My Library, Profile */}
+        {/* Navigation */}
         <ScrollArea className="flex-1 py-3 px-2">
           <nav className="flex flex-col gap-0.5">
             {NAV_ITEMS.map((item) => {
@@ -181,6 +200,23 @@ export function StudentSidebar() {
             })}
           </nav>
         </ScrollArea>
+
+        {/* Theme toggle */}
+        <div className="px-2 pb-2">
+          <button
+            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+            className={cn(
+              "flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition-all duration-150 w-full",
+              "text-muted-foreground hover:bg-muted hover:text-foreground"
+            )}
+            aria-label="Mavzuni almashtirish"
+          >
+            {mounted && theme === "dark" ? <Sun size={18} className="shrink-0" /> : <Moon size={18} className="shrink-0" />}
+            {!collapsed && <span className="flex-1 text-left">
+              {mounted ? (theme === "dark" ? "Yorug' mavzu" : "Qorong'u mavzu") : "Mavzu"}
+            </span>}
+          </button>
+        </div>
 
         {/* Admin link (if admin) */}
         {isAdmin && !collapsed && (

@@ -17,7 +17,7 @@ export function MobileNav() {
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-card/95 backdrop-blur-lg md:hidden safe-area-bottom">
-      <div className="flex items-center justify-around px-2 py-2">
+      <div className="flex items-center justify-around px-2 py-1.5">
         {NAV_ITEMS.map((item) => {
           const isActive =
             pathname === item.href ||
@@ -29,12 +29,11 @@ export function MobileNav() {
               key={item.href}
               href={item.href}
               className={cn(
-                "flex flex-col items-center gap-0.5 rounded-xl px-4 py-2 text-[11px] font-medium transition-colors min-w-[56px] min-h-[44px] justify-center",
+                "flex flex-col items-center gap-0.5 rounded-xl px-3 py-1.5 text-[11px] font-medium transition-colors min-w-[56px]",
                 isActive
                   ? "text-primary"
                   : "text-muted-foreground"
               )}
-              aria-label={item.label}
             >
               <Icon size={22} strokeWidth={isActive ? 2.5 : 2} />
               <span>{item.label}</span>

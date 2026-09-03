@@ -2,7 +2,6 @@ import { getSessionUser } from "@/lib/server/auth";
 import { prisma } from "@/lib/db";
 import { computeStreak, getPersonalStats } from "@/lib/server/reading";
 import { getUserAchievements } from "@/lib/server/achievements";
-import { ReadingGoalCard } from "@/components/reading-goal-card";
 import { ReadingJourneyCard } from "@/components/reading-journey-card";
 import { BallDisplay } from "@/components/ball-display";
 import {
@@ -16,18 +15,17 @@ import {
   Clock,
   Award,
   TrendingUp,
-  Sun,
+  Target,
 } from "lucide-react";
 import Link from "next/link";
 import { ProfileLogoutButton } from "@/components/profile-logout-button";
-import { ThemeToggle } from "@/components/theme-toggle";
 
 export const dynamic = "force-dynamic";
 
 function roleLabel(role: string): string {
   if (role === "ADMIN") return "Admin";
-  if (role === "TEACHER") return "Teacher";
-  return "Student";
+  if (role === "TEACHER") return "O'qituvchi";
+  return "O'quvchi";
 }
 
 function MenuRow({
@@ -42,13 +40,13 @@ function MenuRow({
   return (
     <Link
       href={href}
-      className="flex items-center justify-between px-4 py-3.5 text-sm transition-colors hover:bg-muted/50"
+      className="flex items-center justify-between px-5 py-4 text-sm transition-colors hover:bg-muted/50"
     >
-      <span className="flex items-center gap-3 text-foreground">
+      <span className="flex items-center gap-4 text-foreground">
         <span className="text-muted-foreground">{icon}</span>
         {label}
       </span>
-      <ChevronRight size={16} className="text-muted-foreground" />
+      <ChevronRight size={18} className="text-muted-foreground" />
     </Link>
   );
 }
@@ -93,7 +91,7 @@ export default async function ProfilePage() {
   const monthMinutes = Math.floor((monthSeconds % 3600) / 60);
 
   return (
-    <div className="max-w-md md:max-w-lg lg:max-w-xl mx-auto animate-fade-in space-y-4">
+    <div className="max-w-md md:max-w-lg lg:max-w-xl mx-auto animate-fade-in space-y-4 pb-20 md:pb-0">
       {/* Hero Card */}
       <div className="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
         <div className="flex flex-col items-center px-6 py-8 text-center">
@@ -118,19 +116,19 @@ export default async function ProfilePage() {
           <div className="flex flex-col items-center gap-1 px-2 py-4 text-center">
             <BookOpen size={18} className="text-muted-foreground" />
             <span className="text-lg font-bold text-foreground">{totalBooks}</span>
-            <span className="text-xs text-muted-foreground">Books</span>
+            <span className="text-xs text-muted-foreground">Kitoblar</span>
           </div>
           <div className="flex flex-col items-center gap-1 px-2 py-4 text-center">
             <Flame size={18} className="text-orange-500" />
             <span className="text-lg font-bold text-foreground">{streak}</span>
-            <span className="text-xs text-muted-foreground">Day Streak</span>
+            <span className="text-xs text-muted-foreground">Kunlik streak</span>
           </div>
           <div className="flex flex-col items-center gap-1 px-2 py-4 text-center">
             <Star size={18} className="text-amber-500" />
             <span className="text-lg font-bold text-foreground">
               {avgRating === 0 ? "0" : avgRating.toFixed(1)}
             </span>
-            <span className="text-xs text-muted-foreground">Avg Rating</span>
+            <span className="text-xs text-muted-foreground">O'rtacha reyting</span>
           </div>
         </div>
       </div>
@@ -140,10 +138,10 @@ export default async function ProfilePage() {
         <BallDisplay initialBalls={(user as any).balls ?? 0} />
       </div>
 
-      {/* Reading Journey — most important section, prominently placed */}
+      {/* Reading Journey */}
       <ReadingJourneyCard booksCompleted={totalBooks} streak={streak} monthHours={monthHours} monthMinutes={monthMinutes} />
 
-      {/* Achievements — horizontal scroll for compact display */}
+      {/* Achievements */}
       <div className="rounded-2xl border border-border bg-card shadow-sm px-4 py-4">
         <h2 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
           <Award size={14} className="text-amber-500" /> Yutuqlar
@@ -163,7 +161,7 @@ export default async function ProfilePage() {
                 <p className="text-xs font-semibold text-foreground line-clamp-1">{a.title}</p>
                 <p className="text-[11px] text-muted-foreground line-clamp-1">{a.description}</p>
                 <p className="mt-1 text-xs font-medium text-primary">{a.progress}</p>
-                {a.unlocked &&                 <p className="mt-1 text-[11px] font-bold text-green-600">✓ Ochildi</p>}
+                {a.unlocked && <p className="mt-1 text-[11px] font-bold text-green-600">✓ Ochildi</p>}
               </div>
             ))}
           </div>
@@ -176,7 +174,7 @@ export default async function ProfilePage() {
         )}
       </div>
 
-      {/* Reading Statistics — compact 2x2 grid */}
+      {/* Reading Statistics */}
       <div className="rounded-2xl border border-border bg-card shadow-sm px-4 py-4">
         <h2 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
           <TrendingUp size={14} className="text-primary" /> O'qish statistikasi
@@ -207,26 +205,11 @@ export default async function ProfilePage() {
         </div>
       </div>
 
-      {/* Personal Plan — CTA moved higher for visibility */}
-      <div className="rounded-2xl border border-border bg-card shadow-sm px-4 py-4">
-        <h2 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
-          <TrendingUp size={14} className="text-primary" /> Shaxsiy reja
-        </h2>
-        <ReadingGoalCard />
-      </div>
-
-      {/* Theme toggle */}
-      <div className="rounded-2xl border border-border bg-card shadow-sm px-4 py-4">
-        <h2 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
-          <Sun size={14} className="text-primary" /> Ko'rinish
-        </h2>
-        <ThemeToggle />
-      </div>
-
       {/* Menu items */}
       <nav className="rounded-2xl border border-border bg-card shadow-sm flex flex-col divide-y divide-border/50 overflow-hidden">
-        <MenuRow icon={<History size={18} />} label="O'qish tarixi" href="/history" />
-        <MenuRow icon={<Settings size={18} />} label="Sozlamalar" href="/settings" />
+        <MenuRow icon={<Target size={20} />} label="Shaxsiy reja" href="/plan" />
+        <MenuRow icon={<History size={20} />} label="O'qish tarixi" href="/history" />
+        <MenuRow icon={<Settings size={20} />} label="Sozlamalar" href="/settings" />
         <ProfileLogoutButton />
       </nav>
     </div>

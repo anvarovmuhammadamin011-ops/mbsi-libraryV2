@@ -2,11 +2,10 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname, useRouter } from "next/navigation";
-import { Moon, Sun, Search, Menu, LogOut, User, Bell } from "lucide-react";
+import { usePathname } from "next/navigation";
+import { Moon, Sun, Search, LogOut, User } from "lucide-react";
 import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { useAuthStore } from "@/lib/auth-store";
 import {
   DropdownMenu,
@@ -35,20 +34,12 @@ const pageTitles: Record<string, string> = {
 
 export function Header() {
   const pathname = usePathname();
-  const router = useRouter();
   const { theme, setTheme } = useTheme();
   const { user, logout } = useAuthStore();
 
   if (!user) return null;
 
   const title = pageTitles[pathname] || "MBSI Library";
-
-  function onSearch(e: React.KeyboardEvent<HTMLInputElement>) {
-    if (e.key === "Enter") {
-      const q = (e.target as HTMLInputElement).value.trim();
-      router.push(q ? `/search?q=${encodeURIComponent(q)}` : "/books");
-    }
-  }
 
   return (
     <header className="sticky top-0 z-40 flex h-16 items-center gap-4 border-b border-border bg-background/80 backdrop-blur-md px-4 lg:px-6">
@@ -73,15 +64,14 @@ export function Header() {
       {/* Spacer */}
       <div className="flex-1" />
 
-      {/* Search */}
-      <div className="relative max-w-sm flex-1">
-        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-        <Input
-          placeholder="Kitob, muallif qidiring…"
-          className="h-10 pl-9 bg-muted/50 border-transparent focus:border-primary/20 focus:bg-card"
-          onKeyDown={onSearch}
-        />
-      </div>
+      {/* Search — clickable, navigates to /search */}
+      <Link
+        href="/search"
+        className="relative max-w-sm flex-1 flex items-center h-10 rounded-lg bg-muted/50 border border-transparent hover:border-primary/20 hover:bg-card transition-colors cursor-text"
+      >
+        <Search className="absolute left-3 h-4 w-4 text-muted-foreground" />
+        <span className="pl-9 text-sm text-muted-foreground">Kitob, muallif qidiring...</span>
+      </Link>
 
       <div className="flex items-center gap-1">
         {/* Theme toggle */}
