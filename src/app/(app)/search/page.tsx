@@ -83,6 +83,7 @@ function SearchPageInner() {
   const handleRecentClick = (term: string) => {
     setQuery(term);
     setHasSearched(true);
+    addRecent(term);
     inputRef.current?.focus();
   };
 
