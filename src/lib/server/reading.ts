@@ -486,10 +486,14 @@ export async function getUserRank(
   userId: string,
   role: string
 ): Promise<number> {
-  const data = await buildRankData(role);
-  data.sort((a, b) => b.pages - a.pages);
-  const idx = data.findIndex((d) => d.userId === userId);
-  return idx === -1 ? data.length + 1 : idx + 1;
+  // Reyting endi ballar (0-12) bo'yicha
+  const users = await prisma.user.findMany({
+    where: { role, isActive: true },
+    select: { id: true, balls: true },
+  });
+  const sorted = users.sort((a, b) => (b.balls ?? 0) - (a.balls ?? 0));
+  const idx = sorted.findIndex((u) => u.id === userId);
+  return idx === -1 ? sorted.length + 1 : idx + 1;
 }
 
 // ─── Personal statistics ────────────────────────────────────

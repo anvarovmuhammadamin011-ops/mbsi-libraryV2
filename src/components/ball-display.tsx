@@ -136,15 +136,27 @@ export function BallDisplay({ initialBalls = 0, showDetails = true }: Props) {
                 <ul className="text-xs text-muted-foreground space-y-1">
                   <li className="flex items-center gap-2">
                     <TrendingUp size={12} className="text-green-500" />
-                    Kitob o'qish: +0.1 ~ +0.3
+                    Kitob o'qish: +0.02 ~ +0.08 (kam)
                   </li>
                   <li className="flex items-center gap-2">
                     <TrendingUp size={12} className="text-green-500" />
-                    Missiya bajarish: +0.5
+                    Oson missiya: +0.3 ball
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <TrendingUp size={12} className="text-green-500" />
+                    O'rtacha missiya: +0.6 ball
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <TrendingUp size={12} className="text-blue-500" />
+                    Qiyin missiya: +1.0 ball
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <TrendingUp size={12} className="text-purple-500" />
+                    Epik missiya: +1.5 ball
                   </li>
                   <li className="flex items-center gap-2">
                     <TrendingDown size={12} className="text-red-500" />
-                    Missiya bajarilmasa: -1.0
+                    Missiya bajarilmasa: -0.5
                   </li>
                 </ul>
               </div>

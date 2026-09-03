@@ -43,13 +43,14 @@ export default async function StatisticsPage() {
   const sessions = userId
     ? await prisma.readingSession.findMany({
         where: { userId },
-        select: { startedAt: true, pagesRead: true },
+        select: { startedAt: true, pagesRead: true, duration: true },
         orderBy: { startedAt: "desc" },
       })
     : [];
 
-  // Calculate reading time (minutes)
-  const totalMinutes = sessions.reduce((sum, s) => sum + s.pagesRead * 1, 0); // ~1 min per page
+  // Calculate reading time (minutes) — from actual session duration
+  const totalSeconds = sessions.reduce((sum, s) => sum + (s.duration ?? 0), 0);
+  const totalMinutes = Math.round(totalSeconds / 60);
 
   // Streak
   let streakDays = 0;
