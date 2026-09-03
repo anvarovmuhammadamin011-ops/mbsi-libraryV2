@@ -50,6 +50,7 @@ export default function RootLayout({
       lang="uz"
       className={`${geistSans.variable} ${geistMono.variable} h-full`}
       suppressHydrationWarning
+      data-scroll-behavior="smooth"
     >
       <head>
         <link rel="manifest" href="/manifest.json" />
