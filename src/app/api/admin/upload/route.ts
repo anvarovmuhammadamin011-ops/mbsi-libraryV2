@@ -128,7 +128,7 @@ export async function POST(req: NextRequest) {
     userId: user.id,
   });
 
-  // Save manually provided text content
+  // Save manually provided text content, or auto-extract from PDF
   if (contentText) {
     await prisma.bookContent.upsert({
       where: { bookId: book.id },
@@ -142,6 +142,11 @@ export async function POST(req: NextRequest) {
         status: "completed",
       },
     });
+  } else {
+    // Auto-extract text from PDF in background
+    runExtractionBackground(book.id, saved.urlOrKey).catch((err) =>
+      console.error("Background extraction failed:", err)
+    );
   }
 
   return success(book, 201);
@@ -149,43 +154,24 @@ export async function POST(req: NextRequest) {
 
 async function runExtractionBackground(bookId: string, pdfKey: string) {
   const { extractTextFromPdf } = await import("@/lib/server/text-extraction");
-  const { translateToUzbek } = await import("@/lib/server/translation");
-  const { analyzeBookContent, extractKeyTerms } = await import("@/lib/server/book-analysis");
 
-  await prisma.bookContent.create({
-    data: { bookId, status: "processing" },
+  await prisma.bookContent.upsert({
+    where: { bookId },
+    create: { bookId, status: "processing" },
+    update: { status: "processing" },
   });
 
   try {
     const extraction = await extractTextFromPdf(pdfKey);
     await prisma.bookContent.update({
       where: { bookId },
-      data: { extractedText: extraction.fullText },
-    });
-
-    const translation = await translateToUzbek(extraction.fullText);
-    await prisma.bookContent.update({
-      where: { bookId },
-      data: { translatedText: translation.translatedText },
-    });
-
-    const [analysis, keyTerms] = await Promise.all([
-      analyzeBookContent(extraction.fullText, extraction.pages),
-      extractKeyTerms(extraction.fullText),
-    ]);
-
-    await prisma.bookContent.update({
-      where: { bookId },
       data: {
-        summary: analysis.summary,
-        keyPoints: analysis.keyPoints,
-        highlights: analysis.highlights,
-        tableOfContents: analysis.tableOfContents,
-        keyTerms: keyTerms,
+        extractedText: extraction.fullText,
         status: "completed",
       },
     });
   } catch (error: any) {
+    console.error(`Extraction failed for book ${bookId}:`, error);
     await prisma.bookContent.update({
       where: { bookId },
       data: {

@@ -55,6 +55,8 @@ interface BookRow {
   createdAt: string;
   coverUrl: string;
   contentText?: string;
+  hasContent?: boolean;
+  contentStatus?: string;
 }
 
 interface Props {
@@ -241,6 +243,21 @@ export function AdminBooksTable({ books, categories }: Props) {
       router.refresh();
     } catch (e: any) {
       toast.error(e.message || "Yangilashda xatolik");
+    }
+  }
+
+  const [extracting, setExtracting] = useState<string | null>(null);
+
+  async function extractBookContent(bookId: string) {
+    setExtracting(bookId);
+    try {
+      const res = await api.post(`/api/books/${bookId}/extract`, { action: "extract" });
+      toast.success("Matn ajratildi!");
+      router.refresh();
+    } catch (e: any) {
+      toast.error(e.message || "Matn ajratishda xatolik");
+    } finally {
+      setExtracting(null);
     }
   }
 
