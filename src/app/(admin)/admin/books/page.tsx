@@ -14,6 +14,7 @@ export default async function AdminBooksPage() {
       include: {
         category: { select: { name: true } },
         author: { select: { name: true } },
+        content: { select: { extractedText: true } },
         _count: { select: { ratings: true, progress: true } },
       },
       take: 200,
@@ -47,6 +48,7 @@ export default async function AdminBooksPage() {
     averageRating: ratingMap.get(b.id) ?? null,
     createdAt: b.createdAt.toISOString(),
     coverUrl: b.coverUrl ?? "",
+    contentText: b.content?.extractedText ?? "",
   }));
 
   return (

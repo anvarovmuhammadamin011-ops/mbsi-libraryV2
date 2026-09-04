@@ -93,36 +93,36 @@
 }
 
 .dark {
-  --background: #0B1220;
-  --foreground: #F8FAFC;
-  --card: #111827;
-  --card-foreground: #F8FAFC;
-  --popover: #111827;
-  --popover-foreground: #F8FAFC;
+  --background: #0B1121;
+  --foreground: #F1F5F9;
+  --card: #131C2E;
+  --card-foreground: #E2E8F0;
+  --popover: #131C2E;
+  --popover-foreground: #E2E8F0;
   --primary: #60A5FA;
-  --primary-foreground: #0B1220;
-  --secondary: #1E293B;
+  --primary-foreground: #0B1121;
+  --secondary: #1A2540;
   --secondary-foreground: #CBD5E1;
-  --muted: #1E293B;
-  --muted-foreground: #a3b1c6;
-  --accent: #172033;
-  --accent-foreground: #60A5FA;
+  --muted: #1A2540;
+  --muted-foreground: #94A3B8;
+  --accent: #1E2D4A;
+  --accent-foreground: #93C5FD;
   --destructive: #F87171;
-  --border: rgba(255, 255, 255, 0.08);
-  --input: rgba(255, 255, 255, 0.1);
+  --border: rgba(255, 255, 255, 0.12);
+  --input: rgba(255, 255, 255, 0.15);
   --ring: #60A5FA;
   --chart-1: #60A5FA;
   --chart-2: #93C5FD;
   --chart-3: #3B82F6;
   --chart-4: #2563EB;
   --chart-5: #1D4ED8;
-  --sidebar: #0F172A;
+  --sidebar: #0E1629;
   --sidebar-foreground: #CBD5E1;
   --sidebar-primary: #60A5FA;
-  --sidebar-primary-foreground: #0B1220;
-  --sidebar-accent: #172033;
-  --sidebar-accent-foreground: #60A5FA;
-  --sidebar-border: rgba(255, 255, 255, 0.08);
+  --sidebar-primary-foreground: #0B1121;
+  --sidebar-accent: #1E2D4A;
+  --sidebar-accent-foreground: #93C5FD;
+  --sidebar-border: rgba(255, 255, 255, 0.10);
   --sidebar-ring: #60A5FA;
 }
 
@@ -246,4 +246,69 @@ html.telegram-webapp {
 
 html.telegram-webapp .mobile-nav {
   padding-bottom: calc(8px + var(--tg-safe-area-inset-bottom)) !important;
+}
+
+/* ─── Dark Mode Component Improvements ──────────────────────── */
+.dark .border-border {
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.dark input,
+.dark textarea,
+.dark select {
+  background-color: #0E1629;
+  border-color: rgba(255, 255, 255, 0.12);
+  color: #E2E8F0;
+}
+
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: #64748B;
+}
+
+.dark input:focus,
+.dark textarea:focus,
+.dark select:focus {
+  border-color: #60A5FA;
+  box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.15);
+}
+
+.dark .hover\:bg-muted:hover {
+  background-color: #1A2540;
+}
+
+.dark .bg-card {
+  background-color: #131C2E;
+}
+
+.dark .bg-muted {
+  background-color: #1A2540;
+}
+
+.dark .bg-muted\/50 {
+  background-color: rgba(26, 37, 64, 0.5);
+}
+
+.dark .bg-muted\/70 {
+  background-color: rgba(26, 37, 64, 0.7);
+}
+
+.dark .text-muted-foreground {
+  color: #94A3B8;
+}
+
+.dark .ring {
+  --tw-ring-color: rgba(96, 165, 250, 0.25);
+}
+
+.dark .shadow-sm {
+  --tw-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.4);
+}
+
+.dark .shadow {
+  --tw-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.5), 0 1px 2px -1px rgba(0, 0, 0, 0.5);
+}
+
+.dark .divide-border > :not([hidden]) ~ :not([hidden]) {
+  border-color: rgba(255, 255, 255, 0.10);
 }

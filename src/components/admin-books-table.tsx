@@ -54,6 +54,7 @@ interface BookRow {
   averageRating: number | null;
   createdAt: string;
   coverUrl: string;
+  contentText?: string;
 }
 
 interface Props {
@@ -69,6 +70,7 @@ interface BookForm {
   totalPages: string;
   coinReward: string;
   description: string;
+  contentText: string;
   isPublished: boolean;
   file: File | null;
   cover: File | null;
@@ -82,6 +84,7 @@ const EMPTY_FORM: BookForm = {
   totalPages: "",
   coinReward: "10",
   description: "",
+  contentText: "",
   isPublished: true,
   file: null,
   cover: null,
@@ -160,6 +163,7 @@ export function AdminBooksTable({ books, categories }: Props) {
       fd.append("coinReward", form.coinReward || "10");
       fd.append("isPublished", String(form.isPublished));
       fd.append("categoryId", form.categoryId);
+      fd.append("contentText", form.contentText);
       fd.append("file", form.file);
       if (form.cover && form.cover.size > 0) fd.append("cover", form.cover);
 
@@ -204,6 +208,7 @@ export function AdminBooksTable({ books, categories }: Props) {
       fd.append("language", editing.language);
       fd.append("totalPages", String(editing.totalPages));
       fd.append("coinReward", String(editing.coinReward ?? 10));
+      fd.append("contentText", editing.contentText ?? "");
       await api.patch(`/api/admin/books/${editing.id}`, fd);
       toast.success("Yangilandi");
       setEditing(null);
@@ -332,6 +337,17 @@ export function AdminBooksTable({ books, categories }: Props) {
                   onChange={(e) => setForm({ ...form, description: e.target.value })}
                   placeholder="Kitob haqida qisqacha..."
                 />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Kitob matni (ixtiyoriy)</Label>
+                <Textarea
+                  rows={6}
+                  value={form.contentText}
+                  onChange={(e) => setForm({ ...form, contentText: e.target.value })}
+                  placeholder="Kitob matnini shu yerga joylashtiring. O'quvchilar onlayn o'qish uchun ishlatiladi..."
+                  className="font-mono text-xs"
+                />
+                <p className="text-[11px] text-muted-foreground">Kitob to'liq matnini kiriting yoki keyinro qo'shing</p>
               </div>
               <div className="space-y-1.5">
                 <Label>PDF fayl *</Label>
@@ -676,6 +692,17 @@ export function AdminBooksTable({ books, categories }: Props) {
                   value={editing.description ?? ""}
                   onChange={(e) => setEditing({ ...editing, description: e.target.value })}
                 />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Kitob matni</Label>
+                <Textarea
+                  rows={5}
+                  value={editing.contentText ?? ""}
+                  onChange={(e) => setEditing({ ...editing, contentText: e.target.value })}
+                  placeholder="Kitob matnini shu yerga joylashtiring..."
+                  className="font-mono text-xs"
+                />
+                <p className="text-[11px] text-muted-foreground">O'quvchilar onlayn o'qish uchun ishlatiladi</p>
               </div>
               <Button onClick={saveEdit} disabled={editSaving} className="gap-2">
                 {editSaving ? <Loader2 className="size-4 animate-spin" /> : null}

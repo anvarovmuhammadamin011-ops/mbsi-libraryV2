@@ -45,6 +45,7 @@ export async function POST(req: NextRequest) {
   const totalPages = Math.max(1, Number(form.get("totalPages")) || 1);
   const coinReward = Math.max(0, Math.min(1000, Number(form.get("coinReward")) || 10));
   const isPublished = String(form.get("isPublished") || "true") !== "false";
+  const contentText = String(form.get("contentText") || "").trim();
 
   if (!file || !title) {
     throw new ApiError(ERROR_CODES.VALIDATION, "Sarlavha va PDF fayl kerak", 400);
@@ -126,6 +127,22 @@ export async function POST(req: NextRequest) {
     fileSize: saved.size,
     userId: user.id,
   });
+
+  // Save manually provided text content
+  if (contentText) {
+    await prisma.bookContent.upsert({
+      where: { bookId: book.id },
+      create: {
+        bookId: book.id,
+        extractedText: contentText,
+        status: "completed",
+      },
+      update: {
+        extractedText: contentText,
+        status: "completed",
+      },
+    });
+  }
 
   return success(book, 201);
 }

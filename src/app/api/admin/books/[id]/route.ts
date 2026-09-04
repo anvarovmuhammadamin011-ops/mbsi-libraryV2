@@ -59,6 +59,30 @@ export const PATCH = route(async (req, ctx) => {
   }
 
   const book = await updateBook(id, { ...data, userId: admin.id });
+
+  // Save book content text if provided
+  const contentText = form.get("contentText");
+  if (contentText !== null) {
+    const text = String(contentText).trim();
+    if (text) {
+      await prisma.bookContent.upsert({
+        where: { bookId: id },
+        create: {
+          bookId: id,
+          extractedText: text,
+          status: "completed",
+        },
+        update: {
+          extractedText: text,
+          status: "completed",
+        },
+      });
+    } else {
+      // If text is empty, delete existing content
+      await prisma.bookContent.deleteMany({ where: { bookId: id } });
+    }
+  }
+
   return success(book);
 });
 
