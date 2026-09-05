@@ -24,24 +24,14 @@ export const POST = route(async (req) => {
   const results = [];
   for (const book of books) {
     try {
-      await prisma.bookContent.upsert({
-        where: { bookId: book.id },
-        create: { bookId: book.id, status: "processing" },
-        update: { status: "processing" },
+      const { processBookExtraction } = await import("@/lib/server/book-processor");
+      const result = await processBookExtraction(book.id, book.pdfUrl!);
+      results.push({
+        id: book.id,
+        title: book.title,
+        status: result.status,
+        textLength: result.textLength ?? 0,
       });
-
-      const { extractTextFromPdf } = await import("@/lib/server/text-extraction");
-      const extraction = await extractTextFromPdf(book.pdfUrl!);
-
-      await prisma.bookContent.update({
-        where: { bookId: book.id },
-        data: {
-          extractedText: extraction.fullText,
-          status: "completed",
-        },
-      });
-
-      results.push({ id: book.id, title: book.title, status: "completed", textLength: extraction.fullText.length });
     } catch (error: any) {
       await prisma.bookContent.update({
         where: { bookId: book.id },

@@ -5,7 +5,7 @@ import { getSessionUser } from "@/lib/server/auth";
 import { getBookBySlug } from "@/lib/server/books";
 import { isFavorite } from "@/lib/server/reading";
 import { prisma } from "@/lib/db";
-import { ArrowLeft, Star } from "lucide-react";
+import { ArrowLeft, Star, BookOpen } from "lucide-react";
 import {
   FavoriteHeartButton,
   LibraryToggleButton,
@@ -150,6 +150,13 @@ export default async function BookDetailPage({
               >
                 READ NOW
               </Link>
+              <Link
+                href={`/reader/${book.slug}/text`}
+                className="flex h-11 w-full items-center justify-center gap-2 rounded-full border border-border bg-card px-6 text-sm font-medium text-foreground shadow-sm hover:bg-muted/50 transition-colors"
+              >
+                <BookOpen size={16} />
+                Matn ko'rinishida o'qish
+              </Link>
               <LibraryToggleButton bookId={book.id} initialFavorite={fav} />
             </div>
 
@@ -287,15 +294,20 @@ function MobileBookDetail({
           </span>
           <span>·</span>
           <span>{formatReaders(readerCount)} readers</span>
-        </div>
-
-        {/* Buttons stacked full width */}
+        </div>          {/* Buttons stacked full width */}
         <div className="mt-6 w-full space-y-3">
           <Link
             href={`/reader/${book.slug}`}
             className="flex h-12 w-full items-center justify-center rounded-full bg-primary px-6 text-sm font-semibold tracking-wide text-primary-foreground shadow-sm hover:bg-primary/90 transition-colors"
           >
             READ NOW
+          </Link>
+          <Link
+            href={`/reader/${book.slug}/text`}
+            className="flex h-11 w-full items-center justify-center gap-2 rounded-full border border-border bg-card px-6 text-sm font-medium text-foreground shadow-sm hover:bg-muted/50 transition-colors"
+          >
+            <BookOpen size={16} />
+            Matn ko'rinishida o'qish
           </Link>
           <LibraryToggleButton bookId={book.id} initialFavorite={fav} />
         </div>

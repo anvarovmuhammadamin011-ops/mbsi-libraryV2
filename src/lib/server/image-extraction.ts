@@ -417,8 +417,8 @@ export async function captionImage(
   imageDataUrl: string,
   surroundingText: string
 ): Promise<string> {
-  const apiKey = process.env.OPENAI_API_KEY;
-  if (!apiKey) return "";
+  const { getAIKey, getAIUrl, getAIVisionModel } = await import("./ai-client");
+  if (!getAIKey()) return "";
 
   try {
     // Extract base64 data from data URL
@@ -427,14 +427,14 @@ export async function captionImage(
 
     const [, mimeType, base64Data] = base64Match;
 
-    const res = await fetch("https://api.openai.com/v1/chat/completions", {
+    const res = await fetch(getAIUrl(), {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${apiKey}`,
+        Authorization: `Bearer ${getAIKey()}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "gpt-4o-mini",
+        model: getAIVisionModel(),
         messages: [
           {
             role: "system",

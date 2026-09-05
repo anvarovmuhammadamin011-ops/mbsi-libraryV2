@@ -153,31 +153,6 @@ export async function POST(req: NextRequest) {
 }
 
 async function runExtractionBackground(bookId: string, pdfKey: string) {
-  const { extractTextFromPdf } = await import("@/lib/server/text-extraction");
-
-  await prisma.bookContent.upsert({
-    where: { bookId },
-    create: { bookId, status: "processing" },
-    update: { status: "processing" },
-  });
-
-  try {
-    const extraction = await extractTextFromPdf(pdfKey);
-    await prisma.bookContent.update({
-      where: { bookId },
-      data: {
-        extractedText: extraction.fullText,
-        status: "completed",
-      },
-    });
-  } catch (error: any) {
-    console.error(`Extraction failed for book ${bookId}:`, error);
-    await prisma.bookContent.update({
-      where: { bookId },
-      data: {
-        status: "error",
-        errorMessage: error.message || "Noma'lum xato",
-      },
-    });
-  }
+  const { processBookExtraction } = await import("@/lib/server/book-processor");
+  await processBookExtraction(bookId, pdfKey, { analyze: true });
 }

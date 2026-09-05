@@ -1,4 +1,5 @@
 import { chunkText } from "./text-extraction";
+import { aiChat } from "./ai-client";
 
 export type HighlightedSection = {
   text: string;
@@ -15,43 +16,7 @@ export type AnalysisResult = {
   tableOfContents: { title: string; page: number }[];
 };
 
-async function callOpenAI(prompt: string, systemMessage: string): Promise<string> {
-  const apiKey = process.env.OPENAI_API_KEY;
-  if (!apiKey) {
-    throw new Error("OPENAI_API_KEY topilmadi");
-  }
-
-  const res = await fetch("https://api.openai.com/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      model: "gpt-4o-mini",
-      messages: [
-        { role: "system", content: systemMessage },
-        { role: "user", content: prompt },
-      ],
-      max_tokens: 4000,
-      temperature: 0.3,
-    }),
-  });
-
-  if (!res.ok) {
-    const error = await res.text();
-    throw new Error(`OpenAI API xatosi: ${error}`);
-  }
-
-  const data = await res.json();
-  return data.choices?.[0]?.message?.content?.trim() || "";
-}
-
-export async function analyzeBookContent(
-  fullText: string,
-  pages: { page: number; text: string }[]
-): Promise<AnalysisResult> {
-  const systemMessage = `Sen kitob tahlilchisan. Kitob matnini tahlil qilib, muhim joylarni ajrat.
+const ANALYSIS_SYSTEM = `Sen kitob tahlilchisan. Kitob matnini tahlil qilib, muhim joylarni ajrat.
 JSON formatida javob ber:
 
 {
@@ -72,10 +37,34 @@ JSON formatida javob ber:
 
 Qoidalar:
 1. Faqat JSON qaytar, boshqa hech narsa yozma
-2. Har bir.highlight uchun aniq sabab yoz
+2. Har bir highlight uchun aniq sabab yoz
 3. Muhimlik darajasini to'g'ri belgila
 4. Mundarija sahifalar raqamini kiriting`;
 
+function parseJSON<T>(response: string): T | null {
+  const jsonMatch = response.match(/\{[\s\S]*\}|\[[\s\S]*\]/);
+  if (!jsonMatch) return null;
+  try {
+    return JSON.parse(jsonMatch[0]);
+  } catch {
+    // Try to repair truncated JSON (e.g. missing closing brace)
+    let candidate = jsonMatch[0];
+    if (!candidate.endsWith("}") && !candidate.endsWith("]")) {
+      candidate += candidate.startsWith("[") ? "]" : "}";
+      try {
+        return JSON.parse(candidate);
+      } catch {
+        return null;
+      }
+    }
+    return null;
+  }
+}
+
+export async function analyzeBookContent(
+  fullText: string,
+  pages: { page: number; text: string }[]
+): Promise<AnalysisResult> {
   const chunks = chunkText(fullText, 4000);
   const allHighlights: HighlightedSection[] = [];
   const allKeyPoints: string[] = [];
@@ -88,10 +77,21 @@ Qoidalar:
 Shu qismni tahlil qilib, muhim joylarni ajrat.`;
 
     try {
-      const response = await callOpenAI(prompt, systemMessage);
-      const jsonMatch = response.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        const parsed = JSON.parse(jsonMatch[0]);
+      const response = await aiChat(
+        [
+          { role: "system", content: ANALYSIS_SYSTEM },
+          { role: "user", content: prompt },
+        ],
+        { temperature: 0.3 }
+      );
+      const parsed = parseJSON<{
+        summary?: string;
+        keyPoints?: string[];
+        highlights?: HighlightedSection[];
+        tableOfContents?: { title: string; page: number }[];
+      }>(response);
+
+      if (parsed) {
         if (parsed.summary && !summary) summary = parsed.summary;
         if (parsed.keyPoints) allKeyPoints.push(...parsed.keyPoints);
         if (parsed.highlights) allHighlights.push(...parsed.highlights);
@@ -101,6 +101,26 @@ Shu qismni tahlil qilib, muhim joylarni ajrat.`;
       }
     } catch (e) {
       console.error(`Tahlil xatosi (qism ${i + 1}):`, e);
+    }
+  }
+
+  // If the book is large, ask for a final merged summary from the analysis
+  // of all chunks (better than just the first chunk's summary).
+  if (chunks.length > 1 && !summary && allKeyPoints.length > 0) {
+    try {
+      const finalPrompt = `Kitob quyidagi asosiy fikrlardan iborat (har bir qismdan):
+${allKeyPoints.map((p, i) => `${i + 1}. ${p}`).join("\n")}
+
+Shu asosiy fikrlar asosida kitobning umumiy xulosasini yoz (3-5 gap). Faqat xulosa matnini qaytar.`;
+      summary = await aiChat(
+        [
+          { role: "system", content: "Sen kitob xulosachisan. Faqat xulosa matnini yoz." },
+          { role: "user", content: finalPrompt },
+        ],
+        { temperature: 0.4 }
+      );
+    } catch (e) {
+      console.error("Umumiy xulosa xatosi:", e);
     }
   }
 
@@ -122,11 +142,52 @@ Xulosa:
 - Faqat xulosa matnini qaytar, boshqa hech narsa yozma`;
 
   const chunks = chunkText(fullText, 4000);
-  const prompt = `Quyidagi kitob matnini xulosa qil:\n\n${chunks[0]}
 
-${chunks.length > 1 ? "... (umumiy " + chunks.length + " qism)" : ""}`;
+  // For small books just summarize the whole thing; for large ones,
+  // summarize each chunk and then merge.
+  if (chunks.length <= 2) {
+    const prompt = `Quyidagi kitob matnini xulosa qil:\n\n${chunks.join("\n\n")}`;
+    return aiChat(
+      [
+        { role: "system", content: systemMessage },
+        { role: "user", content: prompt },
+      ],
+      { temperature: 0.4, maxTokens: 2000 }
+    );
+  }
 
-  return callOpenAI(prompt, systemMessage);
+  // Large book: per-chunk short summaries, then merge.
+  const partSummaries: string[] = [];
+  for (let i = 0; i < chunks.length; i++) {
+    try {
+      const prompt = `Quyidagi kitob matnining ${i + 1}-qismini 2-3 gapda xulosa qil:\n\n${chunks[i]}`;
+      const part = await aiChat(
+        [
+          { role: "system", content: systemMessage },
+          { role: "user", content: prompt },
+        ],
+        { temperature: 0.4, maxTokens: 1500 }
+      );
+      partSummaries.push(part);
+    } catch (e) {
+      console.error(`Xulosa xatosi (qism ${i + 1}):`, e);
+    }
+  }
+
+  if (partSummaries.length === 0) return "Xulosa tayyorlanmadi";
+
+  const mergePrompt = `Kitobning har bir qismi uchun quyidagi xulosalar tayyor:
+${partSummaries.map((s, i) => `Qism ${i + 1}: ${s}`).join("\n")}
+
+Endi butun kitob uchun bitta umumiy xulosa yoz (3-5 gap). Faqat xulosa matnini qaytar.`;
+
+  return aiChat(
+    [
+      { role: "system", content: systemMessage },
+      { role: "user", content: mergePrompt },
+    ],
+    { temperature: 0.4, maxTokens: 2000 }
+  );
 }
 
 export async function extractKeyTerms(fullText: string): Promise<string[]> {
@@ -135,17 +196,31 @@ Faqat atamalar ro'yxatini JSON formatida qaytar: ["atama1", "atama2", ...]
 Maksimum 20 ta atama.`;
 
   const chunks = chunkText(fullText, 3000);
-  const prompt = `Quyidagi matndan asosiy atamalarni ajrat:\n\n${chunks[0]}`;
+  const allTerms = new Set<string>();
 
-  try {
-    const response = await callOpenAI(prompt, systemMessage);
-    const jsonMatch = response.match(/\[[\s\S]*\]/);
-    if (jsonMatch) {
-      return JSON.parse(jsonMatch[0]);
+  // Sample up to 3 chunks (first, middle, last) to cover the whole book.
+  const sampleIndices = new Set<number>([0]);
+  if (chunks.length > 1) sampleIndices.add(Math.floor(chunks.length / 2));
+  if (chunks.length > 2) sampleIndices.add(chunks.length - 1);
+
+  for (const i of Array.from(sampleIndices).slice(0, 3)) {
+    try {
+      const prompt = `Quyidagi matndan asosiy atamalarni ajrat (maksimum 20):\n\n${chunks[i]}`;
+      const response = await aiChat(
+        [
+          { role: "system", content: systemMessage },
+          { role: "user", content: prompt },
+        ],
+        { temperature: 0.3, maxTokens: 1500 }
+      );
+      const parsed = parseJSON<string[]>(response);
+      if (Array.isArray(parsed)) {
+        parsed.forEach((t) => allTerms.add(t));
+      }
+    } catch (e) {
+      console.error("Atama ajratish xatosi:", e);
     }
-  } catch (e) {
-    console.error("Atama ajratish xatosi:", e);
   }
 
-  return [];
+  return Array.from(allTerms).slice(0, 20);
 }

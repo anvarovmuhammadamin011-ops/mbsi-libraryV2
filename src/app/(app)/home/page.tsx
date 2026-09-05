@@ -152,7 +152,15 @@ export default async function HomePage() {
       <div className="space-y-3">
         <div>
           <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">
-            Salom, {displayName} 👋
+            Salom, {displayName}{" "}
+            <Image
+              src="/hello-emoji.webp"
+              alt=""
+              width={28}
+              height={28}
+              unoptimized
+              className="inline-block h-[1.1em] w-[1.1em] object-contain align-[-0.15em]"
+            />
           </h1>
           <p className="text-sm md:text-base text-muted-foreground mt-1">
             Bugun nima o'qimoqchisiz?

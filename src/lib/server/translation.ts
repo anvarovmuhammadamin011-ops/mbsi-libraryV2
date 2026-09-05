@@ -1,4 +1,5 @@
 import { chunkText } from "./text-extraction";
+import { aiChat } from "./ai-client";
 
 export type TranslationResult = {
   originalText: string;
@@ -6,38 +7,6 @@ export type TranslationResult = {
   sourceLanguage: string;
   targetLanguage: string;
 };
-
-async function callOpenAI(prompt: string, systemMessage: string): Promise<string> {
-  const apiKey = process.env.OPENAI_API_KEY;
-  if (!apiKey) {
-    throw new Error("OPENAI_API_KEY topilmadi");
-  }
-
-  const res = await fetch("https://api.openai.com/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      model: "gpt-4o-mini",
-      messages: [
-        { role: "system", content: systemMessage },
-        { role: "user", content: prompt },
-      ],
-      max_tokens: 4000,
-      temperature: 0.3,
-    }),
-  });
-
-  if (!res.ok) {
-    const error = await res.text();
-    throw new Error(`OpenAI API xatosi: ${error}`);
-  }
-
-  const data = await res.json();
-  return data.choices?.[0]?.message?.content?.trim() || "";
-}
 
 export async function translateToUzbek(text: string): Promise<TranslationResult> {
   const systemMessage = `Sen professional tarjimansan. Matnni o'zbek tiliga tarjima qil.
@@ -52,7 +21,13 @@ Qoidalar:
 
   for (const chunk of chunks) {
     const prompt = `Quyidagi matnni o'zbek tiliga tarjima qil:\n\n${chunk}`;
-    const translated = await callOpenAI(prompt, systemMessage);
+    const translated = await aiChat(
+      [
+        { role: "system", content: systemMessage },
+        { role: "user", content: prompt },
+      ],
+      { temperature: 0.3 }
+    );
     translatedChunks.push(translated);
   }
 
@@ -85,7 +60,13 @@ Qoidalar:
 
   for (const chunk of chunks) {
     const prompt = `Quyidagi o'zbek matnini ${langNames[targetLang] || targetLang} tiliga tarjima qil:\n\n${chunk}`;
-    const translated = await callOpenAI(prompt, systemMessage);
+    const translated = await aiChat(
+      [
+        { role: "system", content: systemMessage },
+        { role: "user", content: prompt },
+      ],
+      { temperature: 0.3 }
+    );
     translatedChunks.push(translated);
   }
 
