@@ -352,7 +352,12 @@ export function Reader({ bookId, title, totalPages, pdfUrl, initialPage }: Props
             <canvas
               ref={canvasRef}
               className="max-w-full max-h-full object-contain rounded-md shadow-sm"
-              style={{ background: "#ffffff", display: docReady ? "block" : "none" }}
+              style={{
+                background: "#ffffff",
+                display: docReady ? "block" : "none",
+                // Dark mode: invert the white page to dark (hue-rotate keeps colors natural)
+                filter: isDark ? "invert(1) hue-rotate(180deg)" : "none",
+              }}
             />
 
             {(rendering || !docReady) && loading && (

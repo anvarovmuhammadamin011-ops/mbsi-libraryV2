@@ -205,24 +205,24 @@ export function BookContentView({ bookId, isAdmin = false }: Props) {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-5">
-          <TabsTrigger value="summary" className="gap-1.5">
+        <TabsList className="flex w-full items-center justify-start gap-1 overflow-x-auto">
+          <TabsTrigger value="summary" className="gap-1.5 flex-none px-2.5 text-xs sm:text-sm">
             <FileText size={14} />
             Xulosa
           </TabsTrigger>
-          <TabsTrigger value="terms" className="gap-1.5">
+          <TabsTrigger value="terms" className="gap-1.5 flex-none px-2.5 text-xs sm:text-sm">
             <Tag size={14} />
             Atamalar
           </TabsTrigger>
-          <TabsTrigger value="highlights" className="gap-1.5">
+          <TabsTrigger value="highlights" className="gap-1.5 flex-none px-2.5 text-xs sm:text-sm">
             <Sparkles size={14} />
             Muhim joylar
           </TabsTrigger>
-          <TabsTrigger value="images" className="gap-1.5">
+          <TabsTrigger value="images" className="gap-1.5 flex-none px-2.5 text-xs sm:text-sm">
             <ImageIcon size={14} />
             Rasmlar
           </TabsTrigger>
-          <TabsTrigger value="content" className="gap-1.5">
+          <TabsTrigger value="content" className="gap-1.5 flex-none px-2.5 text-xs sm:text-sm">
             <BookOpen size={14} />
             Matn
           </TabsTrigger>
