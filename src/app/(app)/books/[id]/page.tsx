@@ -11,7 +11,6 @@ import {
   LibraryToggleButton,
 } from "@/components/book-detail-client";
 import { ReviewSection } from "@/components/review-section";
-import { BookContentView } from "@/components/book-content-view";
 
 export const dynamic = "force-dynamic";
 
@@ -214,11 +213,6 @@ export default async function BookDetailPage({
           initialUserReview={userReview as any}
           initialUserRating={userRating?.rating ?? null}
         />
-
-        {/* AI Content Section - visible to all users if content exists */}
-        <div className="mt-8">
-          <BookContentView bookId={book.id} isAdmin={user.role === "ADMIN"} />
-        </div>
       </div>
     </div>
   );
@@ -365,11 +359,6 @@ function MobileBookDetail({
         initialUserReview={userReview as any}
         initialUserRating={userRating}
       />
-
-      {/* AI Content Section - visible to all users if content exists */}
-      <div className="mt-8">
-        <BookContentView bookId={book.id} />
-      </div>
     </>
   );
 }
