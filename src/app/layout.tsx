@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
 import { AuthProvider } from "@/components/auth-provider";
+import { LanguageProvider } from "@/lib/i18n/language-provider";
+import { getLang } from "@/lib/i18n/get-lang";
 import { Toaster } from "sonner";
 import "./globals.css";
 
@@ -40,14 +42,15 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const lang = await getLang();
   return (
     <html
-      lang="uz"
+      lang={lang}
       className={`${geistSans.variable} ${geistMono.variable} h-full`}
       suppressHydrationWarning
       data-scroll-behavior="smooth"
@@ -58,10 +61,12 @@ export default function RootLayout({
       </head>
       <body className="min-h-full antialiased">
         <ThemeProvider>
-          <AuthProvider>
-            {children}
-            <Toaster position="top-right" richColors closeButton />
-          </AuthProvider>
+          <LanguageProvider initialLang={lang}>
+            <AuthProvider>
+              {children}
+              <Toaster position="top-right" richColors closeButton />
+            </AuthProvider>
+          </LanguageProvider>
         </ThemeProvider>
       </body>
     </html>

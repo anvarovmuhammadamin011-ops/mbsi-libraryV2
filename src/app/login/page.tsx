@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useAuthStore } from "@/lib/auth-store";
+import { useLanguage } from "@/lib/i18n/language-provider";
 import { Button } from "@/components/ui/button";
 import {
   Loader2,
@@ -12,30 +13,31 @@ import {
 } from "lucide-react";
 import type { UserRole } from "@/types";
 
-const ROLES: {
-  role: UserRole;
-  title: string;
-  desc: string;
-  icon: React.ReactNode;
-  color: string;
-  bgColor: string;
-}[] = [
-  {
-    role: "STUDENT",
-    title: "O'quvchi",
-    desc: "Kitoblarni o'qish, reyting va yutuqlar",
-    icon: <GraduationCap className="h-5 w-5" />,
-    color: "text-blue-600",
-    bgColor: "bg-blue-50 dark:bg-blue-950/30",
-  },
-];
-
 export default function LoginPage() {
   const router = useRouter();
+  const { t } = useLanguage();
   const login = useAuthStore((s) => s.login);
   const user = useAuthStore((s) => s.user);
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const [loading, setLoading] = useState<UserRole | null>(null);
+
+  const ROLES: {
+    role: UserRole;
+    title: string;
+    desc: string;
+    icon: React.ReactNode;
+    color: string;
+    bgColor: string;
+  }[] = [
+    {
+      role: "STUDENT",
+      title: t.login.student,
+      desc: t.login.studentDesc,
+      icon: <GraduationCap className="h-5 w-5" />,
+      color: "text-blue-600",
+      bgColor: "bg-blue-50 dark:bg-blue-950/30",
+    },
+  ];
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -64,7 +66,7 @@ export default function LoginPage() {
               MBSI Library
             </h1>
             <p className="mt-2 text-sm text-muted-foreground">
-              Bilimga yo&apos;l oching
+              {t.login.subtitle}
             </p>
           </div>
         </div>
@@ -72,7 +74,7 @@ export default function LoginPage() {
         {/* Role cards */}
         <div className="space-y-3">
           <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-4 px-1">
-            Davom etish uchun tanlang
+            {t.login.selectRole}
           </p>
           {ROLES.map((r) => (
             <button
@@ -107,7 +109,7 @@ export default function LoginPage() {
         </div>
 
         <p className="mt-8 text-center text-xs text-muted-foreground">
-          Demo rejim — haqiqiy autentifikatsiya hali yo&apos;q
+          {t.login.demoNote}
         </p>
       </div>
     </div>

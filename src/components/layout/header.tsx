@@ -7,6 +7,7 @@ import { Moon, Sun, Search, LogOut, User } from "lucide-react";
 import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
 import { useAuthStore } from "@/lib/auth-store";
+import { useLanguage } from "@/lib/i18n/language-provider";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,30 +17,17 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
-const pageTitles: Record<string, string> = {
-  "/home": "Bosh sahifa",
-  "/books": "Kitoblar",
-  "/ranking": "Reyting",
-  "/favorites": "Sevimlilar",
-  "/bookmarks": "Xatcho'plar",
-  "/continue-reading": "Davom ettirish",
-  "/profile": "Profil",
-  "/settings": "Sozlamalar",
-  "/search": "Qidiruv",
-  "/admin": "Admin paneli",
-  "/admin/books": "Kitoblar boshqaruvi",
-  "/admin/categories": "Kategoriyalar",
-  "/admin/users": "Foydalanuvchilar",
-};
-
 export function Header() {
   const pathname = usePathname();
   const { theme, setTheme } = useTheme();
   const { user, logout } = useAuthStore();
+  const { t } = useLanguage();
 
   if (!user) return null;
 
-  const title = pageTitles[pathname] || "MBSI Library";
+  const title = t.header.titles[pathname] || t.header.appName;
+  const roleLabel =
+    user.role === "ADMIN" ? t.header.admin : user.role === "TEACHER" ? t.header.teacher : t.header.student;
 
   return (
     <header className="sticky top-0 z-40 flex h-16 items-center gap-4 border-b border-border bg-background/80 backdrop-blur-md px-4 lg:px-6">
@@ -72,7 +60,7 @@ export function Header() {
         className="relative flex items-center h-10 rounded-lg bg-muted/50 border border-transparent hover:border-primary/20 hover:bg-card transition-colors"
       >
         <Search className="h-4 w-4 text-muted-foreground mx-3" />
-        <span className="hidden md:inline text-sm text-muted-foreground pr-3">Kitob, muallif qidiring...</span>
+        <span className="hidden md:inline text-sm text-muted-foreground pr-3">{t.header.searchPlaceholder}</span>
       </Link>
 
       <div className="flex items-center gap-1">
@@ -85,7 +73,7 @@ export function Header() {
         >
           <Sun size={17} className="rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
           <Moon size={17} className="absolute rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-          <span className="sr-only">Mavzuni almashtirish</span>
+          <span className="sr-only">{t.header.themeToggle}</span>
         </Button>
 
         {/* User menu */}
@@ -107,19 +95,19 @@ export function Header() {
               <div className="flex flex-col">
                 <p className="text-sm font-medium">{user.name}</p>
                 <p className="text-xs text-muted-foreground">
-                  {user.role === "ADMIN" ? "Admin" : user.role === "TEACHER" ? "O'qituvchi" : "O'quvchi"}
+                  {roleLabel}
                 </p>
               </div>
             </div>
             <DropdownMenuSeparator />
             <DropdownMenuItem render={<Link href="/profile" className="flex items-center gap-2" />}>
               <User size={14} />
-              Profil
+              {t.header.profile}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={logout} className="flex items-center gap-2 text-destructive">
               <LogOut size={14} />
-              Chiqish
+              {t.header.logout}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

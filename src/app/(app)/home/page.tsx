@@ -12,10 +12,14 @@ import {
 } from "lucide-react";
 import { getAiRecommendations, getSmartDiscoverySections } from "@/lib/server/ai-recommendations";
 import { computeStreak } from "@/lib/server/reading";
+import { getLang } from "@/lib/i18n/get-lang";
+import { getDict } from "@/lib/i18n/dictionaries";
 
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
+  const lang = await getLang();
+  const t = getDict(lang);
   const sessionUser = await getSessionUser();
   const userId = sessionUser?.id;
 
@@ -150,21 +154,30 @@ export default async function HomePage() {
     <div className="space-y-6 md:space-y-8 animate-fade-in pb-20 md:pb-6 max-w-2xl mx-auto md:max-w-4xl lg:max-w-5xl">
       {/* ═══ HERO ═══ */}
       <div className="space-y-3">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">
-            Salom, {displayName}{" "}
-            <Image
-              src="/hello-emoji.webp"
-              alt=""
-              width={28}
-              height={28}
-              unoptimized
-              className="inline-block h-[1.1em] w-[1.1em] object-contain align-[-0.15em]"
-            />
-          </h1>
-          <p className="text-sm md:text-base text-muted-foreground mt-1">
-            Bugun nima o'qimoqchisiz?
-          </p>
+        <div className="flex items-center justify-between gap-3">
+          <div className="min-w-0">
+            <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">
+              {t.home.greeting}, {displayName}{" "}
+              <Image
+                src="/hello-emoji.webp"
+                alt=""
+                width={28}
+                height={28}
+                unoptimized
+                className="inline-block h-[1.1em] w-[1.1em] object-contain align-[-0.15em]"
+              />
+            </h1>
+            <p className="text-sm md:text-base text-muted-foreground mt-1">
+              {t.home.greetingSub}
+            </p>
+          </div>
+          <Link
+            href="/profile"
+            aria-label={t.home.profileLink}
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-border bg-card text-base font-semibold text-primary shadow-sm transition-all hover:bg-muted active:scale-95"
+          >
+            {displayName.charAt(0).toUpperCase()}
+          </Link>
         </div>
 
         {/* Search bar — navigates to /search */}
@@ -173,11 +186,11 @@ export default async function HomePage() {
           className="flex items-center gap-3 rounded-2xl border border-border bg-card px-4 py-3 text-sm text-muted-foreground shadow-sm hover:bg-muted/50 transition-colors"
         >
           <Search size={18} className="shrink-0 text-muted-foreground" />
-          <span>Kitoblar, mualliflar, kategoriyalar qidirish...</span>
+          <span>{t.home.searchPlaceholder}</span>
         </Link>
         {streak > 0 && (
           <div className="inline-flex items-center gap-1.5 rounded-full bg-orange-50 dark:bg-orange-950/20 px-3 py-1 text-xs font-medium text-orange-600 dark:text-orange-400 w-fit">
-            <Flame size={12} /> {streak} kunlik streak
+            <Flame size={12} /> {streak} {t.home.streakDays}
           </div>
         )}
       </div>
@@ -186,10 +199,10 @@ export default async function HomePage() {
       {aiRecs.length > 0 && (
         <section>
           <h2 className="text-base md:text-lg font-semibold text-foreground mb-3 flex items-center gap-2">
-            ✨ Sizga tavsiya etiladi
+            ✨ {t.home.recommended}
           </h2>
           <p className="text-xs text-muted-foreground mb-3">
-            {aiRecs[0]?.reason ?? "Sizning o'qish tarixingiz asosida"}
+            {aiRecs[0]?.reason ?? t.home.recommendedFallback}
           </p>
           <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-thin snap-x snap-mandatory md:mx-0 md:px-0 md:overflow-visible md:flex-wrap md:snap-none">
             {aiRecs.map(({ book, reason }) => {
@@ -225,7 +238,7 @@ export default async function HomePage() {
       {smart.becauseYouRead && (
         <section>
           <h2 className="text-base md:text-lg font-semibold text-foreground mb-3">
-            ✨ {smart.becauseYouRead.category} o'qiganingiz uchun
+            ✨ {smart.becauseYouRead.category} {t.home.becauseYouRead}
           </h2>
           <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-thin snap-x snap-mandatory md:mx-0 md:px-0">
             {smart.becauseYouRead.books.map(({ book }: any) => (
@@ -241,7 +254,7 @@ export default async function HomePage() {
       )}
       {smart.youMayAlsoLike && smart.youMayAlsoLike.length > 0 && (
         <section>
-          <h2 className="text-base md:text-lg font-semibold mb-3">✨ Sizga yoqishi mumkin</h2>
+          <h2 className="text-base md:text-lg font-semibold mb-3">✨ {t.home.youMayAlsoLike}</h2>
           <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-thin snap-x snap-mandatory md:mx-0 md:px-0">
             {smart.youMayAlsoLike.map(({ book }: any) => (
               <Link key={book.id} href={`/books/${book.slug}`} className="shrink-0 snap-start w-[140px] group">
@@ -259,20 +272,20 @@ export default async function HomePage() {
       {readingProgress.length > 0 && (
         <section>
           <h2 className="text-base md:text-lg font-semibold text-foreground mb-3 flex items-center gap-2">
-            Davom ettirish
+            {t.home.continueReading}
           </h2>
 
           {/* Mobile: single large card */}
           <div className="md:hidden">
             {mostRecentProgress && (
-              <ContinueReadingCard progress={mostRecentProgress} />
+              <ContinueReadingCard progress={mostRecentProgress} t={t} />
             )}
           </div>
 
           {/* Tablet / Desktop: horizontal row of cards */}
           <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-4 gap-3">
             {readingProgress.map((p) => (
-              <ContinueReadingCard key={p.id} progress={p} compact />
+              <ContinueReadingCard key={p.id} progress={p} compact t={t} />
             ))}
           </div>
         </section>
@@ -284,13 +297,13 @@ export default async function HomePage() {
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-base md:text-lg font-semibold text-foreground flex items-center gap-2">
               <LayoutGrid size={18} className="text-primary" />
-              Kategoriyalar
+              {t.home.categories}
             </h2>
             <Link
               href="/categories"
               className="flex items-center gap-1 text-sm font-medium text-primary hover:underline"
             >
-              Hammasi <ArrowRight size={14} />
+              {t.home.all} <ArrowRight size={14} />
             </Link>
           </div>
           <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-thin snap-x snap-mandatory md:mx-0 md:px-0 md:overflow-visible md:flex-wrap md:snap-none">
@@ -304,7 +317,7 @@ export default async function HomePage() {
                   {cat.name}
                 </p>
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  {cat._count.books} kitob
+                  {cat._count.books} {t.home.books}
                 </p>
               </Link>
             ))}
@@ -315,12 +328,12 @@ export default async function HomePage() {
       {/* ═══ YANGI KITOBLAR ═══ */}
       <section>
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-base md:text-lg font-semibold text-foreground">🆕 Yangi kitoblar</h2>
+          <h2 className="text-base md:text-lg font-semibold text-foreground">🆕 {t.home.newBooks}</h2>
           <Link
             href="/books"
             className="flex items-center gap-1 text-sm font-medium text-primary hover:underline"
           >
-            Hammasi <ArrowRight size={14} />
+              {t.home.all} <ArrowRight size={14} />
           </Link>
         </div>
 
@@ -360,7 +373,7 @@ export default async function HomePage() {
                       {book.title}
                     </p>
                     <p className="text-xs text-muted-foreground mt-0.5 truncate">
-                      {book.author?.name ?? "Noma'lum"}
+                      {book.author?.name ?? t.home.unknown}
                     </p>
                     <div className="flex items-center gap-1 mt-1">
                       <Star size={12} className="fill-yellow-400 text-yellow-400" />
@@ -374,9 +387,9 @@ export default async function HomePage() {
         ) : (
           <div className="text-center py-10">
             <BookOpen size={32} className="mx-auto text-muted-foreground/50 mb-3" />
-            <p className="text-sm text-muted-foreground">Hali kitoblar yo'q.</p>
+            <p className="text-sm text-muted-foreground">{t.home.noBooks}</p>
             <Link href="/books" className="text-sm text-primary hover:underline mt-2 inline-block">
-              Kitoblarni ko'rish →
+              {t.home.viewBooks}
             </Link>
           </div>
         )}
@@ -385,12 +398,12 @@ export default async function HomePage() {
       {/* ═══ TOP 10 TALIK ═══ */}
       <section>
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-base md:text-lg font-semibold text-foreground">🏆 Eng mashhur</h2>
+          <h2 className="text-base md:text-lg font-semibold text-foreground">🏆 {t.home.popular}</h2>
           <Link
             href="/books?sort=popular"
             className="flex items-center gap-1 text-sm font-medium text-primary hover:underline"
           >
-            Hammasi <ArrowRight size={14} />
+              {t.home.all} <ArrowRight size={14} />
           </Link>
         </div>
         {top10Ordered.length > 0 ? (
@@ -432,7 +445,7 @@ export default async function HomePage() {
                       {book.title}
                     </p>
                     <p className="text-xs text-muted-foreground mt-0.5 truncate">
-                      {book.author?.name ?? "Noma'lum"}
+                      {book.author?.name ?? t.home.unknown}
                     </p>
                     <div className="flex items-center gap-1 mt-1">
                       <Star size={12} className="fill-yellow-400 text-yellow-400" />
@@ -444,19 +457,19 @@ export default async function HomePage() {
             })}
           </div>
         ) : (
-          <p className="text-sm text-muted-foreground text-center py-6">Hali o'qilgan kitoblar yo'q</p>
+          <p className="text-sm text-muted-foreground text-center py-6">{t.home.noReadYet}</p>
         )}
       </section>
 
       {/* ═══ ENG ZO'RLARI ═══ */}
       <section>
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-base md:text-lg font-semibold text-foreground">⭐ Eng yuqori reyting</h2>
+          <h2 className="text-base md:text-lg font-semibold text-foreground">⭐ {t.home.topRated}</h2>
           <Link
             href="/books?sort=rating"
             className="flex items-center gap-1 text-sm font-medium text-primary hover:underline"
           >
-            Hammasi <ArrowRight size={14} />
+              {t.home.all} <ArrowRight size={14} />
           </Link>
         </div>
         <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-thin snap-x snap-mandatory md:mx-0 md:px-0 md:overflow-visible md:flex-wrap md:snap-none">
@@ -510,12 +523,12 @@ export default async function HomePage() {
       {/* ═══ SIZGA MOS KITOBLAR ═══ */}
       <section>
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-base md:text-lg font-semibold text-foreground">💎 Sizga mos kitoblar</h2>
+          <h2 className="text-base md:text-lg font-semibold text-foreground">💎 {t.home.forYou}</h2>
           <Link
             href="/books"
             className="flex items-center gap-1 text-sm font-medium text-primary hover:underline"
           >
-            Hammasi <ArrowRight size={14} />
+              {t.home.all} <ArrowRight size={14} />
           </Link>
         </div>
         <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-thin snap-x snap-mandatory md:mx-0 md:px-0 md:overflow-visible md:flex-wrap md:snap-none">
@@ -574,9 +587,11 @@ export default async function HomePage() {
 function ContinueReadingCard({
   progress,
   compact = false,
+  t,
 }: {
   progress: any;
   compact?: boolean;
+  t: ReturnType<typeof getDict>;
 }) {
   const p = progress;
   const totalP = p.book.totalPages || 320;
@@ -611,7 +626,7 @@ function ContinueReadingCard({
               {p.book.title}
             </h3>
             <p className="text-xs text-muted-foreground mt-0.5">
-              {p.book.author?.name ?? "Noma'lum muallif"}
+              {p.book.author?.name ?? t.home.unknownAuthor}
             </p>
           </div>
           <div className="space-y-1.5 mt-2">
@@ -658,7 +673,7 @@ function ContinueReadingCard({
               {p.book.title}
             </h3>
             <p className="text-xs text-muted-foreground mt-1">
-              {p.book.author?.name ?? "Noma'lum muallif"}
+              {p.book.author?.name ?? t.home.unknownAuthor}
             </p>
           </div>
           <div className="space-y-3 mt-3">
@@ -682,7 +697,7 @@ function ContinueReadingCard({
               href={`/reader/${p.book.slug}`}
               className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors"
             >
-              Davom ettirish <ArrowRight size={16} />
+              {t.home.continueButton} <ArrowRight size={16} />
             </Link>
           </div>
         </div>

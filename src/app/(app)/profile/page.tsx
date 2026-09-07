@@ -19,13 +19,15 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { ProfileLogoutButton } from "@/components/profile-logout-button";
+import { getLang } from "@/lib/i18n/get-lang";
+import { getDict, type Dictionary } from "@/lib/i18n/dictionaries";
 
 export const dynamic = "force-dynamic";
 
-function roleLabel(role: string): string {
-  if (role === "ADMIN") return "Admin";
-  if (role === "TEACHER") return "O'qituvchi";
-  return "O'quvchi";
+function roleLabel(t: Dictionary, role: string): string {
+  if (role === "ADMIN") return t.profile.admin;
+  if (role === "TEACHER") return t.profile.teacher;
+  return t.profile.student;
 }
 
 function MenuRow({
@@ -52,6 +54,8 @@ function MenuRow({
 }
 
 export default async function ProfilePage() {
+  const lang = await getLang();
+  const t = getDict(lang);
   const user = await getSessionUser();
   if (!user) return null;
 
@@ -97,7 +101,6 @@ export default async function ProfilePage() {
         <div className="flex flex-col items-center px-6 py-8 text-center">
           <div className="flex h-20 w-20 items-center justify-center rounded-full bg-muted text-muted-foreground">
             {user.avatar ? (
-              // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={user.avatar}
                 alt={user.name}
@@ -108,7 +111,7 @@ export default async function ProfilePage() {
             )}
           </div>
           <h1 className="mt-4 text-lg font-bold text-foreground">{user.name}</h1>
-          <p className="mt-1 text-sm text-muted-foreground">{roleLabel(user.role)}</p>
+          <p className="mt-1 text-sm text-muted-foreground">{roleLabel(t, user.role)}</p>
         </div>
 
         {/* Stats row 3 cols centered */}
@@ -116,19 +119,19 @@ export default async function ProfilePage() {
           <div className="flex flex-col items-center gap-1 px-2 py-4 text-center">
             <BookOpen size={18} className="text-muted-foreground" />
             <span className="text-lg font-bold text-foreground">{totalBooks}</span>
-            <span className="text-xs text-muted-foreground">Kitoblar</span>
+            <span className="text-xs text-muted-foreground">{t.profile.books}</span>
           </div>
           <div className="flex flex-col items-center gap-1 px-2 py-4 text-center">
             <Flame size={18} className="text-orange-500" />
             <span className="text-lg font-bold text-foreground">{streak}</span>
-            <span className="text-xs text-muted-foreground">Kunlik streak</span>
+            <span className="text-xs text-muted-foreground">{t.profile.streak}</span>
           </div>
           <div className="flex flex-col items-center gap-1 px-2 py-4 text-center">
             <Star size={18} className="text-amber-500" />
             <span className="text-lg font-bold text-foreground">
               {avgRating === 0 ? "0" : avgRating.toFixed(1)}
             </span>
-            <span className="text-xs text-muted-foreground">O'rtacha reyting</span>
+            <span className="text-xs text-muted-foreground">{t.profile.avgRating}</span>
           </div>
         </div>
       </div>
@@ -144,7 +147,7 @@ export default async function ProfilePage() {
       {/* Achievements */}
       <div className="rounded-2xl border border-border bg-card shadow-sm px-4 py-4">
         <h2 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
-          <Award size={14} className="text-amber-500" /> Yutuqlar
+          <Award size={14} className="text-amber-500" /> {t.profile.achievements}
         </h2>
         {achievements.length > 0 ? (
           <div className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1 snap-x snap-mandatory scrollbar-hide">
@@ -161,15 +164,15 @@ export default async function ProfilePage() {
                 <p className="text-xs font-semibold text-foreground line-clamp-1">{a.title}</p>
                 <p className="text-[11px] text-muted-foreground line-clamp-1">{a.description}</p>
                 <p className="mt-1 text-xs font-medium text-primary">{a.progress}</p>
-                {a.unlocked && <p className="mt-1 text-[11px] font-bold text-green-600">✓ Ochildi</p>}
+                {a.unlocked && <p className="mt-1 text-[11px] font-bold text-green-600">✓ {t.profile.unlocked}</p>}
               </div>
             ))}
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center py-6 text-center">
             <Award size={32} className="text-muted-foreground mb-2" />
-            <p className="text-sm text-muted-foreground">Hali yutuqlar yo'q</p>
-            <p className="text-xs text-muted-foreground mt-1">Kitoblar o'qish orqali yutuqlar qo'lga kiriting!</p>
+            <p className="text-sm text-muted-foreground">{t.profile.noAchievements}</p>
+            <p className="text-xs text-muted-foreground mt-1">{t.profile.noAchievementsSub}</p>
           </div>
         )}
       </div>
@@ -177,39 +180,39 @@ export default async function ProfilePage() {
       {/* Reading Statistics */}
       <div className="rounded-2xl border border-border bg-card shadow-sm px-4 py-4">
         <h2 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
-          <TrendingUp size={14} className="text-primary" /> O'qish statistikasi
+          <TrendingUp size={14} className="text-primary" /> {t.profile.stats}
         </h2>
         <div className="grid grid-cols-2 gap-3">
           <div className="rounded-xl bg-muted/50 p-3 text-center">
             <BookOpen size={16} className="mx-auto text-primary mb-1" />
             <p className="text-lg font-bold text-foreground">{booksStarted}</p>
-            <p className="text-xs text-muted-foreground">Boshlangan kitoblar</p>
+            <p className="text-xs text-muted-foreground">{t.profile.started}</p>
           </div>
           <div className="rounded-xl bg-muted/50 p-3 text-center">
             <Award size={16} className="mx-auto text-green-600 mb-1" />
             <p className="text-lg font-bold text-foreground">{totalBooks}</p>
-            <p className="text-xs text-muted-foreground">Tugatilgan kitoblar</p>
+            <p className="text-xs text-muted-foreground">{t.profile.finished}</p>
           </div>
           <div className="rounded-xl bg-muted/50 p-3 text-center">
             <TrendingUp size={16} className="mx-auto text-blue-500 mb-1" />
             <p className="text-lg font-bold text-foreground">{pagesRead.toLocaleString()}</p>
-            <p className="text-xs text-muted-foreground">O'qilgan sahifalar</p>
+            <p className="text-xs text-muted-foreground">{t.profile.pages}</p>
           </div>
           <div className="rounded-xl bg-muted/50 p-3 text-center">
             <Clock size={16} className="mx-auto text-orange-500 mb-1" />
             <p className="text-lg font-bold text-foreground">
               {readingTimeHours}h {readingTimeMins}m
             </p>
-            <p className="text-xs text-muted-foreground">O'qish vaqti</p>
+            <p className="text-xs text-muted-foreground">{t.profile.time}</p>
           </div>
         </div>
       </div>
 
       {/* Menu items */}
       <nav className="rounded-2xl border border-border bg-card shadow-sm flex flex-col divide-y divide-border/50 overflow-hidden">
-        <MenuRow icon={<Target size={20} />} label="Shaxsiy reja" href="/plan" />
-        <MenuRow icon={<History size={20} />} label="O'qish tarixi" href="/history" />
-        <MenuRow icon={<Settings size={20} />} label="Sozlamalar" href="/settings" />
+        <MenuRow icon={<Target size={20} />} label={t.profile.plan} href="/plan" />
+        <MenuRow icon={<History size={20} />} label={t.profile.history} href="/history" />
+        <MenuRow icon={<Settings size={20} />} label={t.profile.settings} href="/settings" />
         <ProfileLogoutButton />
       </nav>
     </div>

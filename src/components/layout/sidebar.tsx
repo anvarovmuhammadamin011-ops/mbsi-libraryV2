@@ -23,6 +23,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useAuthStore } from "@/lib/auth-store";
+import { useLanguage } from "@/lib/i18n/language-provider";
 import { useState, useEffect } from "react";
 
 interface NavItem {
@@ -31,18 +32,10 @@ interface NavItem {
   icon: React.ComponentType<{ size?: number; className?: string }>;
 }
 
-const NAV_ITEMS: NavItem[] = [
-  { label: "Bosh sahifa", href: "/home", icon: Home },
-  { label: "Qidiruv", href: "/search", icon: Search },
-  { label: "Kitoblar", href: "/books", icon: BookMarked },
-  { label: "Kutubxonam", href: "/library", icon: Library },
-  { label: "Shaxsiy reja", href: "/plan", icon: Target },
-  { label: "Profil", href: "/profile", icon: User },
-];
-
 export function StudentSidebar() {
   const pathname = usePathname();
   const { user, logout } = useAuthStore();
+  const { t } = useLanguage();
   const { theme, setTheme } = useTheme();
   const [collapsed, setCollapsed] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -51,7 +44,18 @@ export function StudentSidebar() {
 
   if (!user) return null;
 
+  const NAV_ITEMS: NavItem[] = [
+    { label: t.nav.home, href: "/home", icon: Home },
+    { label: t.nav.search, href: "/search", icon: Search },
+    { label: t.nav.books, href: "/books", icon: BookMarked },
+    { label: t.nav.myLibrary, href: "/library", icon: Library },
+    { label: t.nav.plan, href: "/plan", icon: Target },
+    { label: t.nav.profile, href: "/profile", icon: User },
+  ];
+
   const isAdmin = user.role === "ADMIN";
+  const roleLabel =
+    user.role === "ADMIN" ? t.header.admin : user.role === "TEACHER" ? t.header.teacher : t.header.student;
 
   return (
     <>
@@ -106,7 +110,7 @@ export function StudentSidebar() {
           <button
             onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
             className="flex h-12 w-12 items-center justify-center rounded-xl text-muted-foreground hover:bg-muted hover:text-foreground transition-all"
-            aria-label="Mavzuni almashtirish"
+            aria-label={t.header.themeToggle}
           >
             {mounted && theme === "dark" ? <Sun size={22} /> : <Moon size={22} />}
           </button>
@@ -117,7 +121,7 @@ export function StudentSidebar() {
           <div className="px-1.5 pb-2">
             <Link
               href="/admin"
-              title="Admin paneli"
+              title={t.sidebar.adminPanel}
               className="flex h-12 w-12 items-center justify-center rounded-xl text-muted-foreground hover:bg-muted hover:text-foreground transition-all"
             >
               <Shield size={22} />
@@ -213,11 +217,11 @@ export function StudentSidebar() {
               "flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition-all duration-150 w-full",
               "text-muted-foreground hover:bg-muted hover:text-foreground"
             )}
-            aria-label="Mavzuni almashtirish"
+            aria-label={t.header.themeToggle}
           >
             {mounted && theme === "dark" ? <Sun size={18} className="shrink-0" /> : <Moon size={18} className="shrink-0" />}
             {!collapsed && <span className="flex-1 text-left">
-              {mounted ? (theme === "dark" ? "Yorug' mavzu" : "Qorong'u mavzu") : "Mavzu"}
+              {mounted ? (theme === "dark" ? t.sidebar.themeLight : t.sidebar.themeDark) : t.sidebar.theme}
             </span>}
           </button>
         </div>
@@ -230,7 +234,7 @@ export function StudentSidebar() {
               className="flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-all"
             >
               <Shield size={18} className="shrink-0" />
-              <span>Admin paneli</span>
+              <span>{t.sidebar.adminPanel}</span>
             </Link>
           </div>
         )}
@@ -248,7 +252,7 @@ export function StudentSidebar() {
                     {user.name}
                   </p>
                   <p className="truncate text-xs text-muted-foreground capitalize">
-                    {user.role === "STUDENT" ? "O'quvchi" : user.role === "TEACHER" ? "O'qituvchi" : "Admin"}
+                    {roleLabel}
                   </p>
                 </div>
                 <Button
@@ -256,7 +260,7 @@ export function StudentSidebar() {
                   size="icon"
                   onClick={logout}
                   className="h-7 w-7 shrink-0 text-muted-foreground hover:text-destructive"
-                  aria-label="Chiqish"
+                  aria-label={t.sidebar.logout}
                 >
                   <LogOut size={14} />
                 </Button>
