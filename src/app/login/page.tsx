@@ -7,10 +7,7 @@ import { Button } from "@/components/ui/button";
 import {
   Loader2,
   BookOpen,
-  ArrowRight,
   GraduationCap,
-  Shield,
-  BookMarked,
   ChevronRight,
 } from "lucide-react";
 import type { UserRole } from "@/types";
@@ -30,22 +27,6 @@ const ROLES: {
     icon: <GraduationCap className="h-5 w-5" />,
     color: "text-blue-600",
     bgColor: "bg-blue-50 dark:bg-blue-950/30",
-  },
-  {
-    role: "TEACHER",
-    title: "O'qituvchi",
-    desc: "Kuzatuv, topshiriqlar va tavsiyalar",
-    icon: <BookMarked className="h-5 w-5" />,
-    color: "text-emerald-600",
-    bgColor: "bg-emerald-50 dark:bg-emerald-950/30",
-  },
-  {
-    role: "ADMIN",
-    title: "Admin Panel",
-    desc: "Boshqaruv markazi — kitoblar, foydalanuvchilar, statistika",
-    icon: <Shield className="h-5 w-5" />,
-    color: "text-primary",
-    bgColor: "bg-primary/5",
   },
 ];
 
@@ -98,11 +79,7 @@ export default function LoginPage() {
               key={r.role}
               onClick={() => handle(r.role)}
               disabled={loading !== null}
-              className={`group flex w-full items-center gap-4 rounded-2xl border bg-card p-4 text-left transition-all duration-200 hover:shadow-md disabled:opacity-60 ${
-                r.role === "ADMIN"
-                  ? "border-primary/20 hover:border-primary/50 hover:bg-primary/5"
-                  : "border-border hover:border-border/80 hover:bg-accent"
-              }`}
+              className={`group flex w-full items-center gap-4 rounded-2xl border bg-card p-4 text-left transition-all duration-200 hover:shadow-md disabled:opacity-60 border-border hover:border-border/80 hover:bg-accent`}
             >
               <div
                 className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${r.bgColor} ${r.color}`}
