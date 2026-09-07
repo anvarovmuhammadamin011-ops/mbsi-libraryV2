@@ -2,7 +2,6 @@
 
 import type { ReactNode } from "react";
 import { StudentSidebar } from "@/components/layout/sidebar";
-import { Header } from "@/components/layout/header";
 import { MobileNav } from "@/components/layout/mobile-nav";
 import { TelegramWebAppProvider } from "@/components/telegram-webapp-provider";
 
@@ -19,8 +18,6 @@ export function AppLayout({ children }: AppLayoutProps) {
 
       {/* Main Content */}
       <div className="flex flex-1 flex-col overflow-hidden">
-        <Header />
-
         <main className="flex-1 overflow-y-auto pb-20 md:pb-0">
           <div className="container mx-auto p-4 md:p-5 lg:p-6">
             {children}
