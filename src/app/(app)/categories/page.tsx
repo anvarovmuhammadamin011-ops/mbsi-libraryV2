@@ -2,6 +2,7 @@ import { prisma } from "@/lib/db";
 import Link from "next/link";
 import Image from "next/image";
 import { BookOpen, Star, ArrowRight } from "lucide-react";
+import { getCategoryColor } from "@/lib/category-colors";
 import type { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
@@ -82,9 +83,10 @@ export default async function CategoriesPage() {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
           {categories.map((cat) => {
-            const icon = getCategoryIcon(cat.name, cat.slug);
+            const icon = cat.icon ?? getCategoryIcon(cat.name, cat.slug);
             const covers = coverMap[cat.id] ?? [];
             const bookCount = cat._count.books;
+            const c = getCategoryColor(cat.id);
 
             return (
               <Link
@@ -93,7 +95,7 @@ export default async function CategoriesPage() {
                 className="group rounded-2xl border border-border bg-card p-4 hover:shadow-md hover:bg-muted/30 transition-all"
               >
                 <div className="flex items-start justify-between mb-3">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-2xl">
+                  <div className={`flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br ${c.bg} text-2xl shadow-sm`}>
                     {icon}
                   </div>
                   <ArrowRight

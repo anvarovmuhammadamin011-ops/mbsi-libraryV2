@@ -14,6 +14,7 @@ import { getAiRecommendations, getSmartDiscoverySections } from "@/lib/server/ai
 import { computeStreak } from "@/lib/server/reading";
 import { getLang } from "@/lib/i18n/get-lang";
 import { getDict } from "@/lib/i18n/dictionaries";
+import { getCategoryColor } from "@/lib/category-colors";
 
 export const dynamic = "force-dynamic";
 
@@ -307,20 +308,26 @@ export default async function HomePage() {
             </Link>
           </div>
           <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-thin snap-x snap-mandatory md:mx-0 md:px-0 md:overflow-visible md:flex-wrap md:snap-none">
-            {categories.slice(0, 8).map((cat) => (
-              <Link
-                key={cat.id}
-                href={`/books?categoryId=${cat.id}`}
-                className="shrink-0 snap-start rounded-2xl border border-border bg-card px-4 py-3 hover:bg-muted/50 hover:shadow-sm transition-all min-w-[120px] md:min-w-0 md:flex-1 md:max-w-[160px]"
-              >
-                <p className="text-sm font-semibold text-foreground truncate">
-                  {cat.name}
-                </p>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  {cat._count.books} {t.home.books}
-                </p>
-              </Link>
-            ))}
+            {categories.slice(0, 8).map((cat) => {
+              const c = getCategoryColor(cat.id);
+              return (
+                <Link
+                  key={cat.id}
+                  href={`/books?categoryId=${cat.id}`}
+                  className={`shrink-0 snap-start rounded-2xl border border-black/5 dark:border-white/10 bg-gradient-to-br ${c.bg} px-4 py-3 transition-all hover:shadow-md hover:-translate-y-0.5 min-w-[120px] md:min-w-0 md:flex-1 md:max-w-[160px]`}
+                >
+                  <span className="block text-xl leading-none mb-1.5">
+                    {cat.icon ?? "📚"}
+                  </span>
+                  <p className={`text-sm font-semibold truncate ${c.text}`}>
+                    {cat.name}
+                  </p>
+                  <p className={`text-xs mt-0.5 ${c.text} opacity-70`}>
+                    {cat._count.books} {t.home.books}
+                  </p>
+                </Link>
+              );
+            })}
           </div>
         </section>
       )}
