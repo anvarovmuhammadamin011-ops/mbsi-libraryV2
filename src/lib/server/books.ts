@@ -133,12 +133,23 @@ export async function listBooks(
         return { data: [], total: 0, totalPages: 1, page: 1, pageSize };
       }
     } else {
-      baseWhere.OR = [
-        { title: { contains: q, ...insensitive } },
-        { description: { contains: q, ...insensitive } },
-        { author: { name: { contains: q, ...insensitive } } },
-        { category: { name: { contains: q, ...insensitive } } },
-      ];
+      // Tokenized match: every word must appear in at least one of
+      // title / description / author / category. This way "Alisher Navoi"
+      // finds books of "Alisher Navoiy" even with spelling differences.
+      const words = q.trim().split(/\s+/).filter(Boolean);
+      const perWord = (w: string): Prisma.BookWhereInput => ({
+        OR: [
+          { title: { contains: w, ...insensitive } },
+          { description: { contains: w, ...insensitive } },
+          { author: { name: { contains: w, ...insensitive } } },
+          { category: { name: { contains: w, ...insensitive } } },
+        ],
+      });
+      if (words.length === 1) {
+        baseWhere.OR = perWord(words[0]).OR;
+      } else {
+        baseWhere.AND = words.map(perWord);
+      }
     }
   }
 

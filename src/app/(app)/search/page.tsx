@@ -17,6 +17,54 @@ const FILTERS: { value: Filter; label: string }[] = [
   { value: "categories", label: "Kategoriyalar" },
 ];
 
+function ResultRow({ book, onSelect }: { book: Book; onSelect: (b: Book) => void }) {
+  return (
+    <Link
+      href={`/books/${book.slug ?? book.id}`}
+      onClick={() => onSelect(book)}
+      className="flex gap-3 rounded-2xl border border-border bg-card p-3 hover:shadow-sm hover:bg-muted/30 transition-colors"
+    >
+      <div className="relative h-[68px] md:h-[80px] w-12 md:w-14 shrink-0 overflow-hidden rounded-lg bg-muted">
+        {book.coverUrl ? (
+          <Image
+            src={book.coverUrl}
+            alt={book.title}
+            fill
+            className="object-cover"
+            sizes="48px"
+          />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-primary/10 to-primary/5">
+            <BookOpen size={18} className="text-primary/30" />
+          </div>
+        )}
+      </div>
+      <div className="flex flex-1 flex-col justify-center min-w-0 py-0.5">
+        <h3 className="text-sm font-semibold leading-tight text-foreground line-clamp-2">
+          {book.title}
+        </h3>
+        <p className="text-xs text-muted-foreground truncate mt-1">
+          {book.author?.name ?? "Noma'lum muallif"}
+        </p>
+        <div className="flex items-center gap-1 mt-1.5">
+          <Star size={12} className="fill-yellow-400 text-yellow-400" />
+          <span className="text-xs font-medium text-foreground">
+            {book.averageRating ? Number(book.averageRating).toFixed(1) : "—"}
+          </span>
+          {book.category?.name && (
+            <>
+              <span className="text-[11px] text-muted-foreground mx-1">·</span>
+              <span className="text-xs text-muted-foreground truncate">
+                {book.category.name}
+              </span>
+            </>
+          )}
+        </div>
+      </div>
+    </Link>
+  );
+}
+
 function SearchPageInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -30,6 +78,9 @@ function SearchPageInner() {
   const [defaultBooks, setDefaultBooks] = useState<Book[]>([]);
   const [defaultLoading, setDefaultLoading] = useState(true);
   const [hasSearched, setHasSearched] = useState(!!initialQ);
+  const [showAllRecents, setShowAllRecents] = useState(false);
+  const [historyBooks, setHistoryBooks] = useState<Book[]>([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
 
   const inputRef = useRef<HTMLInputElement>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -86,6 +137,39 @@ function SearchPageInner() {
     addRecent(term);
     inputRef.current?.focus();
   };
+
+  // ─── Books based on search history (shown when query is empty) ───
+  useEffect(() => {
+    const q = query.trim();
+    if (q || recents.length === 0) {
+      setHistoryBooks([]);
+      setHistoryLoading(false);
+      return;
+    }
+    setHistoryLoading(true);
+    const terms = recents.slice(0, 4);
+    Promise.all(
+      terms.map((term) =>
+        fetch(`/api/search?${new URLSearchParams({ q: term, pageSize: "6" }).toString()}`)
+          .then((r) => r.json())
+          .then((json: any) => (json.data ?? []) as Book[])
+          .catch(() => [] as Book[])
+      )
+    ).then((lists) => {
+      const seen = new Set<string>();
+      const merged: Book[] = [];
+      for (const list of lists) {
+        for (const b of list) {
+          if (!seen.has(b.id) && merged.length < 10) {
+            seen.add(b.id);
+            merged.push(b);
+          }
+        }
+      }
+      setHistoryBooks(merged);
+      setHistoryLoading(false);
+    });
+  }, [query, recents]);
 
   // Load default books when no query
   useEffect(() => {
@@ -147,7 +231,7 @@ function SearchPageInner() {
     const titleMatch = b.title.toLowerCase().includes(qLower);
     const authorMatch = (b.author?.name ?? "").toLowerCase().includes(qLower);
     const categoryMatch = (b.category?.name ?? "").toLowerCase().includes(qLower);
-    if (filter === "books") return titleMatch;
+    if (filter === "books") return titleMatch || authorMatch;
     if (filter === "authors") return authorMatch;
     if (filter === "categories") return categoryMatch;
     return true;
@@ -156,6 +240,7 @@ function SearchPageInner() {
   const showRecents = !hasSearched && query.trim() === "";
   const showResults = hasSearched || query.trim() !== "";
   const showDefault = !hasSearched && query.trim() === "";
+  const visibleRecents = showAllRecents ? recents.slice(0, 10) : recents.slice(0, 5);
 
   return (
     <div className="mx-auto max-w-2xl md:max-w-3xl lg:max-w-4xl animate-fade-in pb-6">
@@ -246,28 +331,69 @@ function SearchPageInner() {
           {recents.length === 0 ? (
             <p className="text-sm text-muted-foreground">Hali qidiruvlar yo'q</p>
           ) : (
-            <ul className="space-y-1">
-              {recents.slice(0, 6).map((term) => (
-                <li
-                  key={term}
-                  className="flex items-center justify-between rounded-xl px-3 py-2.5 hover:bg-muted/60 transition-colors group"
+            <>
+              <ul className="space-y-1">
+                {visibleRecents.map((term) => (
+                  <li
+                    key={term}
+                    className="flex items-center justify-between rounded-xl px-3 py-2.5 hover:bg-muted/60 transition-colors group"
+                  >
+                    <button
+                      onClick={() => handleRecentClick(term)}
+                      className="flex-1 text-left text-sm text-foreground truncate pr-3"
+                    >
+                      {term}
+                    </button>
+                    <button
+                      onClick={() => removeRecent(term)}
+                      aria-label={`${term} ni o'chirish`}
+                      className="inline-flex h-7 w-7 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground transition-colors shrink-0"
+                    >
+                      <X size={14} />
+                    </button>
+                  </li>
+                ))}
+              </ul>
+              {recents.length > 5 && (
+                <button
+                  onClick={() => setShowAllRecents((v) => !v)}
+                  className="mt-2 text-sm font-medium text-primary hover:underline"
                 >
-                  <button
-                    onClick={() => handleRecentClick(term)}
-                    className="flex-1 text-left text-sm text-foreground truncate pr-3"
-                  >
-                    {term}
-                  </button>
-                  <button
-                    onClick={() => removeRecent(term)}
-                    aria-label={`${term} ni o'chirish`}
-                    className="inline-flex h-7 w-7 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground transition-colors shrink-0"
-                  >
-                    <X size={14} />
-                  </button>
-                </li>
+                  {showAllRecents ? "Yashirish" : `Yana ${recents.length - 5} ta ko'rsatish`}
+                </button>
+              )}
+            </>
+          )}
+        </div>
+      )}
+
+      {/* Books based on search history */}
+      {showRecents && recents.length > 0 && (
+        <div className="mt-6">
+          <h2 className="text-base font-semibold text-foreground mb-3">🔎 Qidiruvlaringiz asosida</h2>
+          {historyLoading ? (
+            <div className="space-y-3">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="flex gap-3 rounded-2xl border border-border bg-card p-3 animate-pulse"
+                >
+                  <div className="h-[68px] w-12 shrink-0 rounded-lg bg-muted" />
+                  <div className="flex-1 space-y-2 py-1">
+                    <div className="h-4 w-3/4 rounded bg-muted" />
+                    <div className="h-3 w-1/2 rounded bg-muted" />
+                  </div>
+                </div>
               ))}
-            </ul>
+            </div>
+          ) : historyBooks.length > 0 ? (
+            <div className="space-y-3 md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-3 md:space-y-0">
+              {historyBooks.map((book) => (
+                <ResultRow key={book.id} book={book} onSelect={handleSelectResult} />
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground">Tarix bo'yicha kitob topilmadi</p>
           )}
         </div>
       )}
@@ -371,50 +497,7 @@ function SearchPageInner() {
               </p>
               <div className="space-y-3 md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-3 md:space-y-0">
                 {filteredBooks.map((book) => (
-                  <Link
-                    key={book.id}
-                    href={`/books/${book.slug ?? book.id}`}
-                    onClick={() => handleSelectResult(book)}
-                    className="flex gap-3 rounded-2xl border border-border bg-card p-3 hover:shadow-sm hover:bg-muted/30 transition-colors"
-                  >
-                    <div className="relative h-[68px] md:h-[80px] w-12 md:w-14 shrink-0 overflow-hidden rounded-lg bg-muted">
-                      {book.coverUrl ? (
-                        <Image
-                          src={book.coverUrl}
-                          alt={book.title}
-                          fill
-                          className="object-cover"
-                          sizes="48px"
-                        />
-                      ) : (
-                        <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-primary/10 to-primary/5">
-                          <BookOpen size={18} className="text-primary/30" />
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex flex-1 flex-col justify-center min-w-0 py-0.5">
-                      <h3 className="text-sm font-semibold leading-tight text-foreground line-clamp-2">
-                        {book.title}
-                      </h3>
-                      <p className="text-xs text-muted-foreground truncate mt-1">
-                        {book.author?.name ?? "Noma'lum muallif"}
-                      </p>
-                      <div className="flex items-center gap-1 mt-1.5">
-                        <Star size={12} className="fill-yellow-400 text-yellow-400" />
-                        <span className="text-xs font-medium text-foreground">
-                          {book.averageRating ? Number(book.averageRating).toFixed(1) : "—"}
-                        </span>
-                        {book.category?.name && (
-                          <>
-                            <span className="text-[11px] text-muted-foreground mx-1">·</span>
-                            <span className="text-xs text-muted-foreground truncate">
-                              {book.category.name}
-                            </span>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  </Link>
+                  <ResultRow key={book.id} book={book} onSelect={handleSelectResult} />
                 ))}
               </div>
             </>
