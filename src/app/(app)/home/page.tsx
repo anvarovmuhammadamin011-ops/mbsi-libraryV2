@@ -214,12 +214,12 @@ export default async function HomePage() {
                   href={`/books/${book.slug}`}
                   className="group shrink-0 snap-start w-[160px] md:w-full"
                 >
-                  <div className="relative aspect-[3/4] w-full overflow-hidden rounded-xl bg-muted">
+                  <div className="relative aspect-[3/4] w-full overflow-hidden rounded-xl bg-muted dark:bg-[#0E1629]">
                     {book.coverUrl ? (
-                      <Image src={book.coverUrl} alt={book.title} fill className="object-cover group-hover:scale-[1.02] transition-transform" sizes="160px" />
+                      <Image src={book.coverUrl} alt={book.title} fill className="object-cover group-hover:scale-[1.03] transition-transform duration-500" sizes="160px" />
                     ) : (
-                      <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-violet-500/10 to-indigo-500/10">
-                        <BookOpen size={28} className="text-violet-500/40" />
+                      <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-violet-500/10 to-indigo-500/10 dark:from-violet-500/15 dark:to-indigo-500/10">
+                        <BookOpen size={28} className="text-violet-500/40 dark:text-violet-400/50" />
                       </div>
                     )}
                   </div>
@@ -314,7 +314,7 @@ export default async function HomePage() {
                 <Link
                   key={cat.id}
                   href={`/books?categoryId=${cat.id}`}
-                  className={`shrink-0 snap-start rounded-2xl border border-black/5 dark:border-white/10 bg-gradient-to-br ${c.bg} px-4 py-3 transition-all hover:shadow-md hover:-translate-y-0.5 min-w-[120px] md:min-w-0 md:flex-1 md:max-w-[160px]`}
+                  className={`shrink-0 snap-start rounded-2xl border border-black/5 dark:border-white/10 bg-gradient-to-br ${c.bg} px-4 py-3 transition-all hover:shadow-lg hover:-translate-y-1 min-w-[120px] md:min-w-0 md:flex-1 md:max-w-[160px] dark:hover:shadow-primary/10`}
                 >
                   <span className="block text-xl leading-none mb-1.5">
                     {cat.icon ?? "📚"}
@@ -360,18 +360,18 @@ export default async function HomePage() {
                   href={`/books/${book.slug}`}
                   className="group shrink-0 snap-start w-[160px] md:w-full"
                 >
-                  <div className="relative aspect-[3/4] w-full overflow-hidden rounded-xl bg-muted">
+                  <div className="relative aspect-[3/4] w-full overflow-hidden rounded-xl bg-muted dark:bg-[#0E1629]">
                     {book.coverUrl ? (
                       <Image
                         src={book.coverUrl}
                         alt={book.title}
                         fill
-                        className="object-cover group-hover:scale-[1.02] transition-transform"
+                        className="object-cover group-hover:scale-[1.03] transition-transform duration-500"
                         sizes="(max-width: 640px) 150px, (max-width: 1024px) 50vw, 33vw"
                       />
                     ) : (
-                      <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-primary/10 to-primary/5">
-                        <BookOpen size={28} className="text-primary/30" />
+                      <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-primary/10 to-primary/5 dark:from-primary/15 dark:to-primary/8">
+                        <BookOpen size={28} className="text-primary/30 dark:text-primary/40" />
                       </div>
                     )}
                   </div>

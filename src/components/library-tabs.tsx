@@ -41,7 +41,7 @@ const TABS: { id: TabId; label: string }[] = [
 
 function Cover({ book }: { book: LibraryBook }) {
   return (
-    <div className="relative h-20 w-14 shrink-0 overflow-hidden rounded-lg bg-muted">
+    <div className="relative h-20 w-14 shrink-0 overflow-hidden rounded-lg bg-muted dark:bg-[#0E1629]">
       {book.coverUrl ? (
         <Image
           src={book.coverUrl}
@@ -51,7 +51,7 @@ function Cover({ book }: { book: LibraryBook }) {
           sizes="56px"
         />
       ) : (
-        <div className="flex h-full w-full items-center justify-center bg-muted text-muted-foreground">
+        <div className="flex h-full w-full items-center justify-center bg-muted dark:bg-[#0E1629] text-muted-foreground">
           <BookOpen size={16} />
         </div>
       )}
@@ -78,9 +78,9 @@ function ReadingRow({ item }: { item: ReadingItem }) {
         )}
         <div className="mt-2">
           <p className="text-xs text-muted-foreground">{pct}% completed</p>
-          <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-muted">
+          <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-muted dark:bg-white/10">
             <div
-              className="h-full rounded-full bg-primary transition-all"
+              className="h-full rounded-full bg-primary transition-all dark:shadow-[0_0_6px_rgba(96,165,250,0.4)]"
               style={{ width: `${Math.min(100, Math.max(0, pct))}%` }}
             />
           </div>

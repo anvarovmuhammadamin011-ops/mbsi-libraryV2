@@ -147,7 +147,7 @@ export function ReviewSection({
                   size={28}
                   className={
                     n <= (hoverRating || rating)
-                      ? "fill-yellow-400 text-yellow-400"
+                      ? "fill-yellow-400 text-yellow-400 dark:drop-shadow-[0_0_4px_rgba(250,204,21,0.5)]"
                       : "text-muted-foreground/30"
                   }
                 />
@@ -188,7 +188,7 @@ export function ReviewSection({
         ) : (
           <div className="mt-3 space-y-3 md:grid md:grid-cols-2 md:gap-3 md:space-y-0">
             {reviews.map((r) => (
-              <div key={r.id} className="rounded-xl border border-border bg-card p-3">
+              <div key={r.id} className="rounded-xl border border-border bg-card p-3 dark:shadow-sm dark:shadow-black/10">
                 {editingId === r.id ? (
                   <div className="space-y-3">
                     <div className="flex gap-1">
@@ -208,7 +208,7 @@ export function ReviewSection({
                   </div>
                 ) : (
                   <div className="flex gap-3">
-                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-medium text-primary">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 dark:bg-primary/20 text-sm font-medium text-primary">
                       {r.user.name?.[0]?.toUpperCase() ?? "?"}
                     </div>
                     <div className="flex-1 min-w-0">
@@ -216,7 +216,7 @@ export function ReviewSection({
                         <p className="truncate text-sm font-medium text-foreground">{r.user.name}</p>
                         <div className="flex shrink-0 items-center gap-0.5">
                           {Array.from({ length: 5 }).map((_, i) => (
-                            <Star key={i} size={12} className={i < r.rating ? "fill-yellow-400 text-yellow-400" : "text-muted-foreground/30"} />
+                            <Star key={i} size={12} className={i < r.rating ? "fill-yellow-400 text-yellow-400 dark:drop-shadow-[0_0_2px_rgba(250,204,21,0.4)]" : "text-muted-foreground/30"} />
                           ))}
                         </div>
                       </div>

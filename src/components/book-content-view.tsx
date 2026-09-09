@@ -195,11 +195,11 @@ export function BookContentView({ bookId, isAdmin = false }: Props) {
   };
 
   return (
-    <div className="rounded-2xl border border-border bg-card p-4 space-y-4">
+    <div className="rounded-2xl border border-border bg-card p-4 space-y-4 dark:shadow-lg dark:shadow-black/10">
       <div className="flex items-center gap-2">
-        <Sparkles size={18} className="text-primary" />
+        <Sparkles size={18} className="text-primary dark:drop-shadow-[0_0_3px_rgba(96,165,250,0.5)]" />
         <h3 className="font-medium">Kitob tahlili</h3>
-        <Badge variant="secondary" className="text-xs">
+        <Badge variant="secondary" className="text-xs dark:bg-primary/20 dark:text-primary">
           AI
         </Badge>
       </div>
@@ -231,7 +231,7 @@ export function BookContentView({ bookId, isAdmin = false }: Props) {
         {/* Summary Tab */}
         <TabsContent value="summary" className="space-y-4">
           {content.summary && (
-            <div className="rounded-lg bg-muted/50 p-4">
+            <div className="rounded-lg bg-muted/50 dark:bg-white/5 p-4 dark:border dark:border-white/5">
               <h4 className="text-sm font-medium mb-2">Xulosa</h4>
               <p className="text-sm text-muted-foreground leading-relaxed">
                 {content.summary}
@@ -240,7 +240,7 @@ export function BookContentView({ bookId, isAdmin = false }: Props) {
           )}
 
           {content.keyPoints && content.keyPoints.length > 0 && (
-            <div className="rounded-lg bg-muted/50 p-4">
+            <div className="rounded-lg bg-muted/50 dark:bg-white/5 p-4 dark:border dark:border-white/5">
               <h4 className="text-sm font-medium mb-2">
                 Asosiy fikrlar ({content.keyPoints.length})
               </h4>
@@ -250,7 +250,7 @@ export function BookContentView({ bookId, isAdmin = false }: Props) {
                     key={i}
                     className="text-sm text-muted-foreground flex items-start gap-2"
                   >
-                    <span className="text-primary mt-0.5">•</span>
+                    <span className="text-primary dark:text-primary mt-0.5">•</span>
                     <span>{point}</span>
                   </li>
                 ))}
@@ -259,7 +259,7 @@ export function BookContentView({ bookId, isAdmin = false }: Props) {
           )}
 
           {content.tableOfContents && content.tableOfContents.length > 0 && (
-            <div className="rounded-lg bg-muted/50 p-4">
+            <div className="rounded-lg bg-muted/50 dark:bg-white/5 p-4 dark:border dark:border-white/5">
               <h4 className="text-sm font-medium mb-2 flex items-center gap-2">
                 <List size={14} />
                 Mundarija
@@ -341,7 +341,7 @@ export function BookContentView({ bookId, isAdmin = false }: Props) {
           {images.length > 0 ? (
             <div className="grid grid-cols-2 gap-3">
               {images.map((img, i) => (
-                <div key={i} className="rounded-lg bg-muted/50 overflow-hidden border border-border">
+                <div key={i} className="rounded-lg bg-muted/50 dark:bg-white/5 overflow-hidden border border-border dark:border-white/10">
                   {img.dataUrl ? (
                     <img
                       src={img.dataUrl}
@@ -395,7 +395,7 @@ export function BookContentView({ bookId, isAdmin = false }: Props) {
           </div>
 
           {fullText && (
-            <div className="rounded-lg bg-muted/50 p-4 max-h-96 overflow-y-auto">
+            <div className="rounded-lg bg-muted/50 dark:bg-white/5 p-4 max-h-96 overflow-y-auto dark:border dark:border-white/5">
               <h4 className="text-sm font-medium mb-2">Asl matn</h4>
               <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">
                 {fullText}
@@ -404,7 +404,7 @@ export function BookContentView({ bookId, isAdmin = false }: Props) {
           )}
 
           {translation && (
-            <div className="rounded-lg bg-muted/50 p-4 max-h-96 overflow-y-auto">
+            <div className="rounded-lg bg-muted/50 dark:bg-white/5 p-4 max-h-96 overflow-y-auto dark:border dark:border-white/5">
               <h4 className="text-sm font-medium mb-2">O'zbekcha tarjima</h4>
               <div className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">
                 {renderTranslatedText(translation, images, bookId)}

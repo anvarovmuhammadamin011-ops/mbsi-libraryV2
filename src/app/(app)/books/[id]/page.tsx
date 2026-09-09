@@ -106,7 +106,7 @@ export default async function BookDetailPage({
         <div className="flex gap-8 mt-4">
           {/* Left: Cover */}
           <div className="shrink-0">
-            <div className="relative h-[320px] md:h-[360px] w-[220px] md:w-[240px] overflow-hidden rounded-2xl shadow-xl shadow-black/10 bg-muted">
+            <div className="relative h-[320px] md:h-[360px] w-[220px] md:w-[240px] overflow-hidden rounded-2xl shadow-2xl shadow-black/20 dark:shadow-black/40 dark:ring-1 dark:ring-white/10 bg-muted dark:bg-[#0E1629]">
               {book.coverUrl ? (
                 <Image
                   src={book.coverUrl}
@@ -117,7 +117,7 @@ export default async function BookDetailPage({
                   priority
                 />
               ) : (
-                <div className="flex h-full w-full items-center justify-center bg-muted text-muted-foreground text-sm">
+                <div className="flex h-full w-full items-center justify-center bg-muted dark:bg-[#0E1629] text-muted-foreground text-sm">
                   No cover
                 </div>
               )}
@@ -148,7 +148,7 @@ export default async function BookDetailPage({
             <div className="mt-6 flex flex-col gap-3 max-w-[280px]">
               <Link
                 href={`/reader/${book.slug}/text`}
-                className="flex h-12 w-full items-center justify-center rounded-full bg-primary px-6 text-sm font-semibold tracking-wide text-primary-foreground shadow-sm hover:bg-primary/90 transition-colors"
+                className="flex h-12 w-full items-center justify-center rounded-full bg-primary px-6 text-sm font-semibold tracking-wide text-primary-foreground shadow-lg shadow-primary/25 hover:bg-primary/90 hover:shadow-xl hover:shadow-primary/30 transition-all duration-300 dark:shadow-primary/40 dark:hover:shadow-primary/50"
               >
                 O'QISH
               </Link>
@@ -171,7 +171,7 @@ export default async function BookDetailPage({
             {/* Information */}
             <div className="mt-6">
               <h2 className="text-base font-semibold text-foreground">Information</h2>
-              <div className="mt-3 grid grid-cols-2 md:grid-cols-4 gap-4 rounded-2xl bg-muted/50 p-4">
+              <div className="mt-3 grid grid-cols-2 md:grid-cols-4 gap-4 rounded-2xl bg-muted/50 dark:bg-white/5 p-4 dark:border dark:border-white/5">
                 <div>
                   <p className="text-xs text-muted-foreground">Language</p>
                   <p className="text-sm font-medium text-foreground">
@@ -193,7 +193,7 @@ export default async function BookDetailPage({
                 <div>
                   <p className="text-xs text-muted-foreground">Rating</p>
                   <p className="flex items-center gap-1 text-sm font-medium text-foreground">
-                    <Star size={12} className="fill-yellow-400 text-yellow-400" />
+                    <Star size={12} className="fill-yellow-400 text-yellow-400 dark:drop-shadow-[0_0_3px_rgba(250,204,21,0.5)]" />
                     {formatRating(avg)} / 5
                   </p>
                 </div>
@@ -257,7 +257,7 @@ function MobileBookDetail({
 
       {/* Center cover + meta */}
       <div className="flex flex-col items-center text-center">
-        <div className="relative h-[280px] w-[200px] overflow-hidden rounded-2xl shadow-xl shadow-black/10 bg-muted">
+        <div className="relative h-[280px] w-[200px] overflow-hidden rounded-2xl shadow-2xl shadow-black/20 dark:shadow-black/40 dark:ring-1 dark:ring-white/10 bg-muted dark:bg-[#0E1629]">
           {book.coverUrl ? (
             <Image
               src={book.coverUrl}
@@ -268,7 +268,7 @@ function MobileBookDetail({
               priority
             />
           ) : (
-            <div className="flex h-full w-full items-center justify-center bg-muted text-muted-foreground text-sm">
+            <div className="flex h-full w-full items-center justify-center bg-muted dark:bg-[#0E1629] text-muted-foreground text-sm">
               No cover
             </div>
           )}
@@ -282,7 +282,7 @@ function MobileBookDetail({
         </p>
 
         <div className="mt-2 flex items-center gap-1.5 text-sm text-muted-foreground">
-          <Star size={14} className="fill-yellow-400 text-yellow-400" />
+          <Star size={14} className="fill-yellow-400 text-yellow-400 dark:drop-shadow-[0_0_3px_rgba(250,204,21,0.5)]" />
           <span className="font-medium text-foreground">
             {formatRating(avg)} / 5
           </span>
@@ -292,7 +292,7 @@ function MobileBookDetail({
         <div className="mt-6 w-full space-y-3">
           <Link
             href={`/reader/${book.slug}/text`}
-            className="flex h-12 w-full items-center justify-center rounded-full bg-primary px-6 text-sm font-semibold tracking-wide text-primary-foreground shadow-sm hover:bg-primary/90 transition-colors"
+            className="flex h-12 w-full items-center justify-center rounded-full bg-primary px-6 text-sm font-semibold tracking-wide text-primary-foreground shadow-lg shadow-primary/25 hover:bg-primary/90 hover:shadow-xl hover:shadow-primary/30 transition-all duration-300 dark:shadow-primary/40 dark:hover:shadow-primary/50"
           >
             O'QISH
           </Link>
@@ -316,7 +316,7 @@ function MobileBookDetail({
       {/* Information */}
       <div className="mt-6">
         <h2 className="text-base font-semibold text-foreground">Information</h2>
-        <div className="mt-3 grid grid-cols-2 gap-4 rounded-2xl bg-muted/50 p-4">
+        <div className="mt-3 grid grid-cols-2 gap-4 rounded-2xl bg-muted/50 dark:bg-white/5 p-4 dark:border dark:border-white/5">
           <div>
             <p className="text-xs text-muted-foreground">Language</p>
             <p className="text-sm font-medium text-foreground">

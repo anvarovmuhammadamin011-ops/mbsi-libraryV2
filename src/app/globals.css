@@ -309,6 +309,78 @@ html.telegram-webapp .mobile-nav {
   --tw-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.5), 0 1px 2px -1px rgba(0, 0, 0, 0.5);
 }
 
+.dark .shadow-md {
+  --tw-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -2px rgba(0, 0, 0, 0.5);
+}
+
+.dark .shadow-lg {
+  --tw-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.6), 0 4px 6px -4px rgba(0, 0, 0, 0.5);
+}
+
+.dark .shadow-xl {
+  --tw-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.6), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
+}
+
+.dark .shadow-primary\/5 {
+  --tw-shadow-color: rgba(96, 165, 250, 0.08);
+}
+
 .dark .divide-border > :not([hidden]) ~ :not([hidden]) {
   border-color: rgba(255, 255, 255, 0.10);
+}
+
+/* Dark mode book card enhancements */
+.dark .group:hover .bg-gradient-to-t {
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.7) 0%, transparent 100%);
+}
+
+/* Dark mode cover placeholder gradient */
+.dark .from-primary\/10.to-primary\/5 {
+  background: linear-gradient(135deg, rgba(96, 165, 250, 0.15) 0%, rgba(96, 165, 250, 0.08) 100%);
+}
+
+/* Dark mode category card glow effect */
+.dark .hover\:shadow-md {
+  --tw-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -2px rgba(0, 0, 0, 0.4);
+}
+
+.dark .hover\:shadow-md:hover {
+  --tw-shadow: 0 4px 12px -1px rgba(96, 165, 250, 0.15), 0 2px 6px -2px rgba(96, 165, 250, 0.1);
+}
+
+/* Dark mode button enhancements */
+.dark .bg-primary {
+  background-color: #60A5FA;
+}
+
+.dark .text-primary-foreground {
+  color: #0B1121;
+}
+
+.dark .hover\:bg-primary\/90:hover {
+  background-color: rgba(96, 165, 250, 0.9);
+}
+
+/* Dark mode accent colors */
+.dark .bg-blue-50.dark\:bg-blue-950\/30 {
+  background-color: rgba(29, 78, 216, 0.2);
+}
+
+/* Dark mode progress bar glow */
+.dark .bg-primary.rounded-full {
+  box-shadow: 0 0 8px rgba(96, 165, 250, 0.4);
+}
+
+/* Dark mode star rating enhancement */
+.dark .fill-yellow-400 {
+  filter: drop-shadow(0 0 2px rgba(250, 204, 21, 0.4));
+}
+
+/* Dark mode scroll shadow for horizontal lists */
+.dark .scrollbar-thin::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+.dark .scrollbar-thin::-webkit-scrollbar-track {
+  background-color: rgba(255, 255, 255, 0.05);
 }
