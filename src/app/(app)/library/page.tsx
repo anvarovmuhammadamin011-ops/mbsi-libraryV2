@@ -8,7 +8,7 @@ export default async function LibraryPage() {
   const user = await getSessionUser();
   if (!user) return null;
 
-  const [readingRows, favoriteRows, finishedRows, totalBooks] = await Promise.all([
+  const [readingRows, favoriteRows, finishedRows] = await Promise.all([
     prisma.readingProgress.findMany({
       where: { userId: user.id, completedAt: null },
       include: { book: { include: { author: true } } },
@@ -24,7 +24,6 @@ export default async function LibraryPage() {
       include: { book: { include: { author: true } } },
       orderBy: { completedAt: "desc" },
     }),
-    prisma.book.count({ where: { isPublished: true } }),
   ]);
 
   const reading: ReadingItem[] = readingRows
@@ -71,14 +70,9 @@ export default async function LibraryPage() {
 
   return (
     <div className="space-y-6 animate-fade-in pb-20 md:pb-0 max-w-2xl md:max-w-4xl lg:max-w-5xl mx-auto">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">My Library</h1>
-          <p className="mt-1 text-sm text-muted-foreground">Shaxsiy kutubxonangiz</p>
-        </div>
-        <div className="rounded-full bg-primary/10 px-3 py-1.5 text-sm font-medium text-primary">
-          Jami {totalBooks} kitob
-        </div>
+      <div>
+        <h1 className="text-2xl font-bold tracking-tight text-foreground">My Library</h1>
+        <p className="mt-1 text-sm text-muted-foreground">Shaxsiy kutubxonangiz</p>
       </div>
 
       <LibraryTabs reading={reading} saved={saved} finished={finished} />

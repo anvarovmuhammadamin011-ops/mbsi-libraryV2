@@ -59,7 +59,7 @@ export default async function ProfilePage() {
   const user = await getSessionUser();
   if (!user) return null;
 
-  const [completedCount, sessions, ratingAgg, personalStats, achievements, monthSessions] = await Promise.all([
+  const [completedCount, sessions, ratingAgg, personalStats, achievements, monthSessions, allBooksCount, totalUsers, totalAuthors, totalCategories] = await Promise.all([
     prisma.readingProgress.count({
       where: { userId: user.id, completedAt: { not: null } },
     }),
@@ -80,6 +80,10 @@ export default async function ProfilePage() {
       },
       select: { duration: true },
     }),
+    prisma.book.count({ where: { isPublished: true } }),
+    prisma.user.count(),
+    prisma.author.count(),
+    prisma.category.count(),
   ]);
 
   const totalBooks = completedCount;
@@ -204,6 +208,39 @@ export default async function ProfilePage() {
               {readingTimeHours}h {readingTimeMins}m
             </p>
             <p className="text-xs text-muted-foreground">{t.profile.time}</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Ilova haqida */}
+      <div className="rounded-2xl border border-border bg-card shadow-sm px-4 py-4">
+        <h2 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+          <BookOpen size={14} className="text-primary" /> Ilova haqida
+        </h2>
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-muted-foreground">Kitoblar soni</span>
+            <span className="text-sm font-semibold text-foreground">{allBooksCount} ta</span>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-muted-foreground">Foydalanuvchilar</span>
+            <span className="text-sm font-semibold text-foreground">{totalUsers} nafar</span>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-muted-foreground">Mualliflar</span>
+            <span className="text-sm font-semibold text-foreground">{totalAuthors} nafar</span>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-muted-foreground">Kategoriyalar</span>
+            <span className="text-sm font-semibold text-foreground">{totalCategories} ta</span>
+          </div>
+          <div className="pt-2 border-t border-border">
+            <p className="text-xs text-muted-foreground text-center">
+              MBSI Library — bilimga yo'l oching 📚
+            </p>
+            <p className="text-xs text-muted-foreground text-center mt-1">
+              Versiya 1.0.0
+            </p>
           </div>
         </div>
       </div>

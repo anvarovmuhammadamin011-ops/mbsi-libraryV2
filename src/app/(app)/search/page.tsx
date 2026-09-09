@@ -81,14 +81,28 @@ function SearchPageInner() {
   const [showAllRecents, setShowAllRecents] = useState(false);
   const [historyBooks, setHistoryBooks] = useState<Book[]>([]);
   const [historyLoading, setHistoryLoading] = useState(false);
+  const [focused, setFocused] = useState(false);
 
   const inputRef = useRef<HTMLInputElement>(null);
+  const overlayInputRef = useRef<HTMLInputElement>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // auto-focus
+  // auto-focus main input
   useEffect(() => {
     inputRef.current?.focus();
   }, []);
+
+  // focus overlay input + lock body scroll while overlay open
+  useEffect(() => {
+    if (focused) {
+      const t = setTimeout(() => overlayInputRef.current?.focus(), 60);
+      document.body.style.overflow = "hidden";
+      return () => {
+        clearTimeout(t);
+        document.body.style.overflow = "";
+      };
+    }
+  }, [focused]);
 
   // load recents from localStorage
   useEffect(() => {
@@ -134,8 +148,8 @@ function SearchPageInner() {
   const handleRecentClick = (term: string) => {
     setQuery(term);
     setHasSearched(true);
+    setFocused(false);
     addRecent(term);
-    inputRef.current?.focus();
   };
 
   // ─── Books based on search history (shown when query is empty) ───
@@ -221,8 +235,16 @@ function SearchPageInner() {
     const q = query.trim();
     if (q) {
       setHasSearched(true);
+      setFocused(false);
       addRecent(q);
+      inputRef.current?.blur();
     }
+  }
+
+  function closeOverlay() {
+    setFocused(false);
+    inputRef.current?.blur();
+    overlayInputRef.current?.blur();
   }
 
   const qLower = query.trim().toLowerCase();
@@ -237,7 +259,6 @@ function SearchPageInner() {
     return true;
   });
 
-  const showRecents = !hasSearched && query.trim() === "";
   const showResults = hasSearched || query.trim() !== "";
   const showDefault = !hasSearched && query.trim() === "";
   const visibleRecents = showAllRecents ? recents.slice(0, 10) : recents.slice(0, 5);
@@ -269,15 +290,23 @@ function SearchPageInner() {
               setFilter("all");
               if (e.target.value.trim()) {
                 setHasSearched(true);
+                setFocused(false);
               }
+            }}
+            onFocus={() => {
+              if (!query.trim()) setFocused(true);
             }}
             onKeyDown={(e) => {
               if (e.key === "Enter") {
                 handleSearch();
               }
               if (e.key === "Escape") {
-                setQuery("");
-                setHasSearched(false);
+                if (focused) {
+                  closeOverlay();
+                } else {
+                  setQuery("");
+                  setHasSearched(false);
+                }
               }
             }}
             placeholder="Kitob, muallif qidiring..."
@@ -324,77 +353,131 @@ function SearchPageInner() {
         )}
       </div>
 
-      {/* Recent searches */}
-      {showRecents && (
-        <div className="mt-4">
-          <h2 className="text-sm font-semibold text-foreground mb-3">Oxirgi qidiruvlar</h2>
-          {recents.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Hali qidiruvlar yo'q</p>
-          ) : (
-            <>
-              <ul className="space-y-1">
-                {visibleRecents.map((term) => (
-                  <li
-                    key={term}
-                    className="flex items-center justify-between rounded-xl px-3 py-2.5 hover:bg-muted/60 transition-colors group"
-                  >
-                    <button
-                      onClick={() => handleRecentClick(term)}
-                      className="flex-1 text-left text-sm text-foreground truncate pr-3"
-                    >
-                      {term}
-                    </button>
-                    <button
-                      onClick={() => removeRecent(term)}
-                      aria-label={`${term} ni o'chirish`}
-                      className="inline-flex h-7 w-7 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground transition-colors shrink-0"
-                    >
-                      <X size={14} />
-                    </button>
-                  </li>
-                ))}
-              </ul>
-              {recents.length > 5 && (
+      {/* ═══ Search focus overlay — recents + history-based books ═══ */}
+      {focused && (
+        <div className="fixed inset-0 z-50 bg-background overflow-y-auto animate-fade-in">
+          <div className="mx-auto max-w-2xl md:max-w-3xl lg:max-w-4xl px-4 pt-2 pb-20">
+            {/* Overlay search bar */}
+            <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-md pb-3 pt-1">
+              <div className="flex items-center gap-3 mb-3">
                 <button
-                  onClick={() => setShowAllRecents((v) => !v)}
-                  className="mt-2 text-sm font-medium text-primary hover:underline"
+                  onClick={closeOverlay}
+                  aria-label="Orqaga"
+                  className="inline-flex h-9 w-9 items-center justify-center rounded-full hover:bg-muted transition-colors shrink-0"
                 >
-                  {showAllRecents ? "Yashirish" : `Yana ${recents.length - 5} ta ko'rsatish`}
+                  <ArrowLeft size={20} className="text-foreground" />
                 </button>
-              )}
-            </>
-          )}
-        </div>
-      )}
+                <h1 className="text-lg font-semibold text-foreground">Qidiruv</h1>
+              </div>
+              <div className="relative">
+                <Search className="absolute left-4 top-1/2 size-4 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+                <input
+                  ref={overlayInputRef}
+                  value={query}
+                  onChange={(e) => {
+                    setQuery(e.target.value);
+                    setFilter("all");
+                    if (e.target.value.trim()) {
+                      setHasSearched(true);
+                      setFocused(false);
+                    }
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      handleSearch();
+                    }
+                    if (e.key === "Escape") {
+                      closeOverlay();
+                    }
+                  }}
+                  placeholder="Kitob, muallif qidiring..."
+                  aria-label="Kitob, muallif qidirish"
+                  className="h-12 w-full rounded-2xl border border-border bg-white dark:bg-card pl-11 pr-10 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-colors"
+                />
+                {query && (
+                  <button
+                    onClick={() => setQuery("")}
+                    aria-label="Tozalash"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                  >
+                    <X size={16} />
+                  </button>
+                )}
+              </div>
+            </div>
 
-      {/* Books based on search history */}
-      {showRecents && recents.length > 0 && (
-        <div className="mt-6">
-          <h2 className="text-base font-semibold text-foreground mb-3">🔎 Qidiruvlaringiz asosida</h2>
-          {historyLoading ? (
-            <div className="space-y-3">
-              {Array.from({ length: 3 }).map((_, i) => (
-                <div
-                  key={i}
-                  className="flex gap-3 rounded-2xl border border-border bg-card p-3 animate-pulse"
-                >
-                  <div className="h-[68px] w-12 shrink-0 rounded-lg bg-muted" />
-                  <div className="flex-1 space-y-2 py-1">
-                    <div className="h-4 w-3/4 rounded bg-muted" />
-                    <div className="h-3 w-1/2 rounded bg-muted" />
+            {/* Recent searches — last 5 */}
+            <div className="mt-4">
+              <h2 className="text-sm font-semibold text-foreground mb-3">Oxirgi qidiruvlar</h2>
+              {recents.length === 0 ? (
+                <p className="text-sm text-muted-foreground">Hali qidiruvlar yo'q</p>
+              ) : (
+                <>
+                  <ul className="space-y-1">
+                    {visibleRecents.map((term) => (
+                      <li
+                        key={term}
+                        className="flex items-center justify-between rounded-xl px-3 py-2.5 hover:bg-muted/60 transition-colors group"
+                      >
+                        <button
+                          onClick={() => handleRecentClick(term)}
+                          className="flex-1 text-left text-sm text-foreground truncate pr-3"
+                        >
+                          {term}
+                        </button>
+                        <button
+                          onClick={() => removeRecent(term)}
+                          aria-label={`${term} ni o'chirish`}
+                          className="inline-flex h-7 w-7 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground transition-colors shrink-0"
+                        >
+                          <X size={14} />
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                  {recents.length > 5 && (
+                    <button
+                      onClick={() => setShowAllRecents((v) => !v)}
+                      className="mt-2 text-sm font-medium text-primary hover:underline"
+                    >
+                      {showAllRecents ? "Yashirish" : `Yana ${recents.length - 5} ta ko'rsatish`}
+                    </button>
+                  )}
+                </>
+              )}
+            </div>
+
+            {/* Books based on search history */}
+            {recents.length > 0 && (
+              <div className="mt-6">
+                <h2 className="text-base font-semibold text-foreground mb-3">🔎 Qidiruvlaringiz asosida</h2>
+                {historyLoading ? (
+                  <div className="space-y-3">
+                    {Array.from({ length: 3 }).map((_, i) => (
+                      <div
+                        key={i}
+                        className="flex gap-3 rounded-2xl border border-border bg-card p-3 animate-pulse"
+                      >
+                        <div className="h-[68px] w-12 shrink-0 rounded-lg bg-muted" />
+                        <div className="flex-1 space-y-2 py-1">
+                          <div className="h-4 w-3/4 rounded bg-muted" />
+                          <div className="h-3 w-1/2 rounded bg-muted" />
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                </div>
-              ))}
-            </div>
-          ) : historyBooks.length > 0 ? (
-            <div className="space-y-3 md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-3 md:space-y-0">
-              {historyBooks.map((book) => (
-                <ResultRow key={book.id} book={book} onSelect={handleSelectResult} />
-              ))}
-            </div>
-          ) : (
-            <p className="text-sm text-muted-foreground">Tarix bo'yicha kitob topilmadi</p>
-          )}
+                ) : historyBooks.length > 0 ? (
+                  <div className="space-y-3 md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-3 md:space-y-0">
+                    {historyBooks.map((book) => (
+                      <ResultRow key={book.id} book={book} onSelect={(b) => { handleSelectResult(b); setFocused(false); }} />
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground">Tarix bo'yicha kitob topilmadi</p>
+                )}
+              </div>
+            )}
+          </div>
         </div>
       )}
 
