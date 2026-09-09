@@ -48,12 +48,61 @@ export function AdminSidebar() {
   if (!user) return null;
 
   return (
-    <aside
-      className={cn(
-        "hidden lg:flex flex-col border-r border-border bg-card transition-all duration-200",
-        collapsed ? "w-[68px]" : "w-64"
-      )}
-    >
+    <>
+      {/* ─── Mobile top navigation (lg:hidden) ─── */}
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-40 border-b border-border bg-card/95 backdrop-blur-xl">
+        <div className="flex items-center justify-between px-4 h-14">
+          <Link href="/admin" className="flex items-center gap-2">
+            <Image
+              src="/logo/school-logo.svg"
+              alt="MBSI Logo"
+              width={28}
+              height={28}
+              className="rounded-lg"
+            />
+            <span className="text-sm font-bold tracking-tight text-foreground leading-none">
+              MBSI LIBRARY
+            </span>
+          </Link>
+          <button
+            onClick={logout}
+            className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground hover:text-destructive transition-colors"
+            aria-label="Chiqish"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>
+          </button>
+        </div>
+        <nav className="flex gap-1 overflow-x-auto px-3 pb-2.5 scrollbar-thin">
+          {NAV_ITEMS.map((item) => {
+            const isActive =
+              pathname === item.href ||
+              (item.href !== "/admin" && pathname.startsWith(item.href));
+            const Icon = item.icon;
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={cn(
+                  "flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors",
+                  isActive
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-muted text-muted-foreground hover:bg-accent hover:text-foreground"
+                )}
+              >
+                <Icon size={14} />
+                {item.label}
+              </Link>
+            );
+          })}
+        </nav>
+      </div>
+
+      <aside
+        className={cn(
+          "hidden lg:flex flex-col border-r border-border bg-card transition-all duration-200",
+          collapsed ? "w-[68px]" : "w-64"
+        )}
+      >
       {/* Logo */}
       <div className="flex h-16 items-center justify-between px-4 border-b border-border">
         {!collapsed && (
@@ -146,6 +195,7 @@ export function AdminSidebar() {
           )}
         </div>
       </div>
-    </aside>
+      </aside>
+    </>
   );
 }
