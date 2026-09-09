@@ -227,6 +227,12 @@ export async function endSession(
     data: { endPage, pagesRead, duration, endedAt: new Date() },
   });
 
+  // Award balls for reading pages (0.01 per page, max 0.5 per session)
+  if (pagesRead > 0) {
+    const { awardBookRead } = await import("./balls");
+    await awardBookRead(userId, book.id);
+  }
+
   const prog = await upsertProgress(userId, book.id, finalMax);
 
   return { pagesRead: updated.pagesRead, progress: prog, duration: updated.duration };

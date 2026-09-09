@@ -28,7 +28,6 @@ import {
   X,
 } from "lucide-react";
 import { useTheme } from "next-themes";
-import { PdfOcrExtractor } from "@/components/pdf-ocr-extractor";
 
 const FONT_SIZES = [
   { label: "Kichik", value: 16 },
@@ -69,7 +68,7 @@ export function TextReader({ bookId, title, totalPages, pdfUrl }: Props) {
   const [totalTextPages, setTotalTextPages] = useState(0);
   const [pageCache, setPageCache] = useState<Map<number, string>>(new Map());
   const [loadingPage, setLoadingPage] = useState<number | null>(1);
-  const [status, setStatus] = useState<"loading" | "ready" | "needs_ocr" | "error">("loading");
+  const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
   const [fontSizeIdx, setFontSizeIdx] = useState(1);
   const [lineHeightIdx, setLineHeightIdx] = useState(2);
   const [showSettings, setShowSettings] = useState(false);
@@ -97,10 +96,7 @@ export function TextReader({ bookId, title, totalPages, pdfUrl }: Props) {
           if (data.data.totalPages > 0 && totalTextPages === 0) {
             setTotalTextPages(data.data.totalPages);
           }
-          if (data.data.status === "needs_ocr") {
-            setStatus("needs_ocr");
-            return null;
-          }
+
           return data.data.text;
         }
         return null;
@@ -281,28 +277,7 @@ export function TextReader({ bookId, title, totalPages, pdfUrl }: Props) {
   const mutedClass = isDark ? "text-slate-400" : "text-slate-500";
   const sidebarBg = isDark ? "bg-[#0F172A]" : "bg-white";
 
-  // ─── Needs OCR ───────────────────────────────────────────
-  if (status === "needs_ocr") {
-    return (
-      <div className={`fixed inset-0 z-50 flex flex-col items-center justify-center ${bgClass} ${textClass}`}>
-        <BookOpen className="size-12 text-muted-foreground mb-4" />
-        <h2 className="text-lg font-semibold mb-2">Matn topilmadi</h2>
-        <p className={`text-sm ${mutedClass} mb-4 text-center max-w-sm`}>
-          Bu kitob uchun matn AI orqali ajratilmoqda...
-        </p>
-        <PdfOcrExtractor
-          bookId={bookId}
-          pdfUrl={pdfUrl}
-          totalPages={totalPages}
-          autoStart
-          onComplete={() => window.location.reload()}
-        />
-        <Button variant="outline" onClick={() => window.history.back()} className="mt-4">
-          Orqaga
-        </Button>
-      </div>
-    );
-  }
+
 
   return (
     <div className={`fixed inset-0 z-50 flex flex-col overflow-hidden select-none ${bgClass}`}>

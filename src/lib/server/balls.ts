@@ -23,7 +23,8 @@ export type BallType =
   | "MISSION_PENALTY"
   | "ADMIN_GIVE"
   | "ADMIN_TAKE"
-  | "MANUAL";
+  | "MANUAL"
+  | "INACTIVITY_PENALTY";
 
 function clampBalls(value: number): number {
   return Math.max(MIN_BALLS, Math.min(MAX_BALLS, Math.round(value * 100) / 100));
@@ -187,6 +188,55 @@ export async function checkAndPenalizeExpiredMissions(): Promise<number> {
 
       if (!alreadyPenalized) {
         await penalizeMissionIncomplete(user.id, mission.id, mission.title);
+        penalizedCount++;
+      }
+    }
+  }
+
+  return penalizedCount;
+}
+
+// ─── Daily inactivity penalty ─────────────────────────────
+// Penalize users who haven't read any book in the last 24 hours.
+export const INACTIVITY_PENALTY = -0.1;
+
+export async function penalizeInactiveUsers(): Promise<number> {
+  const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+
+  // Find active students/teachers
+  const activeUsers = await prisma.user.findMany({
+    where: { isActive: true, role: { in: ["STUDENT", "TEACHER"] } },
+    select: { id: true, balls: true },
+  });
+
+  let penalizedCount = 0;
+
+  for (const user of activeUsers) {
+    // Check if user had any reading session in last 24 hours
+    const recentSession = await prisma.readingSession.findFirst({
+      where: { userId: user.id, startedAt: { gte: oneDayAgo } },
+    });
+
+    if (!recentSession) {
+      // Check if already penalized today
+      const todayStart = new Date();
+      todayStart.setHours(0, 0, 0, 0);
+
+      const alreadyPenalizedToday = await prisma.ballTransaction.findFirst({
+        where: {
+          userId: user.id,
+          type: "INACTIVITY_PENALTY",
+          createdAt: { gte: todayStart },
+        },
+      });
+
+      if (!alreadyPenalizedToday && (user.balls ?? 0) > 0) {
+        await takeBalls(
+          user.id,
+          Math.abs(INACTIVITY_PENALTY),
+          "INACTIVITY_PENALTY",
+          `O'qimaganlik uchun jazo (${INACTIVITY_PENALTY} ball)`
+        );
         penalizedCount++;
       }
     }
