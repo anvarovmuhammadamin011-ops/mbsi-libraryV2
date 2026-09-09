@@ -87,10 +87,7 @@ function SearchPageInner() {
   const overlayInputRef = useRef<HTMLInputElement>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // auto-focus main input
-  useEffect(() => {
-    inputRef.current?.focus();
-  }, []);
+  // Don't auto-focus on mount to avoid overlay showing immediately
 
   // focus overlay input + lock body scroll while overlay open
   useEffect(() => {
@@ -312,7 +309,6 @@ function SearchPageInner() {
             placeholder="Kitob, muallif qidiring..."
             aria-label="Kitob, muallif qidirish"
             className="h-12 w-full rounded-2xl border border-border bg-white dark:bg-card pl-11 pr-10 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-colors"
-            autoFocus
           />
           {query && (
             <button

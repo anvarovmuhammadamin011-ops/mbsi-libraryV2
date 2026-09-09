@@ -100,35 +100,35 @@ export function BookCard({
       </div>
 
       {/* Info */}
-      <div className="flex flex-1 flex-col gap-1 p-3">
-        <h3 className="line-clamp-2 text-[13px] font-semibold leading-tight text-foreground">
+      <div className="flex flex-1 flex-col gap-1.5 p-4">
+        <h3 className="line-clamp-2 text-sm font-bold leading-snug text-foreground">
           {book.title}
         </h3>
-        <p className="text-xs text-muted-foreground truncate">
+        <p className="text-sm text-muted-foreground truncate">
           {book.author?.name}
         </p>
 
-        <div className="flex items-center gap-1.5 mt-0.5">
+        <div className="flex items-center gap-2 mt-1">
           {book.averageRating ? (
-            <div className="flex items-center gap-0.5">
-              <Star size={11} className="fill-yellow-400 text-yellow-400" />
-              <span className="text-[11px] font-medium">{book.averageRating}</span>
+            <div className="flex items-center gap-1">
+              <Star size={14} className="fill-yellow-400 text-yellow-400" />
+              <span className="text-sm font-semibold">{book.averageRating}</span>
             </div>
           ) : null}
-          <span className="text-[11px] text-muted-foreground">·</span>
-          <span className="text-[11px] text-muted-foreground">{book.totalPages} bet</span>
+          <span className="text-sm text-muted-foreground">·</span>
+          <span className="text-sm text-muted-foreground">{book.totalPages} bet</span>
         </div>
 
         {/* Progress */}
         {progress && (
-          <div className="mt-auto pt-2 space-y-1">
-            <div className="flex items-center justify-between text-[11px]">
+          <div className="mt-auto pt-2 space-y-1.5">
+            <div className="flex items-center justify-between text-xs">
               <span className="text-muted-foreground">
                 {progress.currentPage}/{progress.totalPages}
               </span>
               <span className="font-medium text-primary">{progress.progress}%</span>
             </div>
-            <Progress value={progress.progress} className="h-1" />
+            <Progress value={progress.progress} className="h-1.5" />
           </div>
         )}
       </div>

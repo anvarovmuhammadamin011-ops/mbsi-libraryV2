@@ -147,18 +147,12 @@ export default async function BookDetailPage({
             {/* Action buttons */}
             <div className="mt-6 flex flex-col gap-3 max-w-[280px]">
               <Link
-                href={hasPdf ? `/reader/${book.slug}` : `/reader/${book.slug}/text`}
+                href={`/reader/${book.slug}/text`}
                 className="flex h-12 w-full items-center justify-center rounded-full bg-primary px-6 text-sm font-semibold tracking-wide text-primary-foreground shadow-sm hover:bg-primary/90 transition-colors"
               >
-                READ NOW
+                O'QISH
               </Link>
-              <Link
-                href={`/reader/${book.slug}/text`}
-                className="flex h-11 w-full items-center justify-center gap-2 rounded-full border border-border bg-card px-6 text-sm font-medium text-foreground shadow-sm hover:bg-muted/50 transition-colors"
-              >
-                <BookOpen size={16} />
-                Matn ko'rinishida o'qish
-              </Link>
+
               <LibraryToggleButton bookId={book.id} initialFavorite={fav} />
             </div>
 
@@ -217,10 +211,6 @@ export default async function BookDetailPage({
           initialUserRating={userRating?.rating ?? null}
         />
 
-        {/* AI Content Section - visible to all users if content exists */}
-        <div className="mt-8">
-          <BookContentView bookId={book.id} isAdmin={user.role === "ADMIN"} />
-        </div>
       </div>
     </div>
   );
@@ -301,18 +291,12 @@ function MobileBookDetail({
         </div>          {/* Buttons stacked full width */}
         <div className="mt-6 w-full space-y-3">
           <Link
-            href={hasPdf ? `/reader/${book.slug}` : `/reader/${book.slug}/text`}
+            href={`/reader/${book.slug}/text`}
             className="flex h-12 w-full items-center justify-center rounded-full bg-primary px-6 text-sm font-semibold tracking-wide text-primary-foreground shadow-sm hover:bg-primary/90 transition-colors"
           >
-            READ NOW
+            O'QISH
           </Link>
-          <Link
-            href={`/reader/${book.slug}/text`}
-            className="flex h-11 w-full items-center justify-center gap-2 rounded-full border border-border bg-card px-6 text-sm font-medium text-foreground shadow-sm hover:bg-muted/50 transition-colors"
-          >
-            <BookOpen size={16} />
-            Matn ko'rinishida o'qish
-          </Link>
+
           <LibraryToggleButton bookId={book.id} initialFavorite={fav} />
         </div>
       </div>
@@ -370,10 +354,6 @@ function MobileBookDetail({
         initialUserRating={userRating}
       />
 
-      {/* AI Content Section - visible to all users if content exists */}
-      <div className="mt-8">
-        <BookContentView bookId={book.id} />
-      </div>
     </>
   );
 }
