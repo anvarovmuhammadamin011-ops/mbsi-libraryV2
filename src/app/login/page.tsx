@@ -9,6 +9,8 @@ import {
   Loader2,
   BookOpen,
   GraduationCap,
+  BookMarked,
+  ShieldCheck,
   ChevronRight,
 } from "lucide-react";
 import type { UserRole } from "@/types";
@@ -36,6 +38,22 @@ export default function LoginPage() {
       icon: <GraduationCap className="h-5 w-5" />,
       color: "text-blue-600",
       bgColor: "bg-blue-50 dark:bg-blue-950/30",
+    },
+    {
+      role: "TEACHER",
+      title: t.login.teacher,
+      desc: t.login.teacherDesc,
+      icon: <BookMarked className="h-5 w-5" />,
+      color: "text-emerald-600",
+      bgColor: "bg-emerald-50 dark:bg-emerald-950/30",
+    },
+    {
+      role: "ADMIN",
+      title: t.login.admin,
+      desc: t.login.adminDesc,
+      icon: <ShieldCheck className="h-5 w-5" />,
+      color: "text-amber-600",
+      bgColor: "bg-amber-50 dark:bg-amber-950/30",
     },
   ];
 
@@ -111,6 +129,26 @@ export default function LoginPage() {
         <p className="mt-8 text-center text-xs text-muted-foreground">
           {t.login.demoNote}
         </p>
+        {/* Quick access: admin & teacher */}
+        <div className="mt-3 flex items-center justify-center gap-4 text-xs text-muted-foreground">
+          <button
+            type="button"
+            onClick={() => handle("ADMIN")}
+            disabled={loading !== null}
+            className="underline underline-offset-2 hover:text-amber-600 transition-colors disabled:opacity-60"
+          >
+            {t.login.admin} →
+          </button>
+          <span aria-hidden>·</span>
+          <button
+            type="button"
+            onClick={() => handle("TEACHER")}
+            disabled={loading !== null}
+            className="underline underline-offset-2 hover:text-emerald-600 transition-colors disabled:opacity-60"
+          >
+            {t.login.teacher} →
+          </button>
+        </div>
       </div>
     </div>
   );

@@ -134,6 +134,10 @@ const uz = {
     selectRole: "Davom etish uchun tanlang",
     student: "O'quvchi",
     studentDesc: "Kitoblarni o'qish, reyting va yutuqlar",
+    teacher: "O'qituvchi",
+    teacherDesc: "Sinflarni boshqarish va o'quvchilar monitoringi",
+    admin: "Admin",
+    adminDesc: "Tizimni boshqarish, kitoblar va sozlamalar",
     demoNote: "Demo rejim — haqiqiy autentifikatsiya hali yo'q",
   },
   plan: {
@@ -296,6 +300,10 @@ const ru: Dictionary = {
     selectRole: "Выберите, чтобы продолжить",
     student: "Ученик",
     studentDesc: "Чтение книг, рейтинг и достижения",
+    teacher: "Учитель",
+    teacherDesc: "Управление классами и мониторинг учеников",
+    admin: "Админ",
+    adminDesc: "Управление системой, книгами и настройками",
     demoNote: "Демо-режим — настоящей аутентификации пока нет",
   },
   plan: {
@@ -456,6 +464,10 @@ const en: Dictionary = {
     selectRole: "Select to continue",
     student: "Student",
     studentDesc: "Read books, ratings and achievements",
+    teacher: "Teacher",
+    teacherDesc: "Manage classes and monitor students",
+    admin: "Admin",
+    adminDesc: "Manage system, books and settings",
     demoNote: "Demo mode — no real authentication yet",
   },
   plan: {
