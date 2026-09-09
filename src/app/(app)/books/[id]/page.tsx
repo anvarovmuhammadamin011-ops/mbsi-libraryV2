@@ -58,6 +58,7 @@ export default async function BookDetailPage({
   const hasStarted = !!(await prisma.readingProgress.findUnique({
     where: { userId_bookId: { userId: user.id, bookId: book.id } },
   }));
+  const hasPdf = !!book.pdfUrl;
   const reviews = await prisma.review.findMany({
     where: { bookId: book.id, isHidden: false },
     include: { user: { select: { id: true, name: true, avatar: true } } },
@@ -79,6 +80,7 @@ export default async function BookDetailPage({
           readerCount={readerCount}
           fav={fav}
           hasStarted={hasStarted}
+          hasPdf={hasPdf}
           reviews={reviews}
           userReview={userReview}
           userRating={userRating?.rating ?? null}
@@ -145,7 +147,7 @@ export default async function BookDetailPage({
             {/* Action buttons */}
             <div className="mt-6 flex flex-col gap-3 max-w-[280px]">
               <Link
-                href={`/reader/${book.slug}`}
+                href={hasPdf ? `/reader/${book.slug}` : `/reader/${book.slug}/text`}
                 className="flex h-12 w-full items-center justify-center rounded-full bg-primary px-6 text-sm font-semibold tracking-wide text-primary-foreground shadow-sm hover:bg-primary/90 transition-colors"
               >
                 READ NOW
@@ -232,6 +234,7 @@ function MobileBookDetail({
   readerCount,
   fav,
   hasStarted,
+  hasPdf,
   reviews,
   userReview,
   userRating,
@@ -242,6 +245,7 @@ function MobileBookDetail({
   readerCount: number;
   fav: boolean;
   hasStarted: boolean;
+  hasPdf: boolean;
   reviews: any[];
   userReview: any;
   userRating: number | null;
@@ -297,7 +301,7 @@ function MobileBookDetail({
         </div>          {/* Buttons stacked full width */}
         <div className="mt-6 w-full space-y-3">
           <Link
-            href={`/reader/${book.slug}`}
+            href={hasPdf ? `/reader/${book.slug}` : `/reader/${book.slug}/text`}
             className="flex h-12 w-full items-center justify-center rounded-full bg-primary px-6 text-sm font-semibold tracking-wide text-primary-foreground shadow-sm hover:bg-primary/90 transition-colors"
           >
             READ NOW
