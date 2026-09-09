@@ -55,7 +55,7 @@ const tooltipStyle = {
 };
 
 // ─── A1. Completion donut ────────────────────────────────────
-function CompletionDonut({ data }: { data: DiagnosticsData["completion"] }) {
+export function CompletionDonut({ data }: { data: DiagnosticsData["completion"] }) {
   const pie = [
     { name: "Tugatilgan", value: data.totalCompleted },
     { name: "Jarayonda", value: data.inProgress },
@@ -93,7 +93,7 @@ function CompletionDonut({ data }: { data: DiagnosticsData["completion"] }) {
 }
 
 // ─── A2. Reading funnel ──────────────────────────────────────
-function ReadingFunnel({ data }: { data: DiagnosticsData["funnel"] }) {
+export function ReadingFunnel({ data }: { data: DiagnosticsData["funnel"] }) {
   return (
     <div className={CARD}>
       <ChartTitle title="🔻 O'qish voronkasi" sub="Tashrif → Boshlash → 50% → Tugatish" />
@@ -118,7 +118,7 @@ function ReadingFunnel({ data }: { data: DiagnosticsData["funnel"] }) {
 }
 
 // ─── A3. Session scatter ─────────────────────────────────────
-function SessionScatter({ data }: { data: DiagnosticsData["sessionScatter"] }) {
+export function SessionScatter({ data }: { data: DiagnosticsData["sessionScatter"] }) {
   return (
     <div className={CARD}>
       <ChartTitle
@@ -147,7 +147,7 @@ function SessionScatter({ data }: { data: DiagnosticsData["sessionScatter"] }) {
 }
 
 // ─── B1. Category radar ──────────────────────────────────────
-function CategoryRadar({ data }: { data: DiagnosticsData["categoryBalance"] }) {
+export function CategoryRadar({ data }: { data: DiagnosticsData["categoryBalance"] }) {
   return (
     <div className={CARD}>
       <ChartTitle
@@ -172,7 +172,7 @@ function CategoryRadar({ data }: { data: DiagnosticsData["categoryBalance"] }) {
 }
 
 // ─── B2. Category trends ─────────────────────────────────────
-function CategoryTrends({ data }: { data: DiagnosticsData["categoryTrends"] }) {
+export function CategoryTrends({ data }: { data: DiagnosticsData["categoryTrends"] }) {
   const cats = data.length > 0 ? Object.keys(data[0]).filter((k) => k !== "month") : [];
   const palette: Record<string, string> = {};
   cats.forEach((c, i) => (palette[c] = COLORS[i % COLORS.length]));
@@ -206,7 +206,7 @@ function CategoryTrends({ data }: { data: DiagnosticsData["categoryTrends"] }) {
 }
 
 // ─── C1. Cohort retention grid ───────────────────────────────
-function CohortRetention({ data }: { data: DiagnosticsData["cohortRetention"] }) {
+export function CohortRetention({ data }: { data: DiagnosticsData["cohortRetention"] }) {
   function cellColor(v: number) {
     if (v === 0) return "bg-muted/40 text-muted-foreground";
     if (v < 25) return "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300";
@@ -264,7 +264,7 @@ function CohortRetention({ data }: { data: DiagnosticsData["cohortRetention"] })
 // ─── C2. Activity heatmap ────────────────────────────────────
 const DAY_NAMES = ["Du", "Se", "Ch", "Pa", "Ju", "Sh", "Ya"];
 
-function ActivityHeatmap({ data }: { data: DiagnosticsData["heatmap"] }) {
+export function ActivityHeatmap({ data }: { data: DiagnosticsData["heatmap"] }) {
   const max = Math.max(1, ...data.map((c) => c.value));
 
   function shade(v: number) {
@@ -312,7 +312,7 @@ function ActivityHeatmap({ data }: { data: DiagnosticsData["heatmap"] }) {
 }
 
 // ─── C3. User segments pie ───────────────────────────────────
-function UserSegments({ data }: { data: DiagnosticsData["userSegments"] }) {
+export function UserSegments({ data }: { data: DiagnosticsData["userSegments"] }) {
   const total = data.reduce((s, d) => s + d.value, 0);
   return (
     <div className={CARD}>
@@ -335,7 +335,7 @@ function UserSegments({ data }: { data: DiagnosticsData["userSegments"] }) {
 }
 
 // ─── D1. Upload health line ──────────────────────────────────
-function UploadHealth({ data }: { data: DiagnosticsData["uploadHealth"] }) {
+export function UploadHealth({ data }: { data: DiagnosticsData["uploadHealth"] }) {
   return (
     <div className={CARD}>
       <ChartTitle
@@ -360,7 +360,7 @@ function UploadHealth({ data }: { data: DiagnosticsData["uploadHealth"] }) {
 }
 
 // ─── D2. Zero-result searches ────────────────────────────────
-function ZeroResultSearches({ data }: { data: DiagnosticsData["zeroResultSearches"] }) {
+export function ZeroResultSearches({ data }: { data: DiagnosticsData["zeroResultSearches"] }) {
   return (
     <div className={CARD}>
       <ChartTitle

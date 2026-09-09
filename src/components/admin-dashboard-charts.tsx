@@ -75,27 +75,27 @@ const CHART_COLORS = {
 };
 
 // ─── Types ────────────────────────────────────────────────────
-interface SummaryCard {
+export interface SummaryCard {
   label: string;
   value: string | number;
   sub?: string;
   accent: keyof typeof ACCENTS | string;
 }
-interface DailyData {
+export interface DailyData {
   date: string;
   label: string;
   sessions: number;
   pages: number;
   users: number;
 }
-interface PeakHour { hour: string; sessions: number }
-interface MonthlyGrowth { key: string; label: string; sessions: number }
-interface CategoryDonut { name: string; books: number; reads: number }
-interface UserStatusData { name: string; value: number; color: string }
-interface TopReaderData { name: string; pages: number; sessions: number }
-interface RankedItem { rank: number; title: string; count: number }
-interface PopularCat { rank: number; icon: string; name: string; books: number }
-interface RecentActivityItem {
+export interface PeakHour { hour: string; sessions: number }
+export interface MonthlyGrowth { key: string; label: string; sessions: number }
+export interface CategoryDonut { name: string; books: number; reads: number }
+export interface UserStatusData { name: string; value: number; color: string }
+export interface TopReaderData { name: string; pages: number; sessions: number }
+export interface RankedItem { rank: number; title: string; count: number }
+export interface PopularCat { rank: number; icon: string; name: string; books: number }
+export interface RecentActivityItem {
   id: string;
   userName: string;
   bookTitle: string;
@@ -105,7 +105,7 @@ interface RecentActivityItem {
   startedAt: Date;
 }
 
-interface Props {
+export interface Props {
   summaryCards: SummaryCard[];
   dailyData: DailyData[];
   peakHoursData: PeakHour[];
@@ -127,7 +127,7 @@ interface Props {
   totalMinutes: number;
 }
 
-function ChartCard({ title, sub, children }: { title: string; sub?: string; children: React.ReactNode }) {
+export function ChartCard({ title, sub, children }: { title: string; sub?: string; children: React.ReactNode }) {
   return (
     <div className="rounded-2xl border border-border bg-card p-5" role="figure">
       <div className="mb-4">
@@ -161,7 +161,7 @@ function CustomTooltip({ active, payload, label }: any) {
 }
 
 // ─── KPI Cards (glassmorphism) ───────────────────────────────
-function KpiCards({ cards }: { cards: SummaryCard[] }) {
+export function KpiCards({ cards }: { cards: SummaryCard[] }) {
   return (
     <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3 xl:grid-cols-6">
       {cards.map((card, i) => {
@@ -195,7 +195,7 @@ function KpiCards({ cards }: { cards: SummaryCard[] }) {
 }
 
 // ─── Peak Reading Hours (Bar) ────────────────────────────────
-function PeakHours({ data }: { data: PeakHour[] }) {
+export function PeakHours({ data }: { data: PeakHour[] }) {
   return (
     <ChartCard title="⏰ Peak reading hours" sub="Foydalanuvchilar eng faol o'qigan vaqtlar · 30 kun">
       <div className="h-[240px]">
@@ -214,7 +214,7 @@ function PeakHours({ data }: { data: PeakHour[] }) {
 }
 
 // ─── Monthly growth (Area) ───────────────────────────────────
-function MonthlyGrowth({ data }: { data: MonthlyGrowth[] }) {
+export function MonthlyGrowth({ data }: { data: MonthlyGrowth[] }) {
   return (
     <ChartCard title="📈 Oylik mutolaa o'sishi" sub="Oxirgi 6 oy · sessiyalar soni">
       <div className="h-[240px]">
@@ -239,7 +239,7 @@ function MonthlyGrowth({ data }: { data: MonthlyGrowth[] }) {
 }
 
 // ─── Category donut ──────────────────────────────────────────
-function CategoryDonut({ data }: { data: CategoryDonut[] }) {
+export function CategoryDonut({ data }: { data: CategoryDonut[] }) {
   const totalReads = data.reduce((s, d) => s + d.reads, 0);
   const pie = data.filter((d) => d.reads > 0).map((d) => ({ name: d.name, value: d.reads }));
   return (
@@ -283,7 +283,7 @@ function CategoryDonut({ data }: { data: CategoryDonut[] }) {
 }
 
 // ─── Formats + top genres mini-cards ─────────────────────────
-function FormatsGenres({
+export function FormatsGenres({
   formatData,
   topGenres,
 }: {
@@ -338,7 +338,7 @@ function FormatsGenres({
 }
 
 // ─── Top Students / Teachers tabs ────────────────────────────
-function TopUsersTabs({
+export function TopUsersTabs({
   students,
   teachers,
 }: {
@@ -409,7 +409,7 @@ function TopUsersTabs({
 }
 
 // ─── Ranked lists ────────────────────────────────────────────
-function RankedList({
+export function RankedList({
   title,
   items,
   color,
@@ -447,7 +447,7 @@ function RankedList({
 }
 
 // ─── Recent activity (grouped) ───────────────────────────────
-function RecentActivity({ items }: { items: RecentActivityItem[] }) {
+export function RecentActivity({ items }: { items: RecentActivityItem[] }) {
   return (
     <div className="rounded-2xl border border-border bg-card p-5">
       <div className="flex items-center justify-between mb-4">
@@ -491,6 +491,75 @@ function RecentActivity({ items }: { items: RecentActivityItem[] }) {
   );
 }
 
+// ─── User growth area ────────────────────────────────────────
+export function UserGrowthChart({ data }: { data: DailyData[] }) {
+  const userGrowthData = data.map((d) => ({ label: d.label, users: d.users, sessions: d.sessions }));
+  return (
+    <ChartCard title="📈 Foydalanuvchilar o'sishi" sub="Oxirgi 30 kun · yangi a'zolar va sessiyalar">
+      <div className="h-[250px]">
+        <ResponsiveContainer width="100%" height="100%">
+          <AreaChart data={userGrowthData} margin={{ top: 5, right: 5, left: -15, bottom: 0 }}>
+            <defs>
+              <linearGradient id="colorUsers" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor={CHART_COLORS.primary} stopOpacity={0.3} />
+                <stop offset="95%" stopColor={CHART_COLORS.primary} stopOpacity={0} />
+              </linearGradient>
+              <linearGradient id="colorSessions" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor={CHART_COLORS.success} stopOpacity={0.3} />
+                <stop offset="95%" stopColor={CHART_COLORS.success} stopOpacity={0} />
+              </linearGradient>
+            </defs>
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
+            <XAxis dataKey="label" tick={{ fontSize: 10, fill: "var(--muted-foreground)" }} tickLine={false} axisLine={false} />
+            <YAxis tick={{ fontSize: 10, fill: "var(--muted-foreground)" }} tickLine={false} axisLine={false} />
+            <Tooltip content={<CustomTooltip />} />
+            <Area type="monotone" dataKey="users" name="Yangi a'zolar" stroke={CHART_COLORS.primary} strokeWidth={2} fill="url(#colorUsers)" />
+            <Area type="monotone" dataKey="sessions" name="Sessiyalar" stroke={CHART_COLORS.success} strokeWidth={2} fill="url(#colorSessions)" />
+          </AreaChart>
+        </ResponsiveContainer>
+      </div>
+    </ChartCard>
+  );
+}
+
+// ─── Popular categories card ─────────────────────────────────
+export function PopularCatsCard({
+  cats,
+  publishedBooks,
+  totalBooks,
+}: {
+  cats: PopularCat[];
+  publishedBooks: number;
+  totalBooks: number;
+}) {
+  return (
+    <div className="rounded-2xl border border-border bg-card p-5">
+      <h2 className="text-sm font-semibold text-foreground mb-3">🗂️ Mashhur kategoriyalar</h2>
+      <div className="space-y-2">
+        {cats.length === 0 ? (
+          <p className="text-sm text-muted-foreground">Hali kategoriya yo'q</p>
+        ) : (
+          cats.map((c) => (
+            <div key={c.name} className="flex items-center justify-between text-sm">
+              <span className="flex items-center gap-2 truncate">
+                <span className="text-base">{c.icon}</span>
+                <span className="truncate">{c.name}</span>
+              </span>
+              <span className="text-xs font-medium text-muted-foreground">{c.books} kitob</span>
+            </div>
+          ))
+        )}
+      </div>
+      <div className="mt-4 flex items-center justify-between rounded-xl bg-muted/40 p-3 text-xs">
+        <span className="text-muted-foreground">Nashr etilgan</span>
+        <span className="font-semibold text-foreground">
+          {publishedBooks} / {totalBooks}
+        </span>
+      </div>
+    </div>
+  );
+}
+
 // ─── Main ────────────────────────────────────────────────────
 export function AdminDashboardCharts({
   summaryCards,
@@ -513,9 +582,6 @@ export function AdminDashboardCharts({
   totalPages,
   totalMinutes,
 }: Props) {
-  // user growth area uses dailyData (users + sessions)
-  const userGrowthData = dailyData.map((d) => ({ label: d.label, users: d.users, sessions: d.sessions }));
-
   return (
     <div className="space-y-8">
       {/* ═══ KPI CARDS ═══ */}
@@ -534,30 +600,7 @@ export function AdminDashboardCharts({
       </div>
 
       {/* ═══ USER GROWTH AREA ═══ */}
-      <ChartCard title="📈 Foydalanuvchilar o'sishi" sub="Oxirgi 30 kun · yangi a'zolar va sessiyalar">
-        <div className="h-[250px]">
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={userGrowthData} margin={{ top: 5, right: 5, left: -15, bottom: 0 }}>
-              <defs>
-                <linearGradient id="colorUsers" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor={CHART_COLORS.primary} stopOpacity={0.3} />
-                  <stop offset="95%" stopColor={CHART_COLORS.primary} stopOpacity={0} />
-                </linearGradient>
-                <linearGradient id="colorSessions" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor={CHART_COLORS.success} stopOpacity={0.3} />
-                  <stop offset="95%" stopColor={CHART_COLORS.success} stopOpacity={0} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
-              <XAxis dataKey="label" tick={{ fontSize: 10, fill: "var(--muted-foreground)" }} tickLine={false} axisLine={false} />
-              <YAxis tick={{ fontSize: 10, fill: "var(--muted-foreground)" }} tickLine={false} axisLine={false} />
-              <Tooltip content={<CustomTooltip />} />
-              <Area type="monotone" dataKey="users" name="Yangi a'zolar" stroke={CHART_COLORS.primary} strokeWidth={2} fill="url(#colorUsers)" />
-              <Area type="monotone" dataKey="sessions" name="Sessiyalar" stroke={CHART_COLORS.success} strokeWidth={2} fill="url(#colorSessions)" />
-            </AreaChart>
-          </ResponsiveContainer>
-        </div>
-      </ChartCard>
+      <UserGrowthChart data={dailyData} />
 
       {/* ═══ TOP USERS TAB + RANKED LISTS ═══ */}
       <div className="grid gap-6 lg:grid-cols-3">
@@ -572,30 +615,7 @@ export function AdminDashboardCharts({
 
       {/* ═══ POPULAR CATS + RECENT ═══ */}
       <div className="grid gap-6 lg:grid-cols-2">
-        <div className="rounded-2xl border border-border bg-card p-5">
-          <h2 className="text-sm font-semibold text-foreground mb-3">🗂️ Mashhur kategoriyalar</h2>
-          <div className="space-y-2">
-            {popularCats.length === 0 ? (
-              <p className="text-sm text-muted-foreground">Hali kategoriya yo'q</p>
-            ) : (
-              popularCats.map((c) => (
-                <div key={c.name} className="flex items-center justify-between text-sm">
-                  <span className="flex items-center gap-2 truncate">
-                    <span className="text-base">{c.icon}</span>
-                    <span className="truncate">{c.name}</span>
-                  </span>
-                  <span className="text-xs font-medium text-muted-foreground">{c.books} kitob</span>
-                </div>
-              ))
-            )}
-          </div>
-          <div className="mt-4 flex items-center justify-between rounded-xl bg-muted/40 p-3 text-xs">
-            <span className="text-muted-foreground">Nashr etilgan</span>
-            <span className="font-semibold text-foreground">
-              {publishedBooks} / {totalBooks}
-            </span>
-          </div>
-        </div>
+        <PopularCatsCard cats={popularCats} publishedBooks={publishedBooks} totalBooks={totalBooks} />
         <RecentActivity items={recentActivity} />
       </div>
     </div>

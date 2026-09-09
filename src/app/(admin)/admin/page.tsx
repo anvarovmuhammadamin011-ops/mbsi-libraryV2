@@ -1,6 +1,5 @@
 import { prisma } from "@/lib/db";
-import { AdminDashboardCharts } from "@/components/admin-dashboard-charts";
-import { DiagnosticsDashboard } from "@/components/diagnostics-dashboard";
+import { AdminDashboardTabs } from "@/components/admin-dashboard-tabs";
 import { getDiagnosticsData } from "@/lib/server/diagnostics";
 
 export const dynamic = "force-dynamic";
@@ -308,6 +307,8 @@ export default async function AdminDashboard() {
   });
   const mostSavedMap = new Map(mostSavedBooks.map((b) => [b.id, b.title]));
 
+  const diagnosticsData = await getDiagnosticsData();
+
   return (
     <div className="space-y-8 animate-fade-in">
       {/* Header */}
@@ -318,7 +319,7 @@ export default async function AdminDashboard() {
         </p>
       </div>
 
-      <AdminDashboardCharts
+      <AdminDashboardTabs
         summaryCards={summaryCards}
         dailyData={days}
         peakHoursData={peakHoursData}
@@ -363,6 +364,7 @@ export default async function AdminDashboard() {
         publishedBooks={publishedBooks}
         totalPages={totalPages}
         totalMinutes={totalMinutes}
+        diagnostics={diagnosticsData}
       />
     </div>
   );
