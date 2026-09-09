@@ -152,7 +152,7 @@ export default async function HomePage() {
     : { becauseYouRead: null, continueJourney: null, youMayAlsoLike: [] as any[] };
 
   return (
-    <div className="space-y-6 md:space-y-8 animate-fade-in pb-20 md:pb-6 max-w-2xl mx-auto md:max-w-4xl lg:max-w-5xl">
+    <div className="space-y-8 md:space-y-10 animate-fade-in pb-20 md:pb-6 max-w-2xl mx-auto md:max-w-4xl lg:max-w-5xl">
       {/* ═══ HERO ═══ */}
       <div className="space-y-3">
         <div className="flex items-center justify-between gap-3">
@@ -205,14 +205,14 @@ export default async function HomePage() {
           <p className="text-xs text-muted-foreground mb-3">
             {aiRecs[0]?.reason ?? t.home.recommendedFallback}
           </p>
-          <div className="flex gap-4 overflow-x-auto pb-3 -mx-4 px-4 scrollbar-thin snap-x snap-mandatory md:mx-0 md:px-0 md:overflow-visible md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-4">
+          <div className="flex gap-6 overflow-x-auto pb-3 -mx-4 px-4 scrollbar-thin snap-x snap-mandatory md:mx-0 md:px-0 md:overflow-visible md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-6">
             {aiRecs.map(({ book, reason }) => {
               const avg = (book as any).averageRating ?? 0;
               return (
                 <Link
                   key={book.id}
                   href={`/books/${book.slug}`}
-                  className="group shrink-0 snap-start w-[150px] md:w-full"
+                  className="group shrink-0 snap-start w-[160px] md:w-full"
                 >
                   <div className="relative aspect-[3/4] w-full overflow-hidden rounded-xl bg-muted">
                     {book.coverUrl ? (
@@ -241,7 +241,7 @@ export default async function HomePage() {
           <h2 className="text-base md:text-lg font-semibold text-foreground mb-3">
             ✨ {smart.becauseYouRead.category} {t.home.becauseYouRead}
           </h2>
-          <div className="flex gap-4 overflow-x-auto pb-3 -mx-4 px-4 scrollbar-thin snap-x snap-mandatory md:mx-0 md:px-0">
+          <div className="flex gap-6 overflow-x-auto pb-3 -mx-4 px-4 scrollbar-thin snap-x snap-mandatory md:mx-0 md:px-0">
             {smart.becauseYouRead.books.map(({ book }: any) => (
               <Link key={book.id} href={`/books/${book.slug}`} className="shrink-0 snap-start w-[150px] group">
                 <div className="relative aspect-[3/4] overflow-hidden rounded-xl bg-muted">
@@ -256,7 +256,7 @@ export default async function HomePage() {
       {smart.youMayAlsoLike && smart.youMayAlsoLike.length > 0 && (
         <section>
           <h2 className="text-base md:text-lg font-semibold mb-3">✨ {t.home.youMayAlsoLike}</h2>
-          <div className="flex gap-4 overflow-x-auto pb-3 -mx-4 px-4 scrollbar-thin snap-x snap-mandatory md:mx-0 md:px-0">
+          <div className="flex gap-6 overflow-x-auto pb-3 -mx-4 px-4 scrollbar-thin snap-x snap-mandatory md:mx-0 md:px-0">
             {smart.youMayAlsoLike.map(({ book }: any) => (
               <Link key={book.id} href={`/books/${book.slug}`} className="shrink-0 snap-start w-[150px] group">
                 <div className="relative aspect-[3/4] overflow-hidden rounded-xl bg-muted">
@@ -345,7 +345,7 @@ export default async function HomePage() {
         </div>
 
         {yangiKitoblar.length > 0 ? (
-          <div className="flex gap-4 overflow-x-auto pb-3 -mx-4 px-4 scrollbar-thin snap-x snap-mandatory md:mx-0 md:px-0 md:overflow-visible md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-4">
+          <div className="flex gap-6 overflow-x-auto pb-3 -mx-4 px-4 scrollbar-thin snap-x snap-mandatory md:mx-0 md:px-0 md:overflow-visible md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-6">
             {yangiKitoblar.map((book) => {
               const avgRating =
                 (book as any).ratings?.length > 0
@@ -358,7 +358,7 @@ export default async function HomePage() {
                 <Link
                   key={book.id}
                   href={`/books/${book.slug}`}
-                  className="group shrink-0 snap-start w-[150px] md:w-full"
+                  className="group shrink-0 snap-start w-[160px] md:w-full"
                 >
                   <div className="relative aspect-[3/4] w-full overflow-hidden rounded-xl bg-muted">
                     {book.coverUrl ? (
@@ -414,7 +414,7 @@ export default async function HomePage() {
           </Link>
         </div>
         {top10Ordered.length > 0 ? (
-          <div className="flex gap-4 overflow-x-auto pb-3 -mx-4 px-4 scrollbar-thin snap-x snap-mandatory md:mx-0 md:px-0 md:overflow-visible md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-4">
+          <div className="flex gap-6 overflow-x-auto pb-3 -mx-4 px-4 scrollbar-thin snap-x snap-mandatory md:mx-0 md:px-0 md:overflow-visible md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-6">
             {top10Ordered.map((book, idx) => {
               const avgRating =
                 (book as any).ratings?.length > 0
@@ -427,7 +427,7 @@ export default async function HomePage() {
                 <Link
                   key={book.id}
                   href={`/books/${book.slug}`}
-                  className="group shrink-0 snap-start w-[150px] md:w-full relative"
+                  className="group shrink-0 snap-start w-[160px] md:w-full relative"
                 >
                   <div className="absolute -top-2 -left-2 z-10 flex h-7 w-7 items-center justify-center rounded-full bg-primary text-xs font-bold text-white shadow">
                     {idx + 1}
@@ -478,7 +478,7 @@ export default async function HomePage() {
           >
               {t.home.all} <ArrowRight size={14} />
           </Link>
-        </div>          <div className="flex gap-4 overflow-x-auto pb-3 -mx-4 px-4 scrollbar-thin snap-x snap-mandatory md:mx-0 md:px-0 md:overflow-visible md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-4">
+        </div>          <div className="flex gap-6 overflow-x-auto pb-3 -mx-4 px-4 scrollbar-thin snap-x snap-mandatory md:mx-0 md:px-0 md:overflow-visible md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-6">
           {engZorlari.map((book) => {
             const avgRating =
               (book as any).ratings?.length > 0
@@ -491,7 +491,7 @@ export default async function HomePage() {
               <Link
                 key={book.id}
                 href={`/books/${book.slug}`}
-                className="group shrink-0 snap-start w-[150px] md:w-full"
+                className="group shrink-0 snap-start w-[160px] md:w-full"
               >
                 <div className="relative aspect-[3/4] w-full overflow-hidden rounded-xl bg-muted">
                   {book.coverUrl ? (
@@ -537,7 +537,7 @@ export default async function HomePage() {
               {t.home.all} <ArrowRight size={14} />
           </Link>
         </div>
-        <div className="flex gap-4 overflow-x-auto pb-3 -mx-4 px-4 scrollbar-thin snap-x snap-mandatory md:mx-0 md:px-0 md:overflow-visible md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-4">
+        <div className="flex gap-6 overflow-x-auto pb-3 -mx-4 px-4 scrollbar-thin snap-x snap-mandatory md:mx-0 md:px-0 md:overflow-visible md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-6">
           {sizgaMos.map((book) => {
             const avgRating =
               (book as any).ratings?.length > 0
@@ -550,7 +550,7 @@ export default async function HomePage() {
               <Link
                 key={book.id}
                 href={`/books/${book.slug}`}
-                className="group shrink-0 snap-start w-[150px] md:w-full"
+                className="group shrink-0 snap-start w-[160px] md:w-full"
               >
                 <div className="relative aspect-[3/4] w-full overflow-hidden rounded-xl bg-muted">
                   {book.coverUrl ? (
