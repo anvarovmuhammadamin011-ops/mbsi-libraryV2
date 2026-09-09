@@ -154,5 +154,5 @@ export async function POST(req: NextRequest) {
 
 async function runExtractionBackground(bookId: string, pdfKey: string) {
   const { processBookExtraction } = await import("@/lib/server/book-processor");
-  await processBookExtraction(bookId, pdfKey, { analyze: true });
+  await processBookExtraction(bookId, pdfKey);
 }

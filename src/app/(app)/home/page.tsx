@@ -10,7 +10,6 @@ import {
   LayoutGrid,
   Flame,
 } from "lucide-react";
-import { getAiRecommendations, getSmartDiscoverySections } from "@/lib/server/ai-recommendations";
 import { computeStreak } from "@/lib/server/reading";
 import { getLang } from "@/lib/i18n/get-lang";
 import { getDict } from "@/lib/i18n/dictionaries";
@@ -146,11 +145,6 @@ export default async function HomePage() {
     : [];
   const streak = computeStreak(streakSessions.map((s) => s.startedAt));
 
-  const aiRecs = userId ? await getAiRecommendations(userId, 6) : [];
-  const smart = userId
-    ? await getSmartDiscoverySections(userId)
-    : { becauseYouRead: null, continueJourney: null, youMayAlsoLike: [] as any[] };
-
   return (
     <div className="space-y-8 md:space-y-10 animate-fade-in pb-20 md:pb-6 max-w-2xl mx-auto md:max-w-4xl lg:max-w-5xl">
       {/* ═══ HERO ═══ */}
@@ -196,105 +190,8 @@ export default async function HomePage() {
         )}
       </div>
 
-      {/* ═══ AI RECOMMENDATIONS — Phase 5 ═══ */}
-      {aiRecs.length > 0 && (
-        <section>
-          <h2 className="text-base md:text-lg font-semibold text-foreground mb-3 flex items-center gap-2">
-            ✨ {t.home.recommended}
-          </h2>
-          <p className="text-xs text-muted-foreground mb-3">
-            {aiRecs[0]?.reason ?? t.home.recommendedFallback}
-          </p>
-          <div className="flex gap-6 overflow-x-auto pb-3 -mx-4 px-4 scrollbar-thin snap-x snap-mandatory md:mx-0 md:px-0 md:overflow-visible md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-6">
-            {aiRecs.map(({ book, reason }) => {
-              const avg = (book as any).averageRating ?? 0;
-              return (
-                <Link
-                  key={book.id}
-                  href={`/books/${book.slug}`}
-                  className="group shrink-0 snap-start w-[160px] md:w-full"
-                >
-                  <div className="relative aspect-[3/4] w-full overflow-hidden rounded-xl bg-muted dark:bg-[#0E1629]">
-                    {book.coverUrl ? (
-                      <Image src={book.coverUrl} alt={book.title} fill className="object-cover group-hover:scale-[1.03] transition-transform duration-500" sizes="160px" />
-                    ) : (
-                      <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-violet-500/10 to-indigo-500/10 dark:from-violet-500/15 dark:to-indigo-500/10">
-                        <BookOpen size={28} className="text-violet-500/40 dark:text-violet-400/50" />
-                      </div>
-                    )}
-                  </div>
-                  <div className="pt-2">
-                    <p className="text-xs md:text-sm font-semibold line-clamp-2 leading-tight">{book.title}</p>
-                    <p className="text-xs text-muted-foreground truncate">{book.author?.name}</p>
-                    <p className="text-[11px] text-violet-600 dark:text-violet-400 mt-1 line-clamp-2">{reason}</p>
-                  </div>
-                </Link>
-              );
-            })}
-          </div>
-        </section>
-      )}
-
-      {/* ═══ SMART DISCOVERY — Phase 5 ═══ */}
-      {smart.becauseYouRead && (
-        <section>
-          <h2 className="text-base md:text-lg font-semibold text-foreground mb-3">
-            ✨ {smart.becauseYouRead.category} {t.home.becauseYouRead}
-          </h2>
-          <div className="flex gap-6 overflow-x-auto pb-3 -mx-4 px-4 scrollbar-thin snap-x snap-mandatory md:mx-0 md:px-0">
-            {smart.becauseYouRead.books.map(({ book }: any) => (
-              <Link key={book.id} href={`/books/${book.slug}`} className="shrink-0 snap-start w-[150px] group">
-                <div className="relative aspect-[3/4] overflow-hidden rounded-xl bg-muted">
-                  {book.coverUrl ? <Image src={book.coverUrl} alt={book.title} fill className="object-cover" sizes="140px" /> : <div className="flex h-full items-center justify-center bg-muted"><BookOpen size={28} className="text-muted-foreground/30" /></div>}
-                </div>
-                <p className="text-xs font-semibold line-clamp-2 mt-2">{book.title}</p>
-              </Link>
-            ))}
-          </div>
-        </section>
-      )}
-      {smart.youMayAlsoLike && smart.youMayAlsoLike.length > 0 && (
-        <section>
-          <h2 className="text-base md:text-lg font-semibold mb-3">✨ {t.home.youMayAlsoLike}</h2>
-          <div className="flex gap-6 overflow-x-auto pb-3 -mx-4 px-4 scrollbar-thin snap-x snap-mandatory md:mx-0 md:px-0">
-            {smart.youMayAlsoLike.map(({ book }: any) => (
-              <Link key={book.id} href={`/books/${book.slug}`} className="shrink-0 snap-start w-[150px] group">
-                <div className="relative aspect-[3/4] overflow-hidden rounded-xl bg-muted">
-                  {book.coverUrl ? <Image src={book.coverUrl} alt={book.title} fill className="object-cover" sizes="140px" /> : <div className="flex h-full items-center justify-center bg-muted"><BookOpen size={28} className="text-muted-foreground/30" /></div>}
-                </div>
-                <p className="text-xs font-semibold line-clamp-2 mt-2">{book.title}</p>
-              </Link>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* ═══ CONTINUE READING ═══ */}
-      {readingProgress.length > 0 && (
-        <section>
-          <h2 className="text-base md:text-lg font-semibold text-foreground mb-3 flex items-center gap-2">
-            {t.home.continueReading}
-          </h2>
-
-          {/* Mobile: single large card */}
-          <div className="md:hidden">
-            {mostRecentProgress && (
-              <ContinueReadingCard progress={mostRecentProgress} t={t} />
-            )}
-          </div>
-
-          {/* Tablet / Desktop: horizontal row of cards */}
-          <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-4 gap-3">
-            {readingProgress.map((p) => (
-              <ContinueReadingCard key={p.id} progress={p} compact t={t} />
-            ))}
-          </div>
-        </section>
-      )}
-
       {/* ═══ CATEGORIES ═══ */}
-      {categories.length > 0 && (
-        <section>
+      <section>
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-base md:text-lg font-semibold text-foreground flex items-center gap-2">
               <LayoutGrid size={18} className="text-primary" />
@@ -329,8 +226,7 @@ export default async function HomePage() {
               );
             })}
           </div>
-        </section>
-      )}
+      </section>
 
       {/* ═══ YANGI KITOBLAR ═══ */}
       <section>
@@ -478,7 +374,8 @@ export default async function HomePage() {
           >
               {t.home.all} <ArrowRight size={14} />
           </Link>
-        </div>          <div className="flex gap-6 overflow-x-auto pb-3 -mx-4 px-4 scrollbar-thin snap-x snap-mandatory md:mx-0 md:px-0 md:overflow-visible md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-6">
+        </div>
+          <div className="flex gap-6 overflow-x-auto pb-3 -mx-4 px-4 scrollbar-thin snap-x snap-mandatory md:mx-0 md:px-0 md:overflow-visible md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-6">
           {engZorlari.map((book) => {
             const avgRating =
               (book as any).ratings?.length > 0

@@ -36,7 +36,6 @@ import {
   Loader2,
   Sparkles,
 } from "lucide-react";
-import { BookExtractButton } from "@/components/book-extract-button";
 
 interface BookRow {
   id: string;
@@ -55,8 +54,6 @@ interface BookRow {
   createdAt: string;
   coverUrl: string;
   contentText?: string;
-  hasContent?: boolean;
-  contentStatus?: string;
 }
 
 interface Props {
@@ -243,21 +240,6 @@ export function AdminBooksTable({ books, categories }: Props) {
       router.refresh();
     } catch (e: any) {
       toast.error(e.message || "Yangilashda xatolik");
-    }
-  }
-
-  const [extracting, setExtracting] = useState<string | null>(null);
-
-  async function extractBookContent(bookId: string) {
-    setExtracting(bookId);
-    try {
-      const res = await api.post(`/api/books/${bookId}/extract`, { action: "extract" });
-      toast.success("Matn ajratildi!");
-      router.refresh();
-    } catch (e: any) {
-      toast.error(e.message || "Matn ajratishda xatolik");
-    } finally {
-      setExtracting(null);
     }
   }
 
@@ -531,7 +513,6 @@ export function AdminBooksTable({ books, categories }: Props) {
                     </td>
                     <td className="px-4 py-3 text-right">
                       <div className="flex items-center justify-end gap-1">
-                        <BookExtractButton bookId={b.id} bookTitle={b.title} />
                         <Button
                           variant="ghost"
                           size="icon"

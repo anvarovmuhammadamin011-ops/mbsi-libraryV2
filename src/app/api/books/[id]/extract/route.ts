@@ -67,16 +67,8 @@ export const GET = route(async (req, ctx) => {
     data: {
       status: content.status,
       hasText: !!content.extractedText,
-      hasTranslation: !!content.translatedText,
-      hasAnalysis: !!content.summary,
       textLength: content.extractedText?.length ?? 0,
       extractedText: content.extractedText?.substring(0, 500),
-      translatedText: content.translatedText?.substring(0, 500),
-      summary: content.summary,
-      keyPoints: content.keyPoints,
-      highlights: content.highlights,
-      tableOfContents: content.tableOfContents,
-      keyTerms: content.keyTerms,
       errorMessage: content.errorMessage,
     },
   });

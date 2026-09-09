@@ -91,5 +91,5 @@ export const DELETE = route(async (req, ctx) => {
 
 async function runExtractionBackground(bookId: string, pdfKey: string) {
   const { processBookExtraction } = await import("@/lib/server/book-processor");
-  await processBookExtraction(bookId, pdfKey, { analyze: true, translate: true });
+  await processBookExtraction(bookId, pdfKey);
 }

@@ -12,7 +12,6 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { AdminDashboardCharts } from "@/components/admin-dashboard-charts";
-import { getSmartInsights } from "@/lib/server/insights";
 
 export const dynamic = "force-dynamic";
 
@@ -130,8 +129,6 @@ export default async function AdminDashboard() {
       take: 5,
     }),
   ]);
-
-  const insights = await getSmartInsights();
 
   // Fetch user names for top students
   const topStudentUsers = await prisma.user.findMany({
@@ -325,31 +322,6 @@ export default async function AdminDashboard() {
               ))
             )}
           </div>
-        </div>
-      </div>
-
-      {/* ✨ Smart Insights — Phase 5 */}
-      <div className="rounded-2xl border border-border bg-gradient-to-br from-violet-50 to-indigo-50 dark:from-violet-950/20 dark:to-indigo-950/20 p-5">
-        <h2 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
-          ✨ Smart Insights <span className="text-xs font-normal text-muted-foreground">AI tahlili</span>
-        </h2>
-        <div className="grid gap-3 md:grid-cols-2">
-          {insights.map((ins, i) => (
-            <div key={i} className="rounded-xl bg-card border border-border p-4">
-              <div className="flex items-start gap-3">
-                <span className="text-xl">{ins.icon}</span>
-                <div className="flex-1">
-                  <p className="text-sm font-semibold text-foreground">{ins.title}</p>
-                  <p className="text-xs text-muted-foreground mt-1">{ins.description}</p>
-                  {ins.trend && (
-                    <span className="inline-flex mt-2 rounded-full bg-green-50 dark:bg-green-950/30 px-2 py-0.5 text-xs font-medium text-green-600">
-                      {ins.trend}
-                    </span>
-                  )}
-                </div>
-              </div>
-            </div>
-          ))}
         </div>
       </div>
 

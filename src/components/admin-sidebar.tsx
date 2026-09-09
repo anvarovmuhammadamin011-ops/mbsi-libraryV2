@@ -13,8 +13,8 @@ import {
   ChevronRight,
   Tags,
   MessageSquare,
-  Sparkles,
   Star,
+  Activity,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -28,7 +28,7 @@ interface NavItem {
   icon: React.ComponentType<{ size?: number; className?: string }>;
 }
 
-// Phase 5 — Admin navigation: Dashboard, Books, Categories, Users, Reviews, AI Assistant, Settings
+// Phase 5 — Admin navigation: Dashboard, Books, Categories, Users, Reviews, Diagnostics, Settings
 const NAV_ITEMS: NavItem[] = [
   { label: "Boshqaruv paneli", href: "/admin", icon: LayoutDashboard },
   { label: "Kitoblar", href: "/admin/books", icon: BookMarked },
@@ -36,7 +36,7 @@ const NAV_ITEMS: NavItem[] = [
   { label: "Foydalanuvchilar", href: "/admin/users", icon: Users },
   { label: "Sharhlar", href: "/admin/reviews", icon: MessageSquare },
   { label: "Ballar", href: "/admin/balls", icon: Star },
-  { label: "AI Yordamchi", href: "/admin/ai-assistant", icon: Sparkles },
+  { label: "Diagnostika", href: "/admin/diagnostics", icon: Activity },
   { label: "Sozlamalar", href: "/admin/settings", icon: Settings },
 ];
 

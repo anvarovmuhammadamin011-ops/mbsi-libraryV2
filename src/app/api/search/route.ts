@@ -1,10 +1,11 @@
 import { route, json } from "@/lib/server/handler";
 import { requireUser } from "@/lib/server/auth";
 import { listBooks } from "@/lib/server/books";
+import { logSearch } from "@/lib/server/diagnostics";
 import { bookQuerySchema } from "@/lib/validation";
 
 export const GET = route(async (req) => {
-  await requireUser();
+  const user = await requireUser();
   const sp = req.nextUrl.searchParams;
   const parsed = bookQuerySchema.safeParse({
     q: sp.get("q") ?? undefined,
@@ -21,6 +22,16 @@ export const GET = route(async (req) => {
     return json({ success: true, data: [], pagination: { page: 1, pageSize: 20, total: 0, totalPages: 0 } });
   }
   const result = await listBooks(parsed.data);
+
+  // Log the query for zero-result search diagnostics (fire & forget).
+  if (parsed.data.q) {
+    await logSearch({
+      userId: user?.id,
+      query: parsed.data.q,
+      resultCount: result.total,
+    }).catch(() => {});
+  }
+
   return json({
     success: true,
     data: result.data,

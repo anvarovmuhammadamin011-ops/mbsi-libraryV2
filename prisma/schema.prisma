@@ -42,6 +42,7 @@ model User {
   userMissions      UserMission[]
   auditLogs         AuditLog[]
   ballTransactions  BallTransaction[]
+  searchLogs        SearchLog[]
 
   @@index([role])
   @@index([isActive])
@@ -360,4 +361,20 @@ model BallTransaction {
   @@index([userId])
   @@index([createdAt])
   @@map("ball_transactions")
+}
+
+// Search query log — powers zero-result search diagnostics.
+model SearchLog {
+  id         String   @id @default(cuid())
+  userId     String?  @map("user_id")
+  query      String
+  resultCount Int     @default(0) @map("result_count")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt])
+  @@index([resultCount])
+  @@index([query])
+  @@map("search_logs")
 }

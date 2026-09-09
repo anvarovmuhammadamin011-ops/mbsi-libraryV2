@@ -29,12 +29,6 @@ export const GET = route(async (req, ctx) => {
     });
   }
 
-  if (field === "translation") {
-    return json({
-      success: true,
-      data: { text: content.translatedText },
-    });
-  }
 
   const images = (content as any).extractedImages as any[] | null;
 
@@ -44,11 +38,6 @@ export const GET = route(async (req, ctx) => {
       status: content.status,
       hasImages: !!images && images.length > 0,
       imageCount: images?.length || 0,
-      summary: content.summary,
-      keyPoints: content.keyPoints,
-      highlights: content.highlights,
-      tableOfContents: content.tableOfContents,
-      keyTerms: content.keyTerms,
     },
   });
 });
