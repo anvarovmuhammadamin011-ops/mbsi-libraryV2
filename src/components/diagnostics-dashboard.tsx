@@ -30,6 +30,18 @@ import {
   LineChart,
   Line,
 } from "recharts";
+import {
+  CheckCircle,
+  Filter,
+  Timer,
+  LayoutGrid,
+  TrendingUp,
+  RefreshCw,
+  Flame,
+  Users,
+  Activity,
+  Search,
+} from "lucide-react";
 import type { DiagnosticsData } from "@/lib/server/diagnostics";
 
 const COLORS = ["#10b981", "#3b82f6", "#f59e0b", "#ef4444", "#8b5cf6", "#06b6d4"];
@@ -37,10 +49,21 @@ const COLORS = ["#10b981", "#3b82f6", "#f59e0b", "#ef4444", "#8b5cf6", "#06b6d4"
 const CARD =
   "rounded-2xl border border-border bg-card p-5";
 
-function ChartTitle({ title, sub }: { title: string; sub?: string }) {
+function ChartTitle({
+  title,
+  sub,
+  icon,
+}: {
+  title: string;
+  sub?: string;
+  icon?: React.ReactNode;
+}) {
   return (
     <div className="mb-4">
-      <h2 className="text-sm font-semibold text-foreground">{title}</h2>
+      <h2 className="flex items-center gap-2 text-sm font-semibold text-foreground">
+        {icon && <span className="text-primary">{icon}</span>}
+        {title}
+      </h2>
       {sub && <p className="text-xs text-muted-foreground mt-0.5">{sub}</p>}
     </div>
   );
@@ -65,7 +88,8 @@ export function CompletionDonut({ data }: { data: DiagnosticsData["completion"] 
   return (
     <div className={CARD}>
       <ChartTitle
-        title="✅ Tugatish darajasi"
+        title="Tugatish darajasi"
+        icon={<CheckCircle size={15} />}
         sub={`${data.totalStarted} kitob boshlangan · ${data.completionRate}% tugatilgan`}
       />
       <div className="h-56">
@@ -96,7 +120,7 @@ export function CompletionDonut({ data }: { data: DiagnosticsData["completion"] 
 export function ReadingFunnel({ data }: { data: DiagnosticsData["funnel"] }) {
   return (
     <div className={CARD}>
-      <ChartTitle title="🔻 O'qish voronkasi" sub="Tashrif → Boshlash → 50% → Tugatish" />
+      <ChartTitle title="O'qish voronkasi" icon={<Filter size={15} />} sub="Tashrif → Boshlash → 50% → Tugatish" />
       <div className="h-56">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={data} layout="vertical" margin={{ left: 10, right: 16 }}>
@@ -122,7 +146,8 @@ export function SessionScatter({ data }: { data: DiagnosticsData["sessionScatter
   return (
     <div className={CARD}>
       <ChartTitle
-        title="⏱️ Seans davomiyligi va sahifalar"
+        title="Seans davomiyligi va sahifalar"
+        icon={<Timer size={15} />}
         sub={`O'rtacha seans · so'nggi ${data.length} sessiya`}
       />
       <div className="h-56">
@@ -151,7 +176,8 @@ export function CategoryRadar({ data }: { data: DiagnosticsData["categoryBalance
   return (
     <div className={CARD}>
       <ChartTitle
-        title="🗂️ Kategoriya balansi"
+        title="Kategoriya balansi"
+        icon={<LayoutGrid size={15} />}
         sub="Kitoblar soni va o'qilish talabi (reads/kitob)"
       />
       <div className="h-64">
@@ -179,7 +205,7 @@ export function CategoryTrends({ data }: { data: DiagnosticsData["categoryTrends
 
   return (
     <div className={CARD}>
-      <ChartTitle title="📈 Kategoriya trendlari" sub="Oxirgi 7 oy · eng mashhur 4 kategoriya" />
+      <ChartTitle title="Kategoriya trendlari" icon={<TrendingUp size={15} />} sub="Oxirgi 7 oy · eng mashhur 4 kategoriya" />
       <div className="h-64">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={data} margin={{ left: -18, right: 10, top: 6 }}>
@@ -218,7 +244,8 @@ export function CohortRetention({ data }: { data: DiagnosticsData["cohortRetenti
   return (
     <div className={CARD}>
       <ChartTitle
-        title="♻️ Kohort retention"
+        title="Kohort retention"
+        icon={<RefreshCw size={15} />}
         sub="Oylik kohortlar bo'yicha qaytish ko'rsatkichlari"
       />
       <div className="overflow-x-auto">
@@ -279,7 +306,8 @@ export function ActivityHeatmap({ data }: { data: DiagnosticsData["heatmap"] }) 
   return (
     <div className={CARD}>
       <ChartTitle
-        title="🔥 Aktivlik issiqlik xaritasi"
+        title="Aktivlik issiqlik xaritasi"
+        icon={<Flame size={15} />}
         sub="Hafta kunlari × soatlar · oxirgi 90 kun"
       />
       <div className="overflow-x-auto">
@@ -316,7 +344,7 @@ export function UserSegments({ data }: { data: DiagnosticsData["userSegments"] }
   const total = data.reduce((s, d) => s + d.value, 0);
   return (
     <div className={CARD}>
-      <ChartTitle title="👥 Foydalanuvchi segmentatsiyasi" sub={`Jami ${total} foydalanuvchi`} />
+      <ChartTitle title="Foydalanuvchi segmentatsiyasi" icon={<Users size={15} />} sub={`Jami ${total} foydalanuvchi`} />
       <div className="h-56">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
@@ -339,7 +367,8 @@ export function UploadHealth({ data }: { data: DiagnosticsData["uploadHealth"] }
   return (
     <div className={CARD}>
       <ChartTitle
-        title="🩺 Tizim holati"
+        title="Tizim holati"
+        icon={<Activity size={15} />}
         sub="Kitob yuklanishlari va qayta ishlash xatolari · 30 kun"
       />
       <div className="h-56">
@@ -364,12 +393,13 @@ export function ZeroResultSearches({ data }: { data: DiagnosticsData["zeroResult
   return (
     <div className={CARD}>
       <ChartTitle
-        title="🔍 Natijasiz qidiruvlar"
+        title="Natijasiz qidiruvlar"
+        icon={<Search size={15} />}
         sub="Top-10 so'rov — kutubxonani boyitish uchun signal"
       />
       {data.length === 0 ? (
         <p className="text-sm text-muted-foreground py-6 text-center">
-          Hozircha natijasiz qidiruvlar yo'q 🎉
+          Hozircha natijasiz qidiruvlar yo'q
         </p>
       ) : (
         <div className="overflow-x-auto">

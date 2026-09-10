@@ -20,6 +20,7 @@ import {
   Eye,
   EyeOff,
   LogOut,
+  Settings,
 } from "lucide-react";
 
 export default function SettingsPage() {
@@ -99,7 +100,10 @@ export default function SettingsPage() {
   return (
     <div className="max-w-2xl md:max-w-4xl lg:max-w-5xl mx-auto space-y-6 animate-fade-in pb-20 md:pb-0">
       <div>
-        <h1 className="text-xl font-bold text-foreground">⚙️ {t.settings.title}</h1>
+        <h1 className="text-xl font-bold text-foreground flex items-center gap-2">
+          <Settings size={20} className="text-primary" />
+          {t.settings.title}
+        </h1>
         <p className="text-sm text-muted-foreground mt-1">
           {t.settings.subtitle}
         </p>
@@ -148,7 +152,7 @@ export default function SettingsPage() {
         <CardContent className="p-5 space-y-4">
           <div className="flex items-center gap-2 mb-1">
             <Globe size={16} className="text-primary" />
-            <h2 className="text-sm font-semibold text-foreground">🌍 {t.settings.language}</h2>
+            <h2 className="text-sm font-semibold text-foreground">{t.settings.language}</h2>
           </div>
 
           <div className="grid grid-cols-3 gap-3">
@@ -175,7 +179,7 @@ export default function SettingsPage() {
         <CardContent className="p-5 space-y-4">
           <div className="flex items-center gap-2 mb-1">
             <Bell size={16} className="text-primary" />
-            <h2 className="text-sm font-semibold text-foreground">🔔 {t.settings.notifications}</h2>
+            <h2 className="text-sm font-semibold text-foreground">{t.settings.notifications}</h2>
           </div>
 
           <div className="flex items-center justify-between">
@@ -204,7 +208,7 @@ export default function SettingsPage() {
         <CardContent className="p-5 space-y-4">
           <div className="flex items-center gap-2 mb-1">
             <BookOpen size={16} className="text-primary" />
-            <h2 className="text-sm font-semibold text-foreground">📖 {t.settings.reading}</h2>
+            <h2 className="text-sm font-semibold text-foreground">{t.settings.reading}</h2>
           </div>
 
           <div className="space-y-2">
@@ -238,7 +242,7 @@ export default function SettingsPage() {
         <CardContent className="p-5 space-y-4">
           <div className="flex items-center gap-2 mb-1">
             <Lock size={16} className="text-primary" />
-            <h2 className="text-sm font-semibold text-foreground">🔐 {t.settings.security}</h2>
+            <h2 className="text-sm font-semibold text-foreground">{t.settings.security}</h2>
           </div>
 
           <div className="space-y-3">

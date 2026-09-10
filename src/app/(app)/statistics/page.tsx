@@ -107,7 +107,10 @@ export default async function StatisticsPage() {
   return (
     <div className="space-y-6 animate-fade-in pb-20 md:pb-0 max-w-2xl md:max-w-4xl lg:max-w-5xl mx-auto">
       <div>
-        <h1 className="text-xl font-bold text-foreground">📊 Statistika</h1>
+        <h1 className="text-xl font-bold text-foreground flex items-center gap-2">
+          <BarChart3 size={20} className="text-primary" />
+          Statistika
+        </h1>
         <p className="text-sm text-muted-foreground mt-1">
           O&apos;qish faoliyatingizning batafsil ko&apos;rinishi
         </p>
@@ -153,7 +156,7 @@ export default async function StatisticsPage() {
       <div className="rounded-2xl border border-border bg-card p-5">
         <div className="flex items-center gap-2 mb-4">
           <BarChart3 size={16} className="text-primary" />
-          <h2 className="text-sm font-semibold text-foreground">📈 O&apos;qish faolligi</h2>
+          <h2 className="text-sm font-semibold text-foreground">O&apos;qish faolligi</h2>
         </div>
         <div className="flex items-end gap-2 h-32">
           {daysData.map((d, i) => {
@@ -183,7 +186,7 @@ export default async function StatisticsPage() {
         <div className="rounded-2xl border border-border bg-card p-5">
           <div className="flex items-center gap-2 mb-3">
             <Target size={16} className="text-primary" />
-            <h2 className="text-sm font-semibold text-foreground">📖 Hozir o&apos;qilayotganlar</h2>
+            <h2 className="text-sm font-semibold text-foreground">Hozir o&apos;qilayotganlar</h2>
           </div>
           <div className="space-y-3">
             {readingBooks.map((p) => {
@@ -218,7 +221,7 @@ export default async function StatisticsPage() {
       <div className="rounded-2xl border border-border bg-card p-5">
         <div className="flex items-center gap-2 mb-3">
           <Calendar size={16} className="text-primary" />
-          <h2 className="text-sm font-semibold text-foreground">📅 Oylik xulosa</h2>
+          <h2 className="text-sm font-semibold text-foreground">Oylik xulosa</h2>
         </div>
         <div className="grid grid-cols-2 gap-4">
           <div>

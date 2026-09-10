@@ -69,7 +69,10 @@ export default function MissionsPage() {
   return (
     <div className="space-y-6 animate-fade-in pb-20 md:pb-0 max-w-2xl md:max-w-4xl lg:max-w-5xl mx-auto">
       <div>
-        <h1 className="text-xl font-bold text-foreground">🎯 Missiyalar</h1>
+        <h1 className="text-xl font-bold text-foreground flex items-center gap-2">
+          <Target size={20} className="text-primary" />
+          Missiyalar
+        </h1>
         <p className="text-sm text-muted-foreground mt-1">Admin bergan topshiriqlarni bajaring, coin oling va reytingni ko'taring</p>
       </div>
 

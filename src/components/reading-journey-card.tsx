@@ -17,8 +17,9 @@ export function ReadingJourneyCard({
 }: Props) {
   return (
     <section className="rounded-2xl border border-border bg-card p-5 shadow-sm">
-      <h2 className="text-base font-semibold text-foreground mb-4">
-        📌 Your reading journey
+      <h2 className="text-base font-semibold text-foreground mb-4 flex items-center gap-2">
+        <BookOpen size={18} className="text-primary" />
+        Your reading journey
       </h2>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

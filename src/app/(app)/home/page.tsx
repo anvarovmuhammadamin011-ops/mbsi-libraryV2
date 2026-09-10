@@ -9,7 +9,11 @@ import {
   Search,
   LayoutGrid,
   Flame,
+  Sparkles,
+  Trophy,
+  Gem,
 } from "lucide-react";
+import { CategoryIcon } from "@/components/category-icon";
 import { computeStreak } from "@/lib/server/reading";
 import { getLang } from "@/lib/i18n/get-lang";
 import { getDict } from "@/lib/i18n/dictionaries";
@@ -153,13 +157,10 @@ export default async function HomePage() {
           <div className="min-w-0">
             <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">
               {t.home.greeting}, {displayName}{" "}
-              <Image
-                src="/hello-emoji.webp"
-                alt=""
-                width={28}
-                height={28}
-                unoptimized
-                className="inline-block h-[1.1em] w-[1.1em] object-contain align-[-0.15em]"
+              <Sparkles
+                size={24}
+                className="inline-block text-primary align-[-0.15em]"
+                aria-hidden
               />
             </h1>
             <p className="text-sm md:text-base text-muted-foreground mt-1">
@@ -213,8 +214,8 @@ export default async function HomePage() {
                   href={`/books?categoryId=${cat.id}`}
                   className={`shrink-0 snap-start rounded-2xl border border-black/5 dark:border-white/10 bg-gradient-to-br ${c.bg} px-4 py-3 transition-all hover:shadow-lg hover:-translate-y-1 min-w-[120px] md:min-w-0 md:flex-1 md:max-w-[160px] dark:hover:shadow-primary/10`}
                 >
-                  <span className="block text-xl leading-none mb-1.5">
-                    {cat.icon ?? "📚"}
+                  <span className="block mb-1.5 text-primary">
+                    <CategoryIcon slug={cat.slug} name={cat.name} size={22} />
                   </span>
                   <p className={`text-sm font-semibold truncate ${c.text}`}>
                     {cat.name}
@@ -231,7 +232,10 @@ export default async function HomePage() {
       {/* ═══ YANGI KITOBLAR ═══ */}
       <section>
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-base md:text-lg font-semibold text-foreground">🆕 {t.home.newBooks}</h2>
+          <h2 className="text-base md:text-lg font-semibold text-foreground flex items-center gap-2">
+            <Sparkles size={18} className="text-primary" />
+            {t.home.newBooks}
+          </h2>
           <Link
             href="/books"
             className="flex items-center gap-1 text-sm font-medium text-primary hover:underline"
@@ -301,7 +305,10 @@ export default async function HomePage() {
       {/* ═══ TOP 10 TALIK ═══ */}
       <section>
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-base md:text-lg font-semibold text-foreground">🏆 {t.home.popular}</h2>
+          <h2 className="text-base md:text-lg font-semibold text-foreground flex items-center gap-2">
+            <Trophy size={18} className="text-primary" />
+            {t.home.popular}
+          </h2>
           <Link
             href="/books?sort=popular"
             className="flex items-center gap-1 text-sm font-medium text-primary hover:underline"
@@ -367,7 +374,10 @@ export default async function HomePage() {
       {/* ═══ ENG ZO'RLARI ═══ */}
       <section>
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-base md:text-lg font-semibold text-foreground">⭐ {t.home.topRated}</h2>
+          <h2 className="text-base md:text-lg font-semibold text-foreground flex items-center gap-2">
+            <Star size={18} className="text-primary" />
+            {t.home.topRated}
+          </h2>
           <Link
             href="/books?sort=rating"
             className="flex items-center gap-1 text-sm font-medium text-primary hover:underline"
@@ -426,7 +436,10 @@ export default async function HomePage() {
       {/* ═══ SIZGA MOS KITOBLAR ═══ */}
       <section>
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-base md:text-lg font-semibold text-foreground">💎 {t.home.forYou}</h2>
+          <h2 className="text-base md:text-lg font-semibold text-foreground flex items-center gap-2">
+            <Gem size={18} className="text-primary" />
+            {t.home.forYou}
+          </h2>
           <Link
             href="/books"
             className="flex items-center gap-1 text-sm font-medium text-primary hover:underline"

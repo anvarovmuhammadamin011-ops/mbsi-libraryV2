@@ -1,6 +1,18 @@
 export const dynamic = "force-dynamic";
 
-import { Coins, ShoppingCart, History, TrendingUp, TrendingDown, Gift, Trophy, Flame, BookOpen } from "lucide-react";
+import {
+  Coins,
+  ShoppingCart,
+  History,
+  TrendingUp,
+  TrendingDown,
+  Palette,
+  Award,
+  Snowflake,
+  Zap,
+  Frame,
+  Sparkles,
+} from "lucide-react";
 
 type CoinHistory = {
   id: string;
@@ -15,7 +27,7 @@ type MarketItem = {
   name: string;
   description: string;
   price: number;
-  icon: string;
+  icon: React.ReactNode;
   category: string;
 };
 
@@ -28,12 +40,12 @@ const COIN_HISTORY: CoinHistory[] = [
 ];
 
 const MARKET_ITEMS: MarketItem[] = [
-  { id: "1", name: "Premium mavzu", description: "Maxsus dizayn mavzusi", price: 100, icon: "🎨", category: "Theme" },
-  { id: "2", name: "Maxsus nishon", description: "Maxsus badge yutuq", price: 150, icon: "🏆", category: "Badge" },
-  { id: "3", name: "Ketma-ketlikni muzlatish", description: "1 kunlik ketma-ketlik himoyasi", price: 100, icon: "🔥", category: "Power-up" },
-  { id: "4", name: "O'qish bonusi", description: "2x coin 3 kun", price: 200, icon: "🎟️", category: "Power-up" },
-  { id: "5", name: "Avatar ramkasi", description: "Maxsus avatar ramka", price: 120, icon: "🖼️", category: "Avatar" },
-  { id: "6", name: "Shaxsiy status", description: "Shaxsiy status matn", price: 80, icon: "✨", category: "Profile" },
+  { id: "1", name: "Premium mavzu", description: "Maxsus dizayn mavzusi", price: 100, icon: <Palette size={20} />, category: "Theme" },
+  { id: "2", name: "Maxsus nishon", description: "Maxsus badge yutuq", price: 150, icon: <Award size={20} />, category: "Badge" },
+  { id: "3", name: "Ketma-ketlikni muzlatish", description: "1 kunlik ketma-ketlik himoyasi", price: 100, icon: <Snowflake size={20} />, category: "Power-up" },
+  { id: "4", name: "O'qish bonusi", description: "2x coin 3 kun", price: 200, icon: <Zap size={20} />, category: "Power-up" },
+  { id: "5", name: "Avatar ramkasi", description: "Maxsus avatar ramka", price: 120, icon: <Frame size={20} />, category: "Avatar" },
+  { id: "6", name: "Shaxsiy status", description: "Shaxsiy status matn", price: 80, icon: <Sparkles size={20} />, category: "Profile" },
 ];
 
 import { getSessionUser } from "@/lib/server/auth";
@@ -81,13 +93,18 @@ export default async function CoinsPage() {
       {/* Market */}
       <div>
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-sm font-semibold text-foreground">🛒 Coin do&apos;koni</h2>
+          <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
+            <ShoppingCart size={16} className="text-primary" />
+            Coin do&apos;koni
+          </h2>
           <span className="text-xs text-muted-foreground">{MARKET_ITEMS.length} mahsulot</span>
         </div>
         <div className="grid grid-cols-2 gap-3">
           {MARKET_ITEMS.map((item) => (
             <div key={item.id} className="rounded-xl border border-border bg-card p-4">
-              <div className="text-2xl mb-2">{item.icon}</div>
+              <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                {item.icon}
+              </div>
               <h3 className="text-sm font-semibold text-foreground">{item.name}</h3>
               <p className="text-xs text-muted-foreground mt-0.5">{item.description}</p>
               <div className="flex items-center justify-between mt-3">
@@ -112,7 +129,10 @@ export default async function CoinsPage() {
 
       {/* Coin History */}
       <div>
-        <h2 className="text-sm font-semibold text-foreground mb-3">📋 Coin tarixi</h2>
+        <h2 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+          <History size={16} className="text-primary" />
+          Coin tarixi
+        </h2>
         <div className="rounded-xl border border-border bg-card overflow-hidden">
           {COIN_HISTORY.map((h, i) => (
             <div

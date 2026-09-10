@@ -52,7 +52,7 @@ export function ReadingGoalCard() {
     <div className="rounded-2xl border border-border bg-card p-4 space-y-4">
       <div className="flex items-center gap-2">
         <Target size={16} className="text-primary" />
-        <h3 className="text-sm font-semibold">🎯 {t.plan.goals}</h3>
+        <h3 className="text-sm font-semibold">{t.plan.goals}</h3>
       </div>
 
       {goals.length > 0 ? (
@@ -76,7 +76,7 @@ export function ReadingGoalCard() {
                 <div className="h-2.5 rounded-full bg-muted overflow-hidden">
                   <div className="h-full bg-primary transition-all" role="progressbar" aria-valuenow={g.progress.percent} aria-valuemin={0} aria-valuemax={100} style={{ width: `${Math.min(g.progress.percent, 100)}%` }} />
                 </div>
-                <p className="text-xs text-muted-foreground mt-1">{g.progress.percent >= 100 ? `🎉 ${t.plan.goalDone}` : t.plan.keepGoing}</p>
+                <p className="text-xs text-muted-foreground mt-1">{g.progress.percent >= 100 ? t.plan.goalDone : t.plan.keepGoing}</p>
               </div>
             </div>
           ))}
@@ -89,8 +89,8 @@ export function ReadingGoalCard() {
         <div className="flex-1">
           <label className="text-xs text-muted-foreground">{t.plan.goals}</label>
           <select value={newType} onChange={(e) => setNewType(e.target.value as any)} className="mt-1 w-full h-9 rounded-md border border-input bg-transparent px-2 text-sm">
-            <option value="BOOKS_PER_MONTH">📚 {t.plan.goalTypeBooks}</option>
-            <option value="MINUTES_PER_DAY">📖 {t.plan.goalTypeMinutes}</option>
+            <option value="BOOKS_PER_MONTH">{t.plan.goalTypeBooks}</option>
+            <option value="MINUTES_PER_DAY">{t.plan.goalTypeMinutes}</option>
           </select>
         </div>
         <div className="w-24">

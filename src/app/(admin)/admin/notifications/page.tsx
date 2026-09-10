@@ -134,11 +134,13 @@ export default async function NotificationsPage() {
                     <h3 className="text-sm font-semibold text-foreground">{n.title}</h3>
                     <p className="text-xs text-muted-foreground mt-1">{n.message}</p>
                     <div className="flex items-center gap-3 mt-2">
-                      <span className="text-xs text-muted-foreground">
-                        📤 {n.target}
+                      <span className="text-xs text-muted-foreground flex items-center gap-1">
+                        <Send size={11} className="text-muted-foreground" />
+                        {n.target}
                       </span>
-                      <span className="text-xs text-muted-foreground">
-                        👤 {n.sentBy}
+                      <span className="text-xs text-muted-foreground flex items-center gap-1">
+                        <User size={11} className="text-muted-foreground" />
+                        {n.sentBy}
                       </span>
                     </div>
                   </div>

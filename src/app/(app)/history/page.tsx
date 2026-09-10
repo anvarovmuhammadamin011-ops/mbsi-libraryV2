@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/db";
 import { getSessionUser } from "@/lib/server/auth";
-import { BookOpen, Clock, CalendarDays } from "lucide-react";
+import { BookOpen, Clock, CalendarDays, History } from "lucide-react";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
@@ -37,7 +37,10 @@ export default async function HistoryPage() {
   return (
     <div className="space-y-6 animate-fade-in pb-20 md:pb-0 max-w-2xl md:max-w-4xl lg:max-w-5xl mx-auto">
       <div>
-        <h1 className="text-xl font-bold text-foreground">🕘 O&apos;qish tarixi</h1>
+        <h1 className="text-xl font-bold text-foreground flex items-center gap-2">
+          <History size={20} className="text-primary" />
+          O&apos;qish tarixi
+        </h1>
         <p className="text-sm text-muted-foreground mt-1">
           O&apos;qish faoliyatingizning to&apos;liq tarixi
         </p>

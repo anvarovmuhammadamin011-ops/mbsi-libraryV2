@@ -1,14 +1,40 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="400" height="533" viewBox="0 0 400 533">
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="533" viewBox="0 0 400 533" role="img" aria-label="Ali va uning sarguzashtlari">
   <defs>
     <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#1e40af"/>
+      <stop offset="0%" style="stop-color:#1e3a8a"/>
       <stop offset="100%" style="stop-color:#3b82f6"/>
     </linearGradient>
+    <radialGradient id="glow" cx="70%" cy="20%" r="80%">
+      <stop offset="0%" style="stop-color:#93c5fd;stop-opacity:0.45"/>
+      <stop offset="100%" style="stop-color:#93c5fd;stop-opacity:0"/>
+    </radialGradient>
   </defs>
+
+  <!-- Background -->
   <rect width="400" height="533" fill="url(#bg)"/>
-  <text x="200" y="200" text-anchor="middle" fill="white" font-family="system-ui,sans-serif" font-size="28" font-weight="bold">Ali va uning</text>
-  <text x="200" y="240" text-anchor="middle" fill="white" font-family="system-ui,sans-serif" font-size="28" font-weight="bold">sarguzashtlari</text>
-  <rect x="150" y="280" width="100" height="3" rx="1.5" fill="rgba(255,255,255,0.5)"/>
-  <text x="200" y="320" text-anchor="middle" fill="rgba(255,255,255,0.7)" font-family="system-ui,sans-serif" font-size="14">MBSI Library</text>
-  <text x="200" y="350" text-anchor="middle" fill="rgba(255,255,255,0.5)" font-family="system-ui,sans-serif" font-size="12">Badiiy adabiyot</text>
+  <rect width="400" height="533" fill="url(#glow)"/>
+
+  <!-- Decorative geometry -->
+  <circle cx="330" cy="70" r="90" fill="#ffffff" opacity="0.06"/>
+  <circle cx="60" cy="470" r="110" fill="#ffffff" opacity="0.05"/>
+  <path d="M 20 90 L 380 60" stroke="#ffffff" stroke-width="1.5" opacity="0.14"/>
+  <path d="M 20 470 L 380 440" stroke="#ffffff" stroke-width="1.5" opacity="0.14"/>
+  <rect x="0" y="0" width="14" height="533" fill="#000000" opacity="0.18"/>
+  <rect x="14" y="0" width="3" height="533" fill="#ffffff" opacity="0.12"/>
+
+  <!-- Category eyebrow -->
+  <text x="210" y="64" text-anchor="middle" fill="#ffffff" opacity="0.75" font-family="'Segoe UI', system-ui, -apple-system, sans-serif" font-size="12" font-weight="600" letter-spacing="4">BADIIY ADABIYOT</text>
+
+  <!-- Title -->
+  <text x="210" y="203.04" text-anchor="middle" fill="#ffffff" font-family="Georgia, 'Times New Roman', serif" font-size="36" font-weight="bold" letter-spacing="0.5">Ali va uning</text>
+  <text x="210" y="246.95999999999998" text-anchor="middle" fill="#ffffff" font-family="Georgia, 'Times New Roman', serif" font-size="36" font-weight="bold" letter-spacing="0.5">sarguzashtlari</text>
+
+  <!-- Divider -->
+  <rect x="150" y="316.88" width="100" height="2" rx="1" fill="#ffffff" opacity="0.55"/>
+
+  <!-- Author -->
+  <text x="210" y="350.88" text-anchor="middle" fill="#ffffff" opacity="0.9" font-family="'Segoe UI', system-ui, -apple-system, sans-serif" font-size="15" font-weight="500" letter-spacing="1">Mehmon Baxtiyorov</text>
+
+  <!-- Footer -->
+  <text x="210" y="500" text-anchor="middle" fill="#ffffff" opacity="0.45" font-family="'Segoe UI', system-ui, -apple-system, sans-serif" font-size="10" font-weight="600" letter-spacing="3">MBSI KUTUBXONA</text>
 </svg>

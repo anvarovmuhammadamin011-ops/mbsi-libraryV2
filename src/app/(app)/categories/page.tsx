@@ -1,42 +1,13 @@
 import { prisma } from "@/lib/db";
 import Link from "next/link";
 import Image from "next/image";
-import { BookOpen, Star, ArrowRight } from "lucide-react";
+import { BookOpen, ArrowRight } from "lucide-react";
+import { CategoryIcon } from "@/components/category-icon";
 import { getCategoryColor } from "@/lib/category-colors";
 import type { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Categories — MBSI Library" };
-
-// Category icon map
-const CATEGORY_ICONS: Record<string, string> = {
-  it: "💻",
-  fiction: "📖",
-  science: "🔬",
-  history: "🏛️",
-  psychology: "🧠",
-  business: "💼",
-  education: "📚",
-  literature: "✍️",
-  technology: "⚙️",
-  philosophy: "🤔",
-  art: "🎨",
-  religion: "🕌",
-  economy: "📈",
-  law: "⚖️",
-  medicine: "🏥",
-  sports: "⚽",
-  music: "🎵",
-  travel: "✈️",
-  cooking: "🍳",
-};
-
-function getCategoryIcon(name: string, slug: string): string {
-  const lower = name.toLowerCase();
-  if (CATEGORY_ICONS[lower]) return CATEGORY_ICONS[lower];
-  if (CATEGORY_ICONS[slug]) return CATEGORY_ICONS[slug];
-  return "📚";
-}
 
 export default async function CategoriesPage() {
   const categories = await prisma.category.findMany({
@@ -83,7 +54,6 @@ export default async function CategoriesPage() {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
           {categories.map((cat) => {
-            const icon = cat.icon ?? getCategoryIcon(cat.name, cat.slug);
             const covers = coverMap[cat.id] ?? [];
             const bookCount = cat._count.books;
             const c = getCategoryColor(cat.id);
@@ -95,8 +65,8 @@ export default async function CategoriesPage() {
                 className="group rounded-2xl border border-border bg-card p-4 hover:shadow-md hover:bg-muted/30 transition-all"
               >
                 <div className="flex items-start justify-between mb-3">
-                  <div className={`flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br ${c.bg} text-2xl shadow-sm`}>
-                    {icon}
+                  <div className={`flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br ${c.bg} text-primary shadow-sm`}>
+                    <CategoryIcon slug={cat.slug} name={cat.name} size={22} />
                   </div>
                   <ArrowRight
                     size={16}

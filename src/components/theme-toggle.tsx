@@ -29,9 +29,9 @@ export function ThemeToggle() {
   }
 
   const options: { value: Theme; label: string; icon: typeof Sun }[] = [
-    { value: "light", label: "🌞 Yorug'", icon: Sun },
-    { value: "dark", label: "🌙 Qorong'u", icon: Moon },
-    { value: "system", label: "🖥 Tizim", icon: Monitor },
+    { value: "light", label: "Yorug'", icon: Sun },
+    { value: "dark", label: "Qorong'u", icon: Moon },
+    { value: "system", label: "Tizim", icon: Monitor },
   ];
 
   return (

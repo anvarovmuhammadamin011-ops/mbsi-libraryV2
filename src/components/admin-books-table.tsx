@@ -35,6 +35,7 @@ import {
   Pencil,
   Loader2,
   Sparkles,
+  Coins,
 } from "lucide-react";
 
 interface BookRow {
@@ -464,7 +465,9 @@ export function AdminBooksTable({ books, categories }: Props) {
                   <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground hidden md:table-cell">Kategoriya</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground hidden lg:table-cell">Til</th>
                   <th className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground">Sahifalar</th>
-                  <th className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground"><span role="img" aria-label="Coin">🪙</span></th>
+                  <th className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground">
+                    <Coins size={14} className="inline text-yellow-600" aria-label="Coin" />
+                  </th>
                   <th className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground hidden sm:table-cell">O&apos;quvchilar</th>
                   <th className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground hidden md:table-cell">Reyting</th>
                   <th className="px-4 py-3 text-center text-xs font-semibold text-muted-foreground">Holat</th>

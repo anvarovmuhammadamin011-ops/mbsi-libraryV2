@@ -355,7 +355,7 @@ export default async function AdminDashboard() {
         }))}
         popularCats={popularCats.map((c, i) => ({
           rank: i + 1,
-          icon: c.icon ?? "📁",
+          icon: c.slug,
           name: c.name,
           books: c._count.books,
         }))}

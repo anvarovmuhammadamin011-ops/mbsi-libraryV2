@@ -446,7 +446,10 @@ function SearchPageInner() {
             {/* Books based on search history */}
             {recents.length > 0 && (
               <div className="mt-6">
-                <h2 className="text-base font-semibold text-foreground mb-3">🔎 Qidiruvlaringiz asosida</h2>
+                <h2 className="text-base font-semibold text-foreground mb-3 flex items-center gap-2">
+                  <Search size={16} className="text-primary" />
+                  Qidiruvlaringiz asosida
+                </h2>
                 {historyLoading ? (
                   <div className="space-y-3">
                     {Array.from({ length: 3 }).map((_, i) => (
@@ -480,7 +483,10 @@ function SearchPageInner() {
       {/* Default books when no query */}
       {showDefault && (
         <div className="mt-4">
-          <h2 className="text-base font-semibold text-foreground mb-3">📚 Barcha kitoblar</h2>
+          <h2 className="text-base font-semibold text-foreground mb-3 flex items-center gap-2">
+            <BookOpen size={16} className="text-primary" />
+            Barcha kitoblar
+          </h2>
           {defaultLoading ? (
             <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
               {Array.from({ length: 6 }).map((_, i) => (

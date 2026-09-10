@@ -28,7 +28,13 @@ import {
   CalendarClock,
   Library,
   FileText,
+  LayoutGrid,
+  Package,
+  Trophy,
+  GraduationCap,
+  UserRound,
 } from "lucide-react";
+import { CategoryIcon } from "@/components/category-icon";
 
 const ACCENTS: Record<string, { icon: React.ReactNode; grad: string; glow: string }> = {
   blue: {
@@ -127,11 +133,24 @@ export interface Props {
   totalMinutes: number;
 }
 
-export function ChartCard({ title, sub, children }: { title: string; sub?: string; children: React.ReactNode }) {
+export function ChartCard({
+  title,
+  sub,
+  icon,
+  children,
+}: {
+  title: string;
+  sub?: string;
+  icon?: React.ReactNode;
+  children: React.ReactNode;
+}) {
   return (
     <div className="rounded-2xl border border-border bg-card p-5" role="figure">
       <div className="mb-4">
-        <h2 className="text-base font-semibold text-foreground">{title}</h2>
+        <h2 className="flex items-center gap-2 text-base font-semibold text-foreground">
+          {icon && <span className="text-primary">{icon}</span>}
+          {title}
+        </h2>
         {sub && <p className="text-xs text-muted-foreground mt-0.5">{sub}</p>}
       </div>
       {children}
@@ -197,7 +216,7 @@ export function KpiCards({ cards }: { cards: SummaryCard[] }) {
 // ─── Peak Reading Hours (Bar) ────────────────────────────────
 export function PeakHours({ data }: { data: PeakHour[] }) {
   return (
-    <ChartCard title="⏰ Peak reading hours" sub="Foydalanuvchilar eng faol o'qigan vaqtlar · 30 kun">
+    <ChartCard title="Peak reading hours" icon={<Clock size={16} />} sub="Foydalanuvchilar eng faol o'qigan vaqtlar · 30 kun">
       <div className="h-[240px]">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={data} margin={{ top: 5, right: 5, left: -15, bottom: 0 }}>
@@ -216,7 +235,7 @@ export function PeakHours({ data }: { data: PeakHour[] }) {
 // ─── Monthly growth (Area) ───────────────────────────────────
 export function MonthlyGrowth({ data }: { data: MonthlyGrowth[] }) {
   return (
-    <ChartCard title="📈 Oylik mutolaa o'sishi" sub="Oxirgi 6 oy · sessiyalar soni">
+    <ChartCard title="Oylik mutolaa o'sishi" icon={<TrendingUp size={16} />} sub="Oxirgi 6 oy · sessiyalar soni">
       <div className="h-[240px]">
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={data} margin={{ top: 5, right: 5, left: -15, bottom: 0 }}>
@@ -243,7 +262,7 @@ export function CategoryDonut({ data }: { data: CategoryDonut[] }) {
   const totalReads = data.reduce((s, d) => s + d.reads, 0);
   const pie = data.filter((d) => d.reads > 0).map((d) => ({ name: d.name, value: d.reads }));
   return (
-    <ChartCard title="🗂️ Kategoriyalar bo'yicha o'qilish" sub={`Jami ${totalReads} ta o'qish`}>
+    <ChartCard title="Kategoriyalar bo'yicha o'qilish" icon={<LayoutGrid size={16} />} sub={`Jami ${totalReads} ta o'qish`}>
       <div className="h-[240px] flex items-center justify-center">
         {pie.length > 0 ? (
           <ResponsiveContainer width="100%" height="100%">
@@ -292,7 +311,7 @@ export function FormatsGenres({
 }) {
   const total = formatData.reduce((s, d) => s + d.value, 0);
   return (
-    <ChartCard title="📦 Formatlar va eng ko'p o'qilgan janrlar" sub="PDF vs Audio · oylik janr trendlari">
+    <ChartCard title="Formatlar va eng ko'p o'qilgan janrlar" icon={<Package size={16} />} sub="PDF vs Audio · oylik janr trendlari">
       <div className="space-y-4">
         <div className="grid grid-cols-2 gap-3">
           {formatData.map((f) => {
@@ -349,24 +368,26 @@ export function TopUsersTabs({
   const rows = tab === "students" ? students : teachers;
 
   return (
-    <ChartCard title="🏆 Top faollar" sub="Eng faol o'quvchilar va o'qituvchilar">
+    <ChartCard title="Top faollar" icon={<Trophy size={16} />} sub="Eng faol o'quvchilar va o'qituvchilar">
       {/* Tabs */}
       <div className="mb-4 flex gap-1 rounded-xl bg-muted/60 p-1">
         <button
           onClick={() => setTab("students")}
-          className={`flex-1 rounded-lg px-3 py-1.5 text-xs font-medium transition-all ${
+          className={`flex flex-1 items-center justify-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-all ${
             tab === "students" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
           }`}
         >
-          🎓 O'quvchilar
+          <GraduationCap size={14} />
+          O'quvchilar
         </button>
         <button
           onClick={() => setTab("teachers")}
-          className={`flex-1 rounded-lg px-3 py-1.5 text-xs font-medium transition-all ${
+          className={`flex flex-1 items-center justify-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-all ${
             tab === "teachers" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
           }`}
         >
-          👨‍🏫 O'qituvchilar
+          <UserRound size={14} />
+          O'qituvchilar
         </button>
       </div>
 
@@ -495,7 +516,7 @@ export function RecentActivity({ items }: { items: RecentActivityItem[] }) {
 export function UserGrowthChart({ data }: { data: DailyData[] }) {
   const userGrowthData = data.map((d) => ({ label: d.label, users: d.users, sessions: d.sessions }));
   return (
-    <ChartCard title="📈 Foydalanuvchilar o'sishi" sub="Oxirgi 30 kun · yangi a'zolar va sessiyalar">
+    <ChartCard title="Foydalanuvchilar o'sishi" icon={<Users size={16} />} sub="Oxirgi 30 kun · yangi a'zolar va sessiyalar">
       <div className="h-[250px]">
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={userGrowthData} margin={{ top: 5, right: 5, left: -15, bottom: 0 }}>
@@ -534,7 +555,10 @@ export function PopularCatsCard({
 }) {
   return (
     <div className="rounded-2xl border border-border bg-card p-5">
-      <h2 className="text-sm font-semibold text-foreground mb-3">🗂️ Mashhur kategoriyalar</h2>
+      <h2 className="flex items-center gap-2 text-sm font-semibold text-foreground mb-3">
+        <LayoutGrid size={15} className="text-primary" />
+        Mashhur kategoriyalar
+      </h2>
       <div className="space-y-2">
         {cats.length === 0 ? (
           <p className="text-sm text-muted-foreground">Hali kategoriya yo'q</p>
@@ -542,7 +566,9 @@ export function PopularCatsCard({
           cats.map((c) => (
             <div key={c.name} className="flex items-center justify-between text-sm">
               <span className="flex items-center gap-2 truncate">
-                <span className="text-base">{c.icon}</span>
+                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
+                  <CategoryIcon slug={c.icon} name={c.name} size={13} />
+                </span>
                 <span className="truncate">{c.name}</span>
               </span>
               <span className="text-xs font-medium text-muted-foreground">{c.books} kitob</span>
@@ -608,8 +634,8 @@ export function AdminDashboardCharts({
           <TopUsersTabs students={topStudents} teachers={topTeachers} />
         </div>
         <div className="lg:col-span-2 grid gap-6 md:grid-cols-2">
-          <RankedList title="📚 Eng ko'p o'qilgan kitoblar" items={mostRead} color="blue" />
-          <RankedList title="🔖 Eng ko'p saqlangan kitoblar" items={mostSaved} color="amber" />
+          <RankedList title="Eng ko'p o'qilgan kitoblar" items={mostRead} color="blue" />
+          <RankedList title="Eng ko'p saqlangan kitoblar" items={mostSaved} color="amber" />
         </div>
       </div>
 

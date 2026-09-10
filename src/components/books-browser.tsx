@@ -33,6 +33,7 @@ import {
   Upload,
   Loader2,
   FileText,
+  X,
 } from "lucide-react";
 import { useAuthStore } from "@/lib/auth-store";
 import { toast } from "sonner";
@@ -84,6 +85,12 @@ export function BooksBrowser({ categories, authors, initial }: Props) {
   const isAdmin = user?.role === "ADMIN";
 
   const [q, setQ] = useState(initial.q);
+  // Debounce the query so keystrokes don't fire a request each time
+  const [debouncedQ, setDebouncedQ] = useState(initial.q);
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedQ(q), 300);
+    return () => clearTimeout(t);
+  }, [q]);
   const [language, setLanguage] = useState(initial.language);
   const [categoryId, setCategoryId] = useState(initial.categoryId);
   const [authorId, setAuthorId] = useState("");
@@ -107,7 +114,7 @@ export function BooksBrowser({ categories, authors, initial }: Props) {
     let cancelled = false;
     setLoading(true);
     const params = new URLSearchParams();
-    if (q) params.set("q", q);
+    if (debouncedQ) params.set("q", debouncedQ);
     if (language && language !== "all") params.set("language", language);
     if (categoryId && categoryId !== "all") params.set("categoryId", categoryId);
     if (authorId && authorId !== "all") params.set("authorId", authorId);
@@ -125,7 +132,7 @@ export function BooksBrowser({ categories, authors, initial }: Props) {
     return () => {
       cancelled = true;
     };
-  }, [q, language, categoryId, authorId, sort, page, refreshKey]);
+  }, [debouncedQ, language, categoryId, authorId, sort, page, refreshKey]);
 
   function resetPage(setter: (v: string) => void) {
     return (v: string | null) => {
@@ -457,8 +464,9 @@ export function BooksBrowser({ categories, authors, initial }: Props) {
                           setForm({ ...form, cover: null });
                           if (coverRef.current) coverRef.current.value = "";
                         }}
+                        aria-label="Muqovani olib tashlash"
                       >
-                        ✕
+                        <X size={14} />
                       </Button>
                     )}
                   </div>

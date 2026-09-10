@@ -16,6 +16,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Plus, Pencil, Trash2, Tags, Loader2 } from "lucide-react";
+import { CategoryIcon } from "@/components/category-icon";
 
 interface CategoryItem {
   id: string;
@@ -122,7 +123,12 @@ export function AdminCategoriesView({ categories }: { categories: CategoryItem[]
               <div className="flex items-start justify-between">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
-                    {c.icon && <span className="text-lg">{c.icon}</span>}
+                    <CategoryIcon
+                      slug={c.slug}
+                      name={c.name}
+                      size={16}
+                      className="text-primary"
+                    />
                     <h2 className="font-semibold text-foreground">{c.name}</h2>
                   </div>
                   {c.description && (
@@ -179,8 +185,8 @@ export function AdminCategoriesView({ categories }: { categories: CategoryItem[]
               <Input value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Ixtiyoriy tavsif" />
             </div>
             <div className="space-y-1.5">
-              <Label>Ikonka (emoji)</Label>
-              <Input value={form.icon} onChange={(e) => setForm({ ...form, icon: e.target.value })} placeholder="Masalan: 📚" />
+              <Label>Ikonka (ixtiyoriy)</Label>
+              <Input value={form.icon} onChange={(e) => setForm({ ...form, icon: e.target.value })} placeholder="Ixtiyoriy" />
             </div>
             <Button onClick={addCategory} disabled={busy} className="w-full">
               {busy ? "Yaratilmoqda..." : "Kategoriyani yaratish"}
@@ -229,7 +235,7 @@ export function AdminCategoriesView({ categories }: { categories: CategoryItem[]
               <Input value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
             </div>
             <div className="space-y-1.5">
-              <Label>Ikonka (emoji)</Label>
+              <Label>Ikonka (ixtiyoriy)</Label>
               <Input value={form.icon} onChange={(e) => setForm({ ...form, icon: e.target.value })} />
             </div>
             <Button onClick={saveEdit} disabled={busy} className="w-full">

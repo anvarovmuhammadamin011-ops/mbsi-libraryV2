@@ -236,7 +236,7 @@ export default async function ProfilePage() {
           </div>
           <div className="pt-2 border-t border-border">
             <p className="text-xs text-muted-foreground text-center">
-              MBSI Library — bilimga yo'l oching 📚
+              MBSI Library — bilimga yo'l oching
             </p>
             <p className="text-xs text-muted-foreground text-center mt-1">
               Versiya 1.0.0

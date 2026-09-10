@@ -125,12 +125,12 @@ export function AdminDashboardTabs(
         <div className="space-y-6 animate-fade-in">
           <div className="grid gap-6 lg:grid-cols-3">
             <RankedList
-              title="📚 Eng ko'p o'qilgan kitoblar"
+              title="Eng ko'p o'qilgan kitoblar"
               items={props.mostRead}
               color="blue"
             />
             <RankedList
-              title="🔖 Eng ko'p saqlangan kitoblar"
+              title="Eng ko'p saqlangan kitoblar"
               items={props.mostSaved}
               color="amber"
             />

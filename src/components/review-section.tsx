@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Star, Edit3, Trash2, Send, X } from "lucide-react";
+import { Star, Edit3, Trash2, Send, X, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
@@ -51,7 +51,7 @@ export function ReviewSection({
     setRating(value);
     try {
       await api.post("/api/ratings", { bookId, rating: value });
-      toast.success("Reyting saqlandi ⭐");
+      toast.success("Reyting saqlandi");
     } catch (e: any) {
       toast.error(e.message || "Xatolik");
     }
@@ -129,7 +129,10 @@ export function ReviewSection({
     <div className="space-y-6 mt-8">
       {/* Rating */}
       <div>
-        <h3 className="text-base font-semibold text-foreground">⭐ Baho bering</h3>
+        <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
+          <Star size={18} className="fill-yellow-400 text-yellow-400" />
+          Baho bering
+        </h3>
         {!hasStarted ? (
           <p className="mt-2 text-sm text-muted-foreground">Avval kitobni o'qishni boshlang, keyin baho bera olasiz.</p>
         ) : (
@@ -160,7 +163,10 @@ export function ReviewSection({
 
       {/* Write Review */}
       <div>
-        <h3 className="text-base font-semibold text-foreground">✍️ Sharh yozish</h3>
+        <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
+          <Edit3 size={18} className="text-primary" />
+          Sharh yozish
+        </h3>
         {!hasStarted ? (
           <p className="mt-2 text-sm text-muted-foreground">Sharh yozish uchun avval kitobni o'qishni boshlang.</p>
         ) : (
@@ -182,7 +188,10 @@ export function ReviewSection({
 
       {/* Reviews List */}
       <div>
-        <h3 className="text-base font-semibold text-foreground">💬 Sharhlar ({reviews.length})</h3>
+        <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
+          <MessageSquare size={18} className="text-primary" />
+          Sharhlar ({reviews.length})
+        </h3>
         {reviews.length === 0 ? (
           <p className="mt-3 text-sm text-muted-foreground">Hali sharhlar yo&apos;q. Birinchi bo'lib yozing!</p>
         ) : (

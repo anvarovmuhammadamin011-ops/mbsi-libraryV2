@@ -130,10 +130,10 @@ export default function AdminMissionsPage() {
             <div className="space-y-1">
               <Label>Qiyinlik</Label>
               <select value={form.difficulty} onChange={(e) => setForm({ ...form, difficulty: e.target.value })} className="h-9 w-full rounded-md border border-input bg-transparent px-2 text-sm">
-                <option value="EASY">🟢 Oson (0.3 ball)</option>
-                <option value="MEDIUM">🔵 O'rtacha (0.6 ball)</option>
-                <option value="HARD">🟠 Qiyin (1.0 ball)</option>
-                <option value="EPIC">🟣 Epik (1.5 ball)</option>
+                <option value="EASY">Oson (0.3 ball)</option>
+                <option value="MEDIUM">O'rtacha (0.6 ball)</option>
+                <option value="HARD">Qiyin (1.0 ball)</option>
+                <option value="EPIC">Epik (1.5 ball)</option>
               </select>
             </div>
             <div className="space-y-1">
