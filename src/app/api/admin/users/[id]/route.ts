@@ -8,9 +8,24 @@ export const PATCH = route(async (req, ctx) => {
   if (!admin) throw new ApiError(ERROR_CODES.FORBIDDEN, "Ruxsat yo'q", 403);
   const { id } = await ctx.params;
   const body = await req.json();
-  const data: { isActive?: boolean; role?: string } = {};
+  const data: Record<string, unknown> = {};
   if (body.role) data.role = body.role;
   if (body.isActive !== undefined) data.isActive = Boolean(body.isActive);
+  // O'quvchi profili maydonlari (Students seksiyasi — tahrirlash)
+  for (const f of [
+    "name",
+    "email",
+    "phone",
+    "group",
+    "age",
+    "gender",
+    "address",
+    "parentContact",
+    "healthNote",
+    "about",
+  ]) {
+    if (body[f] !== undefined) data[f] = body[f] === "" ? null : body[f];
+  }
   const u = await prisma.user.update({ where: { id }, data });
   return success({
     id: u.id,

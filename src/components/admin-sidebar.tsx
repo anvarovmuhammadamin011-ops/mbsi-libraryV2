@@ -8,12 +8,11 @@ import {
   BookMarked,
   Users,
   Settings,
-  BookOpenCheck,
   ChevronLeft,
   ChevronRight,
   Tags,
   MessageSquare,
-  Star,
+  UserPlus,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -27,14 +26,14 @@ interface NavItem {
   icon: React.ComponentType<{ size?: number; className?: string }>;
 }
 
-// Phase 5 — Admin navigation: Dashboard, Books, Categories, Users, Reviews, Diagnostics, Settings
+// Admin navigation: Dashboard, Kitoblar, Kategoriyalar, O'quvchilar, Yangi o'quvchi, Sharhlar, Sozlamalar
 const NAV_ITEMS: NavItem[] = [
   { label: "Boshqaruv paneli", href: "/admin", icon: LayoutDashboard },
   { label: "Kitoblar", href: "/admin/books", icon: BookMarked },
   { label: "Kategoriyalar", href: "/admin/categories", icon: Tags },
-  { label: "Foydalanuvchilar", href: "/admin/users", icon: Users },
+  { label: "O'quvchilar", href: "/admin/students", icon: Users },
+  { label: "Yangi o'quvchi", href: "/admin/students/new", icon: UserPlus },
   { label: "Sharhlar", href: "/admin/reviews", icon: MessageSquare },
-  { label: "Ballar", href: "/admin/balls", icon: Star },
   { label: "Sozlamalar", href: "/admin/settings", icon: Settings },
 ];
 

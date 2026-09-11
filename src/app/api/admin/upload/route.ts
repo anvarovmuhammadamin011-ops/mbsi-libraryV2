@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { savePdf, saveCover } from "@/lib/server/storage";
 import { createBook } from "@/lib/server/books";
 import { ApiError, ERROR_CODES, success } from "@/lib/server/errors";
+import { notifyNewBook } from "@/lib/server/notify";
 
 const MAX_PDF_BYTES = 25 * 1024 * 1024; // 25 MB
 const MAX_COVER_BYTES = 5 * 1024 * 1024; // 5 MB
@@ -35,7 +36,10 @@ export async function POST(req: NextRequest) {
   const file = form.get("file") as File | null;
   const coverFile = form.get("cover") as File | null;
   const title = String(form.get("title") || "").trim();
-  const authorName = String(form.get("author") || "").trim();
+  // Auto-capitalize the author name and reject all-lowercase or non-letter input
+  const authorName = String(form.get("author") || "")
+    .trim()
+    .replace(/\S+/g, (w) => w.charAt(0).toUpperCase() + w.slice(1));
   const description = String(form.get("description") || "").trim();
   const language = ["UZ", "RU", "EN"].includes(String(form.get("language")))
     ? String(form.get("language"))
@@ -49,6 +53,12 @@ export async function POST(req: NextRequest) {
 
   if (!file || !title) {
     throw new ApiError(ERROR_CODES.VALIDATION, "Sarlavha va PDF fayl kerak", 400);
+  }
+  if (!authorName) {
+    throw new ApiError(ERROR_CODES.VALIDATION, "Muallif ismini kiriting", 400);
+  }
+  if (!/^[\p{L}][\p{L}\s.'-]*$/u.test(authorName)) {
+    throw new ApiError(ERROR_CODES.VALIDATION, "Muallif ismi faqat harflardan iborat bo'lishi kerak", 400);
   }
   if (
     file.type !== "application/pdf" &&
@@ -97,7 +107,7 @@ export async function POST(req: NextRequest) {
     authorId = existing.id;
   } else {
     const created = await prisma.author.create({
-      data: { name: authorName || "Noma'lum" },
+      data: { name: authorName },
     });
     authorId = created.id;
   }
@@ -129,8 +139,7 @@ export async function POST(req: NextRequest) {
   });
 
   // Save manually provided text content, or auto-extract from PDF
-  if (contentText) {
-    await prisma.bookContent.upsert({
+  if (contentText) {    await prisma.bookContent.upsert({
       where: { bookId: book.id },
       create: {
         bookId: book.id,
@@ -147,6 +156,19 @@ export async function POST(req: NextRequest) {
     runExtractionBackground(book.id, saved.urlOrKey).catch((err) =>
       console.error("Background extraction failed:", err)
     );
+  }
+
+  // Admin Telegram xabarnomasi (env sozlanmagan bo'lsa jim turadi)
+  try {
+    const cat = categoryId
+      ? await prisma.category.findUnique({
+          where: { id: categoryId },
+          select: { name: true },
+        })
+      : null;
+    notifyNewBook(title, authorName, cat?.name ?? "—");
+  } catch {
+    /* ignore */
   }
 
   return success(book, 201);

@@ -36,6 +36,9 @@ import {
   Loader2,
   Sparkles,
   Coins,
+  BarChart3,
+  Star,
+  EyeOff,
 } from "lucide-react";
 
 interface BookRow {
@@ -106,7 +109,24 @@ export function AdminBooksTable({ books, categories }: Props) {
   const [page, setPage] = useState(1);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [uploadProgress, setUploadProgress] = useState<number | null>(null);
+  const [statsId, setStatsId] = useState<string | null>(null);
+  const [stats, setStats] = useState<any>(null);
+  const [statsLoading, setStatsLoading] = useState(false);
   const PAGE_SIZE = 10;
+
+  async function openStats(id: string) {
+    setStatsId(id);
+    setStats(null);
+    setStatsLoading(true);
+    try {
+      const res = await api.get(`/api/admin/books/${id}/stats`);
+      setStats(res);
+    } catch (e: any) {
+      toast.error(e.message || "Statistika yuklanmadi");
+    } finally {
+      setStatsLoading(false);
+    }
+  }
 
   // Filter & sort
   const filtered = useMemo(() => {
@@ -520,6 +540,24 @@ export function AdminBooksTable({ books, categories }: Props) {
                           variant="ghost"
                           size="icon"
                           className="h-8 w-8"
+                          onClick={() => router.push(`/books/${b.slug}`)}
+                          aria-label="Ko'rish"
+                        >
+                          <Eye size={14} className="text-muted-foreground" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8"
+                          onClick={() => openStats(b.id)}
+                          aria-label="Statistika"
+                        >
+                          <BarChart3 size={14} className="text-muted-foreground" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8"
                           onClick={() => setEditing(b)}
                           aria-label="Tahrirlash"
                         >
@@ -530,10 +568,10 @@ export function AdminBooksTable({ books, categories }: Props) {
                           size="icon"
                           className="h-8 w-8"
                           onClick={() => togglePublish(b.id, b.isPublished)}
-                          aria-label={b.isPublished ? "Yashirish" : "Nashr etish"}
+                          aria-label={b.isPublished ? "Arxivlash" : "Nashr etish"}
                         >
                           {b.isPublished ? (
-                            <Eye size={14} className="text-muted-foreground" />
+                            <EyeOff size={14} className="text-muted-foreground" />
                           ) : (
                             <Upload size={14} className="text-muted-foreground" />
                           )}
@@ -709,6 +747,72 @@ export function AdminBooksTable({ books, categories }: Props) {
                 {editSaving ? <Loader2 className="size-4 animate-spin" /> : null}
                 Saqlash
               </Button>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Stats dialog — Kitob Menejeri: ko'rishlar, o'quvchilar, reyting, 30 kunlik trend */}
+      <Dialog open={statsId !== null} onOpenChange={(open) => !open && setStatsId(null)}>
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Kitob statistikasi</DialogTitle>
+          </DialogHeader>
+          {statsLoading || !stats ? (
+            <div className="flex items-center justify-center gap-2 py-10 text-sm text-muted-foreground">
+              {statsLoading && <Loader2 className="size-4 animate-spin" />}
+              Yuklanmoqda...
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div>
+                <p className="text-sm font-semibold">{stats.book?.title}</p>
+                <p className="text-xs text-muted-foreground">
+                  {stats.book?.author?.name} · {stats.book?.category?.name}
+                </p>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <div className="rounded-xl border border-border p-3">
+                  <p className="text-xs text-muted-foreground">Jami ko&apos;rish</p>
+                  <p className="text-xl font-bold tabular-nums">{stats.viewsTotal}</p>
+                </div>
+                <div className="rounded-xl border border-border p-3">
+                  <p className="text-xs text-muted-foreground">Bu oyda</p>
+                  <p className="text-xl font-bold tabular-nums">{stats.viewsMonth}</p>
+                </div>
+                <div className="rounded-xl border border-border p-3">
+                  <p className="text-xs text-muted-foreground">Jami o&apos;quvchilar</p>
+                  <p className="text-xl font-bold tabular-nums">{stats.readers}</p>
+                </div>
+                <div className="rounded-xl border border-border p-3">
+                  <p className="text-xs text-muted-foreground">O&apos;rtacha reyting</p>
+                  <p className="flex items-center gap-1 text-xl font-bold tabular-nums">
+                    <Star size={15} className="fill-yellow-400 text-yellow-400" />
+                    {stats.avgRating ? Number(stats.avgRating).toFixed(1) : "—"}
+                    <span className="text-xs font-normal text-muted-foreground">
+                      ({stats.ratingCount})
+                    </span>
+                  </p>
+                </div>
+              </div>
+              <div>
+                <p className="mb-2 text-xs font-semibold text-muted-foreground">
+                  Ko&apos;rishlar trendi (30 kun)
+                </p>
+                <div className="flex h-24 items-end gap-[2px]">
+                  {stats.trend.map((d: any) => {
+                    const max = Math.max(1, ...stats.trend.map((t: any) => t.views));
+                    return (
+                      <div
+                        key={d.date}
+                        title={`${d.label}: ${d.views}`}
+                        className="min-w-0 flex-1 rounded-sm bg-primary/70"
+                        style={{ height: `${Math.max(4, (d.views / max) * 100)}%` }}
+                      />
+                    );
+                  })}
+                </div>
+              </div>
             </div>
           )}
         </DialogContent>

@@ -53,6 +53,31 @@ export const sessionEndSchema = z.object({
 export const userUpdateSchema = z.object({
   isActive: z.boolean().optional(),
   role: z.enum(["STUDENT", "TEACHER", "ADMIN"]).optional(),
+  name: z.string().min(2).max(200).optional(),
+  email: z.string().email("Noto'g'ri email").max(200).optional().nullable(),
+  phone: z.string().max(50).optional().nullable(),
+  group: z.string().max(50).optional().nullable(),
+  age: z.coerce.number().int().min(5).max(100).optional().nullable(),
+  gender: z.enum(["MALE", "FEMALE"]).optional().nullable(),
+  address: z.string().max(500).optional().nullable(),
+  parentContact: z.string().max(200).optional().nullable(),
+  healthNote: z.string().max(1000).optional().nullable(),
+  about: z.string().max(2000).optional().nullable(),
+});
+
+// ─── O'quvchi qo'shish formasi (Admin → PendingStudent) ───
+export const pendingStudentSchema = z.object({
+  firstName: z.string().min(2, "Ism kamida 2 harf").max(100),
+  lastName: z.string().min(2, "Familya kamida 2 harf").max(100),
+  email: z.string().email("Noto'g'ri email").max(200).optional().or(z.literal("")),
+  phone: z.string().max(50).optional().default(""),
+  group: z.string().min(1, "Guruh tanlang").max(50),
+  age: z.coerce.number().int().min(5, "Yosh 5 dan kichik bo'lmasligi kerak").max(100),
+  gender: z.enum(["MALE", "FEMALE"]).optional(),
+  address: z.string().max(500).optional().default(""),
+  parentContact: z.string().max(200).optional().default(""),
+  healthNote: z.string().max(1000).optional().default(""),
+  about: z.string().max(2000).optional().default(""),
 });
 
 export const authorSchema = z.object({

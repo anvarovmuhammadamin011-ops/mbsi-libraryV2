@@ -26,6 +26,16 @@ model User {
   avatar          String?
   externalUserId  String?  @map("external_user_id") // future MBSI SSO link
   telegramId      String?  @unique @map("telegram_id") // Telegram bot link
+  // ── O'quvchi profili (Admin panel "O'quvchi qo'shish" seksiyasi) ──
+  email           String?
+  phone           String?
+  group           String?  // Guruh/sinf, masalan "7-A"
+  age             Int?
+  gender          String?  // MALE | FEMALE
+  address         String?
+  parentContact   String?  @map("parent_contact") // Ota-ona kontakti
+  healthNote      String?  @map("health_note") // Salomatlik holati haqida qisqacha
+  about           String?  // Qo'shimcha ma'lumot
   coins           Int      @default(0)
   balls           Float    @default(0) // Ball system (0-12)
   isActive        Boolean  @default(true) @map("is_active")
@@ -361,6 +371,29 @@ model BallTransaction {
   @@index([userId])
   @@index([createdAt])
   @@map("ball_transactions")
+}
+
+// Tasdiqlanmagan o'quvchi arizalari — Admin "O'quvchi qo'shish" seksiyasi.
+// Confirm → User yaratiladi, Reject → o'chiriladi.
+model PendingStudent {
+  id            String   @id @default(cuid())
+  firstName     String   @map("first_name")
+  lastName      String   @map("last_name")
+  email         String?
+  phone         String?
+  group         String?
+  age           Int?
+  gender        String?  // MALE | FEMALE
+  address       String?
+  parentContact String?  @map("parent_contact")
+  healthNote    String?  @map("health_note")
+  about         String?
+  status        String   @default("PENDING") // PENDING | APPROVED | REJECTED
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@index([status])
+  @@map("pending_students")
 }
 
 // Search query log — powers zero-result search diagnostics.

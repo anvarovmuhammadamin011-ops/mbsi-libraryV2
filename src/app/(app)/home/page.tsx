@@ -17,7 +17,6 @@ import { CategoryIcon } from "@/components/category-icon";
 import { computeStreak } from "@/lib/server/reading";
 import { getLang } from "@/lib/i18n/get-lang";
 import { getDict } from "@/lib/i18n/dictionaries";
-import { getCategoryColor } from "@/lib/category-colors";
 
 export const dynamic = "force-dynamic";
 
@@ -100,13 +99,17 @@ export default async function HomePage() {
     for (const b of fallback) if (!seen.has(b.id) && engZorlari.length < 10) engZorlari.push(b);
   }
 
-  // ── Categories with book counts
-  const categories = await prisma.category.findMany({
+  // ── Categories with book counts (only categories that actually have published books)
+  const allCategories = await prisma.category.findMany({
     orderBy: { name: "asc" },
+    where: {
+      books: { some: { isPublished: true } },
+    },
     include: {
-      _count: { select: { books: true } },
+      _count: { select: { books: { where: { isPublished: true } } } },
     },
   });
+  const categories = allCategories.slice(0, 8);
 
   // ── Sizga mos kitoblar (personalized)
   let sizgaMos: typeof yangiKitoblar = [];
@@ -150,39 +153,40 @@ export default async function HomePage() {
   const streak = computeStreak(streakSessions.map((s) => s.startedAt));
 
   return (
-    <div className="space-y-8 md:space-y-10 animate-fade-in pb-20 md:pb-6 max-w-2xl mx-auto md:max-w-4xl lg:max-w-5xl">
-      {/* ═══ HERO ═══ */}
-      <div className="space-y-3">
+    <div className="space-y-6 md:space-y-8 animate-fade-in pb-28 md:pb-6 max-w-2xl mx-auto md:max-w-4xl lg:max-w-5xl">
+      {/* ═══ HERO — ixcham header: e'tibor kitoblarga qaratiladi ═══ */}
+      <div className="space-y-2">
         <div className="flex items-center justify-between gap-3">
           <div className="min-w-0">
-            <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">
+            {/* Sarlavha — 20px Bold, iyerarxiya aniq */}
+            <h1 className="text-xl md:text-2xl font-bold tracking-tight text-foreground leading-snug">
               {t.home.greeting}, {displayName}{" "}
               <Sparkles
-                size={24}
+                size={20}
                 className="inline-block text-primary align-[-0.15em]"
                 aria-hidden
               />
             </h1>
-            <p className="text-sm md:text-base text-muted-foreground mt-1">
+            <p className="text-[13px] md:text-sm text-muted-foreground mt-0.5 leading-normal">
               {t.home.greetingSub}
             </p>
           </div>
           <Link
             href="/profile"
             aria-label={t.home.profileLink}
-            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-border bg-card text-base font-semibold text-primary shadow-sm transition-all hover:bg-muted active:scale-95"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border bg-card text-sm font-semibold text-primary shadow-sm transition-all hover:bg-muted active:scale-95"
           >
             {displayName.charAt(0).toUpperCase()}
           </Link>
         </div>
 
-        {/* Search bar — navigates to /search */}
+        {/* Search bar — ixcham */}
         <Link
           href="/search"
-          className="flex items-center gap-3 rounded-2xl border border-border bg-card px-4 py-3 text-sm text-muted-foreground shadow-sm hover:bg-muted/50 transition-colors"
+          className="flex items-center gap-2.5 rounded-xl border border-border bg-card px-3.5 py-2.5 text-[13px] text-muted-foreground shadow-sm hover:bg-muted/50 transition-colors"
         >
-          <Search size={18} className="shrink-0 text-muted-foreground" />
-          <span>{t.home.searchPlaceholder}</span>
+          <Search size={16} className="shrink-0 text-muted-foreground" />
+          <span className="truncate">{t.home.searchPlaceholder}</span>
         </Link>
         {streak > 0 && (
           <div className="inline-flex items-center gap-1.5 rounded-full bg-orange-50 dark:bg-orange-950/20 px-3 py-1 text-xs font-medium text-orange-600 dark:text-orange-400 w-fit">
@@ -191,48 +195,49 @@ export default async function HomePage() {
         )}
       </div>
 
-      {/* ═══ CATEGORIES ═══ */}
+      {/* ═══ CATEGORIES — ixcham pills/chips, gorizontal scroll ═══ */}
       <section>
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-base md:text-lg font-semibold text-foreground flex items-center gap-2">
-              <LayoutGrid size={18} className="text-primary" />
+          <div className="flex items-center justify-between mb-2.5">
+            <h2 className="text-[15px] md:text-lg font-semibold text-foreground flex items-center gap-2">
+              <LayoutGrid size={16} className="text-primary" />
               {t.home.categories}
             </h2>
             <Link
               href="/categories"
-              className="flex items-center gap-1 text-sm font-medium text-primary hover:underline"
+              className="flex items-center gap-1 text-[13px] font-medium text-primary hover:underline"
             >
               {t.home.all} <ArrowRight size={14} />
             </Link>
           </div>
-          <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-thin snap-x snap-mandatory md:mx-0 md:px-0 md:overflow-visible md:flex-wrap md:snap-none">
+          <div className="relative">
+          <div className="flex gap-2 overflow-x-auto pb-1 -mx-4 px-4 scrollbar-hide snap-x md:mx-0 md:px-0 md:flex-wrap md:snap-none">
+            {/* right fade hint — shows there is more to scroll */}
+            <div aria-hidden className="pointer-events-none absolute inset-y-0 right-0 w-10 bg-gradient-to-l from-background to-transparent md:hidden" />
             {categories.slice(0, 8).map((cat) => {
-              const c = getCategoryColor(cat.id);
               return (
                 <Link
                   key={cat.id}
                   href={`/books?categoryId=${cat.id}`}
-                  className={`shrink-0 snap-start rounded-2xl border border-black/5 dark:border-white/10 bg-gradient-to-br ${c.bg} px-4 py-3 transition-all hover:shadow-lg hover:-translate-y-1 min-w-[120px] md:min-w-0 md:flex-1 md:max-w-[160px] dark:hover:shadow-primary/10`}
+                  className="inline-flex shrink-0 snap-start items-center gap-1.5 rounded-full border border-border bg-card px-3 py-2 text-[13px] font-medium text-foreground shadow-sm transition-all hover:border-primary/40 hover:shadow-md hover:-translate-y-px active:scale-95 whitespace-nowrap"
                 >
-                  <span className="block mb-1.5 text-primary">
-                    <CategoryIcon slug={cat.slug} name={cat.name} size={22} />
+                  <span className="text-primary">
+                    <CategoryIcon slug={cat.slug} name={cat.name} size={16} />
                   </span>
-                  <p className={`text-sm font-semibold truncate ${c.text}`}>
-                    {cat.name}
-                  </p>
-                  <p className={`text-xs mt-0.5 ${c.text} opacity-70`}>
-                    {cat._count.books} {t.home.books}
-                  </p>
+                  {cat.name}
+                  <span className="rounded-full bg-primary/10 px-1.5 py-0.5 text-[11px] font-semibold tabular-nums text-primary">
+                    {cat._count.books}
+                  </span>
                 </Link>
               );
             })}
+          </div>
           </div>
       </section>
 
       {/* ═══ YANGI KITOBLAR ═══ */}
       <section>
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-base md:text-lg font-semibold text-foreground flex items-center gap-2">
+          <h2 className="text-[15px] md:text-lg font-semibold text-foreground flex items-center gap-2">
             <Sparkles size={18} className="text-primary" />
             {t.home.newBooks}
           </h2>
@@ -245,7 +250,7 @@ export default async function HomePage() {
         </div>
 
         {yangiKitoblar.length > 0 ? (
-          <div className="flex gap-6 overflow-x-auto pb-3 -mx-4 px-4 scrollbar-thin snap-x snap-mandatory md:mx-0 md:px-0 md:overflow-visible md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-6">
+          <div className="flex gap-3 overflow-x-auto pb-3 -mx-4 px-4 scrollbar-thin snap-x snap-mandatory md:mx-0 md:px-0 md:overflow-visible md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-5">
             {yangiKitoblar.map((book) => {
               const avgRating =
                 (book as any).ratings?.length > 0
@@ -253,14 +258,14 @@ export default async function HomePage() {
                       (book as any).ratings.reduce((s: number, r: { rating: number }) => s + r.rating, 0) /
                       (book as any).ratings.length
                     ).toFixed(1)
-                  : "—";
+                  : null;
               return (
                 <Link
                   key={book.id}
                   href={`/books/${book.slug}`}
-                  className="group shrink-0 snap-start w-[160px] md:w-full"
+                  className="group shrink-0 snap-start w-[160px] md:w-full overflow-hidden rounded-xl border border-border bg-white shadow-sm transition-all hover:shadow-md hover:-translate-y-0.5 dark:bg-card"
                 >
-                  <div className="relative aspect-[3/4] w-full overflow-hidden rounded-xl bg-muted dark:bg-[#0E1629]">
+                  <div className="relative aspect-[3/4] w-full overflow-hidden bg-slate-100 dark:bg-[#0E1629]">
                     {book.coverUrl ? (
                       <Image
                         src={book.coverUrl}
@@ -275,17 +280,26 @@ export default async function HomePage() {
                       </div>
                     )}
                   </div>
-                  <div className="pt-2">
-                    <p className="text-xs md:text-sm font-semibold text-foreground line-clamp-2 leading-tight">
+                  <div className="p-2.5">
+                    {/* Sarlavha — 14px Semibold / Muallif — 12px Regular */}
+                    <p className="h-9 text-[13px] md:text-sm font-semibold text-slate-900 dark:text-foreground line-clamp-2 leading-snug">
                       {book.title}
                     </p>
-                    <p className="text-xs text-muted-foreground mt-0.5 truncate">
+                    <p className="mt-0.5 h-4 truncate text-xs font-normal text-slate-500 dark:text-muted-foreground">
                       {book.author?.name ?? t.home.unknown}
                     </p>
-                    <div className="flex items-center gap-1 mt-1">
-                      <Star size={12} className="fill-yellow-400 text-yellow-400" />
-                      <span className="text-xs font-medium">{avgRating}</span>
-                    </div>
+                    {avgRating ? (
+                      <div className="mt-1 flex h-5 items-center gap-1">
+                        <Star size={12} className="fill-yellow-400 text-yellow-400" />
+                        <span className="text-xs font-medium">{avgRating}</span>
+                      </div>
+                    ) : (
+                      <div className="mt-1 flex h-5 items-center">
+                        <span className="rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-semibold text-blue-600 dark:bg-blue-950/40 dark:text-blue-300">
+                          {t.home.unrated}
+                        </span>
+                      </div>
+                    )}
                   </div>
                 </Link>
               );
@@ -305,7 +319,7 @@ export default async function HomePage() {
       {/* ═══ TOP 10 TALIK ═══ */}
       <section>
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-base md:text-lg font-semibold text-foreground flex items-center gap-2">
+          <h2 className="text-[15px] md:text-lg font-semibold text-foreground flex items-center gap-2">
             <Trophy size={18} className="text-primary" />
             {t.home.popular}
           </h2>
@@ -317,7 +331,7 @@ export default async function HomePage() {
           </Link>
         </div>
         {top10Ordered.length > 0 ? (
-          <div className="flex gap-6 overflow-x-auto pb-3 -mx-4 px-4 scrollbar-thin snap-x snap-mandatory md:mx-0 md:px-0 md:overflow-visible md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-6">
+          <div className="flex gap-3 overflow-x-auto pb-3 -mx-4 px-4 scrollbar-thin snap-x snap-mandatory md:mx-0 md:px-0 md:overflow-visible md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-5">
             {top10Ordered.map((book, idx) => {
               const avgRating =
                 (book as any).ratings?.length > 0
@@ -325,17 +339,17 @@ export default async function HomePage() {
                       (book as any).ratings.reduce((s: number, r: { rating: number }) => s + r.rating, 0) /
                       (book as any).ratings.length
                     ).toFixed(1)
-                  : "—";
+                  : null;
               return (
                 <Link
                   key={book.id}
                   href={`/books/${book.slug}`}
-                  className="group shrink-0 snap-start w-[160px] md:w-full relative"
+                  className="group shrink-0 snap-start w-[160px] md:w-full relative overflow-hidden rounded-xl border border-border bg-white shadow-sm transition-all hover:shadow-md hover:-translate-y-0.5 dark:bg-card"
                 >
-                  <div className="absolute -top-2 -left-2 z-10 flex h-7 w-7 items-center justify-center rounded-full bg-primary text-xs font-bold text-white shadow">
+                  <div className="absolute top-2 left-2 z-10 flex h-6 w-6 items-center justify-center rounded-full bg-primary text-[11px] font-bold text-white shadow">
                     {idx + 1}
                   </div>
-                  <div className="relative aspect-[3/4] w-full overflow-hidden rounded-xl bg-muted">
+                  <div className="relative aspect-[3/4] w-full overflow-hidden bg-slate-100 dark:bg-[#0E1629]">
                     {book.coverUrl ? (
                       <Image
                         src={book.coverUrl}
@@ -350,17 +364,25 @@ export default async function HomePage() {
                       </div>
                     )}
                   </div>
-                  <div className="pt-2">
-                    <p className="text-xs md:text-sm font-semibold text-foreground line-clamp-2 leading-tight">
+                  <div className="p-2.5">
+                    <p className="h-9 text-[13px] md:text-sm font-semibold text-slate-900 dark:text-foreground line-clamp-2 leading-snug">
                       {book.title}
                     </p>
-                    <p className="text-xs text-muted-foreground mt-0.5 truncate">
+                    <p className="mt-0.5 h-4 truncate text-xs font-normal text-slate-500 dark:text-muted-foreground">
                       {book.author?.name ?? t.home.unknown}
                     </p>
-                    <div className="flex items-center gap-1 mt-1">
-                      <Star size={12} className="fill-yellow-400 text-yellow-400" />
-                      <span className="text-xs font-medium">{avgRating}</span>
-                    </div>
+                    {avgRating ? (
+                      <div className="mt-1 flex h-5 items-center gap-1">
+                        <Star size={12} className="fill-yellow-400 text-yellow-400" />
+                        <span className="text-xs font-medium">{avgRating}</span>
+                      </div>
+                    ) : (
+                      <div className="mt-1 flex h-5 items-center">
+                        <span className="rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-semibold text-blue-600 dark:bg-blue-950/40 dark:text-blue-300">
+                          {t.home.unrated}
+                        </span>
+                      </div>
+                    )}
                   </div>
                 </Link>
               );
@@ -374,7 +396,7 @@ export default async function HomePage() {
       {/* ═══ ENG ZO'RLARI ═══ */}
       <section>
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-base md:text-lg font-semibold text-foreground flex items-center gap-2">
+          <h2 className="text-[15px] md:text-lg font-semibold text-foreground flex items-center gap-2">
             <Star size={18} className="text-primary" />
             {t.home.topRated}
           </h2>
@@ -385,7 +407,7 @@ export default async function HomePage() {
               {t.home.all} <ArrowRight size={14} />
           </Link>
         </div>
-          <div className="flex gap-6 overflow-x-auto pb-3 -mx-4 px-4 scrollbar-thin snap-x snap-mandatory md:mx-0 md:px-0 md:overflow-visible md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-6">
+          <div className="flex gap-3 overflow-x-auto pb-3 -mx-4 px-4 scrollbar-thin snap-x snap-mandatory md:mx-0 md:px-0 md:overflow-visible md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-5">
           {engZorlari.map((book) => {
             const avgRating =
               (book as any).ratings?.length > 0
@@ -393,14 +415,14 @@ export default async function HomePage() {
                     (book as any).ratings.reduce((s: number, r: { rating: number }) => s + r.rating, 0) /
                     (book as any).ratings.length
                   ).toFixed(1)
-                : "—";
+                : null;
             return (
               <Link
                 key={book.id}
                 href={`/books/${book.slug}`}
-                className="group shrink-0 snap-start w-[160px] md:w-full"
+                className="group shrink-0 snap-start w-[160px] md:w-full overflow-hidden rounded-xl border border-border bg-white shadow-sm transition-all hover:shadow-md hover:-translate-y-0.5 dark:bg-card"
               >
-                <div className="relative aspect-[3/4] w-full overflow-hidden rounded-xl bg-muted">
+                <div className="relative aspect-[3/4] w-full overflow-hidden bg-slate-100 dark:bg-[#0E1629]">
                   {book.coverUrl ? (
                     <Image
                       src={book.coverUrl}
@@ -414,16 +436,18 @@ export default async function HomePage() {
                       <BookOpen size={28} className="text-primary/30" />
                     </div>
                   )}
-                  <div className="absolute top-2 right-2 flex items-center gap-1 rounded-full bg-black/70 px-2 py-0.5">
-                    <Star size={10} className="fill-yellow-400 text-yellow-400" />
-                    <span className="text-[11px] font-bold text-white">{avgRating}</span>
-                  </div>
+                  {avgRating && (
+                    <div className="absolute top-2 right-2 flex items-center gap-1 rounded-full bg-black/70 px-2 py-0.5">
+                      <Star size={10} className="fill-yellow-400 text-yellow-400" />
+                      <span className="text-[11px] font-bold text-white">{avgRating}</span>
+                    </div>
+                  )}
                 </div>
-                <div className="pt-2">
-                  <p className="text-xs md:text-sm font-semibold text-foreground line-clamp-2 leading-tight">
+                <div className="p-2.5">
+                  <p className="h-9 text-[13px] md:text-sm font-semibold text-slate-900 dark:text-foreground line-clamp-2 leading-snug">
                     {book.title}
                   </p>
-                  <p className="text-xs text-muted-foreground mt-0.5 truncate">
+                  <p className="mt-0.5 h-4 truncate text-xs font-normal text-slate-500 dark:text-muted-foreground">
                     {book.author?.name ?? "Noma'lum"}
                   </p>
                 </div>
@@ -436,7 +460,7 @@ export default async function HomePage() {
       {/* ═══ SIZGA MOS KITOBLAR ═══ */}
       <section>
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-base md:text-lg font-semibold text-foreground flex items-center gap-2">
+          <h2 className="text-[15px] md:text-lg font-semibold text-foreground flex items-center gap-2">
             <Gem size={18} className="text-primary" />
             {t.home.forYou}
           </h2>
@@ -447,7 +471,7 @@ export default async function HomePage() {
               {t.home.all} <ArrowRight size={14} />
           </Link>
         </div>
-        <div className="flex gap-6 overflow-x-auto pb-3 -mx-4 px-4 scrollbar-thin snap-x snap-mandatory md:mx-0 md:px-0 md:overflow-visible md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-6">
+        <div className="flex gap-3 overflow-x-auto pb-3 -mx-4 px-4 scrollbar-thin snap-x snap-mandatory md:mx-0 md:px-0 md:overflow-visible md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-5">
           {sizgaMos.map((book) => {
             const avgRating =
               (book as any).ratings?.length > 0
@@ -455,14 +479,14 @@ export default async function HomePage() {
                     (book as any).ratings.reduce((s: number, r: { rating: number }) => s + r.rating, 0) /
                     (book as any).ratings.length
                   ).toFixed(1)
-                : "—";
+                : null;
             return (
               <Link
                 key={book.id}
                 href={`/books/${book.slug}`}
-                className="group shrink-0 snap-start w-[160px] md:w-full"
+                className="group shrink-0 snap-start w-[160px] md:w-full overflow-hidden rounded-xl border border-border bg-white shadow-sm transition-all hover:shadow-md hover:-translate-y-0.5 dark:bg-card"
               >
-                <div className="relative aspect-[3/4] w-full overflow-hidden rounded-xl bg-muted">
+                <div className="relative aspect-[3/4] w-full overflow-hidden bg-slate-100 dark:bg-[#0E1629]">
                   {book.coverUrl ? (
                     <Image
                       src={book.coverUrl}
@@ -477,17 +501,25 @@ export default async function HomePage() {
                     </div>
                   )}
                 </div>
-                <div className="pt-2">
-                  <p className="text-xs md:text-sm font-semibold text-foreground line-clamp-2 leading-tight">
+                <div className="p-2.5">
+                  <p className="h-9 text-[13px] md:text-sm font-semibold text-slate-900 dark:text-foreground line-clamp-2 leading-snug">
                     {book.title}
                   </p>
-                  <p className="text-xs text-muted-foreground mt-0.5 truncate">
+                  <p className="mt-0.5 h-4 truncate text-xs font-normal text-slate-500 dark:text-muted-foreground">
                     {book.author?.name ?? "Noma'lum"}
                   </p>
-                  <div className="flex items-center gap-1 mt-1">
-                    <Star size={12} className="fill-yellow-400 text-yellow-400" />
-                    <span className="text-xs font-medium">{avgRating}</span>
-                  </div>
+                  {avgRating ? (
+                    <div className="mt-1 flex h-5 items-center gap-1">
+                      <Star size={12} className="fill-yellow-400 text-yellow-400" />
+                      <span className="text-xs font-medium">{avgRating}</span>
+                    </div>
+                  ) : (
+                    <div className="mt-1 flex h-5 items-center">
+                      <span className="rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-semibold text-blue-600 dark:bg-blue-950/40 dark:text-blue-300">
+                        {t.home.unrated}
+                      </span>
+                    </div>
+                  )}
                 </div>
               </Link>
             );

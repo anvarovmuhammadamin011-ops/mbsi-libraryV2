@@ -5,7 +5,12 @@ export const dynamic = "force-dynamic";
 
 export default async function BooksPage() {
   const [categories, authors] = await Promise.all([
-    prisma.category.findMany({ orderBy: { name: "asc" }, select: { id: true, name: true } }),
+    // Faqat kitobi bor kategoriyalar — bo'sh va test kategoriyalar filtrda ko'rinmaydi
+    prisma.category.findMany({
+      where: { books: { some: { isPublished: true } } },
+      orderBy: { name: "asc" },
+      select: { id: true, name: true },
+    }),
     prisma.author.findMany({ orderBy: { name: "asc" }, select: { id: true, name: true } }),
   ]);
 
