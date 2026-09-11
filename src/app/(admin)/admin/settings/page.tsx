@@ -130,8 +130,8 @@ export default function AdminSettingsPage() {
                 {tgConfigured === null
                   ? "Tekshirilmoqda..."
                   : tgConfigured
-                    ? "Ulangan — yangi o'quvchi/kitob/kategoriya haqida xabar boradi"
-                    : "Ulanmagan — TELEGRAM_BOT_TOKEN va TELEGRAM_ADMIN_CHAT_ID ni env ga qo'shing"}
+                    ? "Ulangan — yangi o'quvchi arizalari ✅/❌ tugmalari bilan keladi"
+                    : "Ulanmagan — quyidagi sozlash yo'riqnomasini bajaring"}
               </p>
             </div>
             <span
@@ -149,7 +149,11 @@ export default function AdminSettingsPage() {
             </span>
           </div>
           <div className="rounded-xl bg-muted/50 p-3 text-xs text-muted-foreground">
-            <p className="font-medium text-foreground">Bildirishnoma turlari:</p>
+            <p className="font-medium text-foreground">Sozlash (bir marta):</p>
+            <p className="mt-1">1. Telegram&apos;da botni oching va <code className="rounded bg-muted px-1">/id</code> yozing — Chat ID beradi</p>
+            <p>2. <code className="rounded bg-muted px-1">.env</code> faylida <code className="rounded bg-muted px-1">TELEGRAM_ADMIN_CHAT_ID</code> ga shu ID ni yozing</p>
+            <p>3. Ilovani qayta ishga tushiring va sinov xabari yuborib ko&apos;ring</p>
+            <p className="mt-2 font-medium text-foreground">Bildirishnoma turlari:</p>
             <p>☑️ Yangi o&apos;quvchi ☑️ Yangi kitob ☑️ Yangi kategoriya ☑️ Xavf signallari</p>
             <p className="mt-1">
               Token kodga yozilmaydi — faqat server env o&apos;zgaruvchilarida saqlanadi.

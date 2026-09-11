@@ -11,7 +11,7 @@ import type { NextRequest } from "next/server";
 
 const SESSION_COOKIE = "mbsi_session";
 
-// Protected paths (inside (app) route group)
+// Protected paths (inside (app)/(admin)/(manager)/(registrar) groups)
 const protectedPaths = [
   "/home",
   "/books",
@@ -22,6 +22,8 @@ const protectedPaths = [
   "/continue-reading",
   "/reader",
   "/admin",
+  "/manager",
+  "/registrar",
 ];
 
 function needsAuth(pathname: string): boolean {
@@ -60,5 +62,7 @@ export const config = {
     "/continue-reading/:path*",
     "/reader/:path*",
     "/admin/:path*",
+    "/manager/:path*",
+    "/registrar/:path*",
   ],
 };

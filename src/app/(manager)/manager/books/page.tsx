@@ -1,0 +1,56 @@
+import { prisma } from "@/lib/db";
+import { AdminBooksTable } from "@/components/admin-books-table";
+
+export const dynamic = "force-dynamic";
+
+export default async function ManagerBooksPage() {
+  const [books, categories] = await Promise.all([
+    prisma.book.findMany({
+      orderBy: { createdAt: "desc" },
+      include: {
+        category: { select: { name: true } },
+        author: { select: { name: true } },
+        content: { select: { extractedText: true } },
+        _count: { select: { ratings: true, progress: true } },
+      },
+      take: 200,
+    }),
+    prisma.category.findMany({
+      orderBy: { name: "asc" },
+      select: { id: true, name: true },
+    }),
+  ]);
+
+  // Compute average ratings
+  const ratingAgg = await prisma.rating.groupBy({
+    by: ["bookId"],
+    _avg: { rating: true },
+  });
+  const ratingMap = new Map(ratingAgg.map((r) => [r.bookId, r._avg.rating]));
+
+  const rows = books.map((b) => ({
+    id: b.id,
+    title: b.title,
+    slug: b.slug,
+    authorName: b.author?.name ?? "-",
+    categoryName: b.category?.name ?? "-",
+    description: b.description ?? "",
+    language: b.language,
+    totalPages: b.totalPages,
+    coinReward: (b as any).coinReward ?? 10,
+    isPublished: b.isPublished,
+    readerCount: b._count.progress,
+    ratingCount: b._count.ratings,
+    averageRating: ratingMap.get(b.id) ?? null,
+    createdAt: b.createdAt.toISOString(),
+    coverUrl: b.coverUrl ?? "",
+    contentText: b.content?.extractedText ?? "",
+  }));
+
+  return (
+    <AdminBooksTable
+      books={rows}
+      categories={categories.map((c) => ({ id: c.id, name: c.name }))}
+    />
+  );
+}

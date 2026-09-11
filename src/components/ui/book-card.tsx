@@ -101,29 +101,35 @@ export function BookCard({
         </div>
       </div>
 
-      {/* Info */}
-      <div className="flex flex-1 flex-col gap-1.5 p-4">
-        <h3 className="line-clamp-2 text-sm font-bold leading-snug text-foreground">
+      {/* Info — fixed-height blocks so every card is the same size */}
+      <div className="flex flex-1 flex-col p-3">
+        <h3 className="line-clamp-2 h-10 text-sm font-bold leading-snug text-foreground">
           {book.title}
         </h3>
-        <p className="text-sm text-muted-foreground truncate">
-          {book.author?.name}
+        <p className="mt-0.5 h-5 truncate text-xs text-muted-foreground">
+          {book.author?.name ?? "Noma'lum muallif"}
         </p>
 
-        <div className="flex items-center gap-2 mt-1">
+        <div className="mt-auto flex h-6 items-center gap-2">
           {book.averageRating ? (
-            <div className="flex items-center gap-1">
-              <Star size={14} className="fill-yellow-400 text-yellow-400 dark:drop-shadow-[0_0_3px_rgba(250,204,21,0.5)]" />
-              <span className="text-sm font-semibold">{book.averageRating}</span>
-            </div>
-          ) : null}
-          <span className="text-sm text-muted-foreground">·</span>
+            <>
+              <div className="flex items-center gap-1">
+                <Star size={13} className="fill-yellow-400 text-yellow-400 dark:drop-shadow-[0_0_3px_rgba(250,204,21,0.5)]" />
+                <span className="text-sm font-semibold">{Number(book.averageRating).toFixed(1)}</span>
+              </div>
+              <span className="text-sm text-muted-foreground">·</span>
+            </>
+          ) : (
+            <span className="rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-semibold text-blue-600 dark:bg-blue-950/40 dark:text-blue-300">
+              Yangi
+            </span>
+          )}
           <span className="text-sm text-muted-foreground">{book.totalPages} bet</span>
         </div>
 
         {/* Progress */}
         {progress && (
-          <div className="mt-auto pt-2 space-y-1.5">
+          <div className="mt-1 h-9 space-y-1.5">
             <div className="flex items-center justify-between text-xs">
               <span className="text-muted-foreground">
                 {progress.currentPage}/{progress.totalPages}

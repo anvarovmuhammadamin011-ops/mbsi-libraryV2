@@ -16,8 +16,13 @@ export const GET = route(async (req, ctx) => {
   const { id } = await ctx.params;
   const book = await getBookById(id);
   if (!book) throw new ApiError(ERROR_CODES.NOT_FOUND, "Kitob topilmadi", 404);
-  if (!book.isPublished && user.role !== "ADMIN") {
-    throw new ApiError(ERROR_CODES.FORBIDDEN, "Ruxsat yo'q", 403);
+  // Yashirilgan/qoralama kitoblar faqat ADMIN va BOOK_MANAGER uchun
+  const canSeeHidden =
+    user.role === "ADMIN" || user.role === "BOOK_MANAGER";
+  const isHiddenOrDraft =
+    !book.isPublished || book.status === "HIDDEN" || book.status === "DRAFT";
+  if (!canSeeHidden && isHiddenOrDraft) {
+    throw new ApiError(ERROR_CODES.NOT_FOUND, "Kitob topilmadi", 404);
   }
   return json({ success: true, data: book });
 });

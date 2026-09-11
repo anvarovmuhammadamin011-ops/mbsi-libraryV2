@@ -2,45 +2,60 @@ import { prisma } from "@/lib/db";
 import Link from "next/link";
 import {
   Users,
-  BookMarked,
-  Tags,
-  BookPlus,
-  UserPlus,
   UserCheck,
-  Bell,
-  TriangleAlert,
-  Plus,
-  Eye,
+  BookMarked,
+  BookOpen,
+  Activity,
+  UserPlus,
   Star,
   TrendingUp,
+  Flame,
+  Clock,
 } from "lucide-react";
+import { AdminActivityChart } from "@/components/admin-activity-chart";
 
 export const dynamic = "force-dynamic";
 
+function formatDuration(seconds: number): string {
+  if (!seconds || seconds <= 0) return "0 daq";
+  const h = Math.floor(seconds / 3600);
+  const m = Math.round((seconds % 3600) / 60);
+  if (h > 0) return `${h} soat${m > 0 ? ` ${m} daq` : ""}`;
+  return `${m} daq`;
+}
+
 export default async function AdminDashboard() {
   const now = new Date();
-  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const weekAgo = new Date(now.getTime() - 7 * 86400000);
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
 
   const [
     totalStudents,
+    activeStudents,
+    completedBooks,
     totalBooks,
-    totalCategories,
-    newBooksMonth,
-    newUsersMonth,
+    todayActive,
+    newThisWeek,
+    pendingCount,
     topBookAgg,
     topStudentAgg,
-    draftBooks,
-    newUsersWeek,
-    pendingCount,
+    avgAgg,
+    sessions30,
   ] = await Promise.all([
     prisma.user.count({ where: { role: "STUDENT" } }),
-    prisma.book.count({ where: { isPublished: true } }),
-    prisma.category.count(),
-    prisma.book.count({ where: { createdAt: { gte: monthStart } } }),
-    prisma.user.count({
-      where: { role: "STUDENT", createdAt: { gte: monthStart } },
+    prisma.user.count({ where: { role: "STUDENT", isActive: true } }),
+    prisma.readingProgress.count({ where: { completedAt: { not: null } } }),
+    prisma.book.count({ where: { status: "ACTIVE" } }),
+    prisma.readingSession.findMany({
+      where: { startedAt: { gte: todayStart } },
+      select: { userId: true },
+      distinct: ["userId"],
     }),
+    prisma.user.count({
+      where: { role: "STUDENT", createdAt: { gte: weekAgo } },
+    }),
+    prisma.pendingStudent.count({ where: { status: "PENDING" } }),
     prisma.readingSession.groupBy({
       by: ["bookId"],
       _count: { bookId: true },
@@ -50,15 +65,14 @@ export default async function AdminDashboard() {
     prisma.readingSession.groupBy({
       by: ["userId"],
       _sum: { pagesRead: true },
-      _count: { id: true },
       orderBy: { _sum: { pagesRead: "desc" } },
-      take: 10,
+      take: 5,
     }),
-    prisma.book.count({ where: { isPublished: false } }),
-    prisma.user.count({
-      where: { role: "STUDENT", createdAt: { gte: weekAgo } },
+    prisma.readingSession.aggregate({ _avg: { pagesRead: true, duration: true } }),
+    prisma.readingSession.findMany({
+      where: { startedAt: { gte: new Date(now.getTime() - 30 * 86400000) } },
+      select: { startedAt: true },
     }),
-    prisma.pendingStudent.count({ where: { status: "PENDING" } }),
   ]);
 
   const [topBooks, topUsers] = await Promise.all([
@@ -82,166 +96,189 @@ export default async function AdminDashboard() {
     {
       label: "Jami o'quvchilar",
       value: totalStudents,
-      sub: `+${newUsersMonth} bu oy`,
+      sub: `+${newThisWeek} shu hafta`,
       icon: Users,
       href: "/admin/students",
+      color: "text-primary",
+    },
+    {
+      label: "Faol o'quvchilar",
+      value: activeStudents,
+      sub: "tizimga kirish huquqi bor",
+      icon: UserCheck,
+      href: "/admin/students",
+      color: "text-green-600",
+    },
+    {
+      label: "Tugatilgan kitoblar",
+      value: completedBooks,
+      sub: "oxirgi g'oyacha",
+      icon: BookOpen,
+      href: undefined,
+      color: "text-orange-500",
     },
     {
       label: "Jami kitoblar",
       value: totalBooks,
-      sub: `+${newBooksMonth} bu oy`,
+      sub: "faol kutubxonada",
       icon: BookMarked,
-      href: "/admin/books",
+      href: undefined,
+      color: "text-violet-600",
     },
     {
-      label: "Jami kategoriyalar",
-      value: totalCategories,
-      sub: "barcha bo'limlar",
-      icon: Tags,
-      href: "/admin/categories",
+      label: "Bugun faol",
+      value: todayActive.length,
+      sub: "o'quvchi o'qidi",
+      icon: Activity,
+      href: undefined,
+      color: "text-blue-600",
+    },
+    {
+      label: "Yangi o'quvchilar",
+      value: newThisWeek,
+      sub: "shu hafta qo'shildi",
+      icon: UserPlus,
+      href: "/admin/students/pending",
+      color: "text-amber-600",
     },
   ];
+
+  // 30 kunlik o'qish faolligi
+  const days: { date: string; label: string; sessions: number }[] = [];
+  for (let i = 29; i >= 0; i--) {
+    const d = new Date(now.getTime() - i * 86400000);
+    days.push({
+      date: d.toISOString().slice(0, 10),
+      label: d.toLocaleDateString("uz-UZ", { day: "numeric", month: "short" }),
+      sessions: 0,
+    });
+  }
+  const idx = new Map(days.map((d, i) => [d.date, i]));
+  for (const s of sessions30) {
+    const i = idx.get(s.startedAt.toISOString().slice(0, 10));
+    if (i !== undefined) days[i].sessions++;
+  }
 
   return (
     <div className="space-y-6 animate-fade-in">
       <div>
         <h1 className="text-2xl font-bold text-foreground">Boshqaruv paneli</h1>
         <p className="text-sm text-muted-foreground mt-1">
-          Asosiy statistika va tezkor amallar
+          Maktab kutubxonasidan hozir qanday foydalanilyapti — bir qarashda
         </p>
       </div>
 
-      {/* ─── A) Umumiy statistika ─── */}
-      <div className="grid gap-3 sm:grid-cols-3">
+      {/* ─── KPI kartalar ─── */}
+      <div className="grid gap-3 grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
         {stats.map((s) => {
           const Icon = s.icon;
-          return (
+          const inner = (
+            <>
+              <div className="flex items-center justify-between">
+                <p className="text-xs font-medium text-muted-foreground leading-snug">
+                  {s.label}
+                </p>
+                <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-muted/60 ${s.color}`}>
+                  <Icon size={16} />
+                </span>
+              </div>
+              <p className="mt-2 text-2xl font-bold tabular-nums">
+                {s.value.toLocaleString()}
+              </p>
+              <p className="mt-0.5 text-[11px] text-muted-foreground">{s.sub}</p>
+            </>
+          );
+          return s.href ? (
             <Link
               key={s.label}
               href={s.href}
-              className="rounded-2xl border border-border bg-card p-5 transition-all hover:shadow-md"
+              className="rounded-2xl border border-border bg-card p-4 transition-all hover:shadow-md"
             >
-              <div className="flex items-center justify-between">
-                <p className="text-sm font-medium text-muted-foreground">
-                  {s.label}
-                </p>
-                <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                  <Icon size={18} />
-                </span>
-              </div>
-              <p className="mt-2 text-3xl font-bold tabular-nums">
-                {s.value.toLocaleString()}
-              </p>
-              <p className="mt-1 text-xs text-muted-foreground">{s.sub}</p>
+              {inner}
             </Link>
+          ) : (
+            <div key={s.label} className="rounded-2xl border border-border bg-card p-4">
+              {inner}
+            </div>
           );
         })}
       </div>
 
-      {/* ─── C) Admin bildirishnomalari ─── */}
-      {(pendingCount > 0 || newUsersWeek > 0 || draftBooks > 0) && (
-        <div className="rounded-2xl border border-border bg-card p-5">
-          <div className="mb-3 flex items-center gap-2">
-            <Bell size={16} className="text-primary" />
-            <h2 className="text-base font-semibold">Bildirishnomalar</h2>
+      {/* ─── O'quvchilar statistikasi ─── */}
+      <div className="grid gap-6 lg:grid-cols-3">
+        <div className="lg:col-span-2 rounded-2xl border border-border bg-card p-5">
+          <div className="mb-4 flex items-center gap-2">
+            <TrendingUp size={16} className="text-primary" />
+            <h2 className="text-base font-semibold">O'qish faolligi (30 kun)</h2>
           </div>
-          <ul className="space-y-2 text-sm">
-            {pendingCount > 0 && (
-              <li>
-                <Link
-                  href="/admin/students/pending"
-                  className="flex items-center gap-2 rounded-xl bg-amber-50 px-3 py-2 font-medium text-amber-700 hover:bg-amber-100 dark:bg-amber-950/30 dark:text-amber-300"
-                >
-                  <TriangleAlert size={15} />
-                  {pendingCount} ta yangi o&apos;quvchi tasdiqlanishni kutmoqda
-                </Link>
-              </li>
-            )}
-            {newUsersWeek > 0 && (
-              <li className="flex items-center gap-2 rounded-xl bg-blue-50 px-3 py-2 text-blue-700 dark:bg-blue-950/30 dark:text-blue-300">
-                <UserPlus size={15} />
-                Bu hafta {newUsersWeek} ta yangi o&apos;quvchi qo&apos;shildi
-              </li>
-            )}
-            {draftBooks > 0 && (
-              <li>
-                <Link
-                  href="/admin/books"
-                  className="flex items-center gap-2 rounded-xl bg-slate-100 px-3 py-2 text-slate-600 hover:bg-slate-200 dark:bg-slate-800/50 dark:text-slate-300"
-                >
-                  <Eye size={15} />
-                  {draftBooks} ta kitob nashr qilinmagan (draft)
-                </Link>
-              </li>
-            )}
-          </ul>
+          <AdminActivityChart data={days} />
         </div>
-      )}
 
-      {/* ─── D) Quick actions ─── */}
-      <div className="rounded-2xl border border-border bg-card p-5">
-        <h2 className="mb-3 text-base font-semibold">Tezkor amallar</h2>
-        <div className="flex flex-wrap gap-2">
-          <Link
-            href="/admin/students/new"
-            className="inline-flex items-center gap-1.5 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
-          >
-            <Plus size={16} /> Yangi o&apos;quvchi
-          </Link>
-          <Link
-            href="/admin/books"
-            className="inline-flex items-center gap-1.5 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
-          >
-            <BookPlus size={16} /> Yangi kitob
-          </Link>
-          <Link
-            href="/admin/categories"
-            className="inline-flex items-center gap-1.5 rounded-xl border border-border px-4 py-2.5 text-sm font-semibold hover:bg-muted"
-          >
-            <Plus size={16} /> Yangi kategoriya
-          </Link>
-          <Link
-            href="/admin/students"
-            className="inline-flex items-center gap-1.5 rounded-xl border border-border px-4 py-2.5 text-sm font-semibold hover:bg-muted"
-          >
-            <Users size={16} /> O&apos;quvchilar
-          </Link>
-          <Link
-            href="/admin/students/pending"
-            className={`inline-flex items-center gap-1.5 rounded-xl border px-4 py-2.5 text-sm font-semibold transition-colors ${
-              pendingCount > 0
-                ? "border-amber-500/40 bg-amber-500/10 text-amber-700 hover:bg-amber-500/20 dark:text-amber-300"
-                : "border-border hover:bg-muted"
-            }`}
-          >
-            <UserCheck size={16} /> Kutilayotganlar
-            {pendingCount > 0 && (
-              <span className="rounded-full bg-amber-500 px-1.5 py-0.5 text-[11px] font-bold tabular-nums text-white">
-                {pendingCount}
+        <div className="rounded-2xl border border-border bg-card p-5">
+          <div className="mb-4 flex items-center gap-2">
+            <Flame size={16} className="text-primary" />
+            <h2 className="text-base font-semibold">O'rtacha faollik</h2>
+          </div>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <BookOpen size={15} /> Sessiyaga sahifa
+              </div>
+              <span className="text-lg font-bold tabular-nums">
+                {Math.round(avgAgg._avg.pagesRead ?? 0)}
               </span>
-            )}
-          </Link>
+            </div>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Clock size={15} /> Sessiya davomiyligi
+              </div>
+              <span className="text-lg font-bold tabular-nums">
+                {Math.round((avgAgg._avg.duration ?? 0) / 60)} daq
+              </span>
+            </div>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Activity size={15} /> Bugungi sessiyalar
+              </div>
+              <span className="text-lg font-bold tabular-nums">
+                {sessions30.filter((s) => s.startedAt >= todayStart).length}
+              </span>
+            </div>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Users size={15} /> Bugun faol o'quvchilar
+              </div>
+              <span className="text-lg font-bold tabular-nums">
+                {todayActive.length}
+              </span>
+            </div>
+          </div>
         </div>
       </div>
+
+      {/* ─── Tasdiqlash kutilmoqda ─── */}
+      {pendingCount > 0 && (
+        <Link
+          href="/admin/students/pending"
+          className="flex items-center gap-3 rounded-2xl border border-amber-500/40 bg-amber-500/10 p-4 font-medium text-amber-700 transition-colors hover:bg-amber-500/20 dark:text-amber-300"
+        >
+          <UserPlus size={18} />
+          {pendingCount} ta yangi o&apos;quvchi tasdiqlashni kutmoqda →
+        </Link>
+      )}
 
       <div className="grid gap-6 lg:grid-cols-2">
         {/* ─── Eng ko'p o'qilgan kitoblar (Top 5) ─── */}
         <div className="rounded-2xl border border-border bg-card p-5">
           <div className="mb-3 flex items-center justify-between">
             <h2 className="flex items-center gap-2 text-base font-semibold">
-              <TrendingUp size={16} className="text-primary" />
-              Eng ko&apos;p o&apos;qilgan (Top 5)
+              <Star size={16} className="text-primary" />
+              Eng ko&apos;p o&apos;qilgan kitoblar
             </h2>
-            <Link
-              href="/admin/books"
-              className="text-xs font-medium text-primary hover:underline"
-            >
-              Barchasi
-            </Link>
           </div>
           {topBookAgg.length === 0 ? (
             <p className="py-6 text-center text-sm text-muted-foreground">
-              Hali o&apos;qish statistikasi yo&apos;q
+              📚 Hozircha o&apos;qish statistikasi yo&apos;q
             </p>
           ) : (
             <ol className="space-y-2.5">
@@ -254,7 +291,7 @@ export default async function AdminDashboard() {
                     </span>
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-medium">
-                        {b?.title ?? r.bookId}
+                        {b?.title ?? "—"}
                       </p>
                       <p className="truncate text-xs text-muted-foreground">
                         {b?.author?.name ?? "—"}
@@ -270,12 +307,12 @@ export default async function AdminDashboard() {
           )}
         </div>
 
-        {/* ─── Eng faol o'quvchilar (Top 10) ─── */}
+        {/* ─── Eng faol o'quvchilar (Top 5) ─── */}
         <div className="rounded-2xl border border-border bg-card p-5">
           <div className="mb-3 flex items-center justify-between">
             <h2 className="flex items-center gap-2 text-base font-semibold">
-              <Star size={16} className="text-primary" />
-              Eng faol o&apos;quvchilar (Top 10)
+              <Users size={16} className="text-primary" />
+              Eng faol o&apos;quvchilar
             </h2>
             <Link
               href="/admin/students"
@@ -299,7 +336,7 @@ export default async function AdminDashboard() {
                     </span>
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-medium">
-                        {u?.name ?? r.userId}
+                        {u?.name ?? "—"}
                       </p>
                       <p className="truncate text-xs text-muted-foreground">
                         {u?.group ?? "—"}

@@ -1,9 +1,17 @@
 import { route, json, readJson } from "@/lib/server/handler";
-import { requireUser, setSessionCookie, clearSessionCookie } from "@/lib/server/auth";
+import { setSessionCookie, clearSessionCookie } from "@/lib/server/auth";
 import { prisma } from "@/lib/db";
 import { loginSchema } from "@/lib/validation";
 import { ERROR_CODES, ApiError } from "@/lib/server/errors";
 import type { User } from "@/types";
+
+const DEMO_NAMES: Record<string, string> = {
+  STUDENT: "Muhammadamin Toshtemirov",
+  TEACHER: "Dilshod Mirzayev",
+  ADMIN: "Alisher Navoiy",
+  BOOK_MANAGER: "Zilola Rahimova",
+  REGISTRAR: "Sanjar Tolibov",
+};
 
 function toUser(u: {
   id: string;
@@ -38,13 +46,23 @@ export const POST = route(async (req) => {
       400
     );
   }
-  const user = await prisma.user.findFirst({
+  let user = await prisma.user.findFirst({
     where: { role: parsed.data.role, isActive: true },
     orderBy: { createdAt: "asc" },
   });
+
+  // Demo rejim: rolda faol foydalanuvchi bo'lmasa — demo account yaratamiz,
+  // shunda barcha panellar har doim tekshirilishi mumkin.
   if (!user) {
-    throw new ApiError(ERROR_CODES.NOT_FOUND, "Foydalanuvchi topilmadi", 404);
+    user = await prisma.user.create({
+      data: {
+        name: DEMO_NAMES[parsed.data.role] ?? "Demo foydalanuvchi",
+        role: parsed.data.role,
+        isActive: true,
+      },
+    });
   }
+
   const res = json({ success: true, data: toUser(user as any) });
   setSessionCookie(res, user.id);
   return res;

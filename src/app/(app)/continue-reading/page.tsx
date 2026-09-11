@@ -14,7 +14,7 @@ export default async function ContinueReadingPage() {
   const items = await listContinueReading(user.id, 50);
 
   return (
-    <div className="space-y-6 animate-fade-in pb-20 md:pb-0 max-w-2xl md:max-w-4xl lg:max-w-5xl mx-auto">
+    <div className="space-y-6 animate-fade-in pb-28 md:pb-0 max-w-2xl md:max-w-4xl lg:max-w-5xl mx-auto">
       <div>
         <h1 className="text-2xl font-bold text-foreground">O&apos;qishni davom ettirish</h1>
         <p className="text-sm text-muted-foreground mt-1">Boshlagan kitoblaringiz</p>
@@ -31,7 +31,7 @@ export default async function ContinueReadingPage() {
           }
         />
       ) : (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
           {items.map((p) => (
             <BookCardView key={p.bookId} book={p.book!} progress={p} />
           ))}

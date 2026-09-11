@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { api } from "@/lib/api-client";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -25,11 +26,10 @@ import {
 import {
   Search,
   Eye,
-  Pencil,
-  Trash2,
+  Users,
   Ban,
   CheckCircle2,
-  Users,
+  Pencil,
   Loader2,
 } from "lucide-react";
 
@@ -47,6 +47,7 @@ export interface StudentRow {
   about: string | null;
   isActive: boolean;
   bookCount: number;
+  lastActiveAt: string | null;
   createdAt: string;
 }
 
@@ -67,16 +68,20 @@ export function AdminStudentsTable({
   const [status, setStatus] = useState("all");
   const [page, setPage] = useState(1);
   const [viewing, setViewing] = useState<StudentRow | null>(null);
+  const [busyId, setBusyId] = useState<string | null>(null);
   const [editing, setEditing] = useState<StudentRow | null>(null);
   const [saving, setSaving] = useState(false);
-  const [busyId, setBusyId] = useState<string | null>(null);
 
   const filtered = useMemo(() => {
     const needle = q.trim().toLowerCase();
     return students.filter((s) => {
       if (group !== "all" && (s.group ?? "") !== group) return false;
       if (status === "active" && !s.isActive) return false;
-      if (status === "blocked" && s.isActive) return false;
+      if (status === "inactive" && s.isActive) return false;
+      if (status === "new") {
+        const created = new Date(s.createdAt).getTime();
+        return Date.now() - created < 7 * 86400000; // oxirgi 7 kun ichida qo'shilgan
+      }
       if (
         needle &&
         !`${s.name} ${s.email ?? ""} ${s.group ?? ""}`
@@ -105,37 +110,24 @@ export function AdminStudentsTable({
     }
   }
 
-  async function remove(id: string) {
-    if (!confirm("O'quvchini o'chirishni tasdiqlaysizmi?")) return;
-    setBusyId(id);
-    try {
-      await api.del(`/api/admin/users/${id}`);
-      toast.success("O'chirildi");
-      router.refresh();
-    } catch (e: any) {
-      toast.error(e.message || "Xatolik");
-    } finally {
-      setBusyId(null);
-    }
-  }
-
   async function saveEdit() {
     if (!editing) return;
+    if (editing.name.trim().length < 2) {
+      toast.error("Ism kamida 2 harf bo'lsin");
+      return;
+    }
     setSaving(true);
     try {
       await api.patch(`/api/admin/users/${editing.id}`, {
-        name: editing.name,
-        email: editing.email,
-        phone: editing.phone,
-        group: editing.group,
+        name: editing.name.trim(),
+        email: editing.email ?? "",
+        phone: editing.phone ?? "",
+        group: editing.group ?? "",
         age: editing.age,
-        gender: editing.gender,
-        address: editing.address,
-        parentContact: editing.parentContact,
-        healthNote: editing.healthNote,
-        about: editing.about,
+        address: editing.address ?? "",
+        parentContact: editing.parentContact ?? "",
       });
-      toast.success("Saqlangan");
+      toast.success("Ma'lumotlar saqlandi");
       setEditing(null);
       router.refresh();
     } catch (e: any) {
@@ -197,7 +189,7 @@ export function AdminStudentsTable({
             <SelectContent>
               <SelectItem value="all">Barchasi</SelectItem>
               <SelectItem value="active">Faol</SelectItem>
-              <SelectItem value="blocked">Bloklangan</SelectItem>
+              <SelectItem value="inactive">Faol emas</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -227,8 +219,11 @@ export function AdminStudentsTable({
                   <th className="hidden px-4 py-3 text-right text-xs font-semibold text-muted-foreground sm:table-cell">
                     Kitoblar
                   </th>
+                  <th className="hidden px-4 py-3 text-right text-xs font-semibold text-muted-foreground lg:table-cell">
+                    Oxirgi faollik
+                  </th>
                   <th className="px-4 py-3 text-center text-xs font-semibold text-muted-foreground">
-                    Status
+                    Faollik
                   </th>
                   <th className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground">
                     Amallar
@@ -239,9 +234,14 @@ export function AdminStudentsTable({
                 {paged.map((s) => (
                   <tr key={s.id} className="transition-colors hover:bg-muted/30">
                     <td className="px-4 py-3">
-                      <p className="max-w-[200px] truncate font-medium">{s.name}</p>
+                      <Link
+                        href={`/admin/students/${s.id}`}
+                        className="max-w-[200px] truncate font-medium hover:text-primary hover:underline"
+                      >
+                        {s.name}
+                      </Link>
                       <p className="max-w-[200px] truncate text-xs text-muted-foreground">
-                        {s.email ?? "—"}
+                        {s.email ?? s.phone ?? "—"}
                       </p>
                     </td>
                     <td className="hidden px-4 py-3 md:table-cell">
@@ -253,12 +253,17 @@ export function AdminStudentsTable({
                     <td className="hidden px-4 py-3 text-right text-xs text-muted-foreground sm:table-cell">
                       {s.bookCount}
                     </td>
+                    <td className="hidden px-4 py-3 text-right text-xs text-muted-foreground lg:table-cell">
+                      {s.lastActiveAt
+                        ? new Date(s.lastActiveAt).toLocaleDateString("uz-UZ")
+                        : "—"}
+                    </td>
                     <td className="px-4 py-3 text-center">
                       <Badge
                         variant={s.isActive ? "default" : "secondary"}
                         className={`text-[10px] ${s.isActive ? "bg-green-500/10 text-green-600" : "bg-red-500/10 text-red-600"}`}
                       >
-                        {s.isActive ? "Faol" : "Bloklangan"}
+                        {s.isActive ? "Faol" : "Faol emas"}
                       </Badge>
                     </td>
                     <td className="px-4 py-3">
@@ -276,38 +281,26 @@ export function AdminStudentsTable({
                           variant="ghost"
                           size="icon"
                           className="h-8 w-8"
-                          onClick={() => setEditing({ ...s })}
+                          onClick={() => setEditing(s)}
                           aria-label="Tahrirlash"
                         >
                           <Pencil size={14} className="text-muted-foreground" />
                         </Button>
                         {s.id !== currentUserId && (
-                          <>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8"
-                              disabled={busyId === s.id}
-                              onClick={() => toggleBlock(s)}
-                              aria-label={s.isActive ? "Bloklash" : "Faollashtirish"}
-                            >
-                              {s.isActive ? (
-                                <Ban size={14} className="text-muted-foreground" />
-                              ) : (
-                                <CheckCircle2 size={14} className="text-green-600" />
-                              )}
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                              disabled={busyId === s.id}
-                              onClick={() => remove(s.id)}
-                              aria-label="O'chirish"
-                            >
-                              <Trash2 size={14} />
-                            </Button>
-                          </>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                            disabled={busyId === s.id}
+                            onClick={() => toggleBlock(s)}
+                            aria-label={s.isActive ? "Bloklash" : "Faollashtirish"}
+                          >
+                            {s.isActive ? (
+                              <Ban size={14} className="text-muted-foreground" />
+                            ) : (
+                              <CheckCircle2 size={14} className="text-green-600" />
+                            )}
+                          </Button>
                         )}
                       </div>
                     </td>

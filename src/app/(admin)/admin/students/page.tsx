@@ -2,7 +2,7 @@ import { requireRole } from "@/lib/server/auth";
 import { prisma } from "@/lib/db";
 import { AdminStudentsTable } from "@/components/admin-students-table";
 import Link from "next/link";
-import { Plus } from "lucide-react";
+import { UserCheck } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -14,7 +14,14 @@ export default async function AdminStudentsPage() {
     prisma.user.findMany({
       where: { role: "STUDENT" },
       orderBy: { createdAt: "desc" },
-      include: { _count: { select: { progress: true } } },
+      include: {
+        _count: { select: { progress: true } },
+        sessions: {
+          select: { startedAt: true },
+          take: 1,
+          orderBy: { startedAt: "desc" },
+        },
+      },
       take: 300,
     }),
     prisma.pendingStudent.count({ where: { status: "PENDING" } }),
@@ -49,18 +56,12 @@ export default async function AdminStudentsPage() {
             href="/admin/students/pending"
             className="inline-flex items-center gap-1.5 rounded-xl border border-border px-4 py-2.5 text-sm font-semibold hover:bg-muted"
           >
-            Kutilayotganlar
+            <UserCheck size={16} /> Tasdiqlash
             {pendingCount > 0 && (
               <span className="rounded-full bg-amber-500/15 px-1.5 text-xs font-bold text-amber-600">
                 {pendingCount}
               </span>
             )}
-          </Link>
-          <Link
-            href="/admin/students/new"
-            className="inline-flex items-center gap-1.5 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
-          >
-            <Plus size={16} /> Yangi o&apos;quvchi
           </Link>
         </div>
       </div>
@@ -80,6 +81,7 @@ export default async function AdminStudentsPage() {
           about: s.about,
           isActive: s.isActive,
           bookCount: s._count.progress,
+          lastActiveAt: s.sessions[0]?.startedAt?.toISOString() ?? null,
           createdAt: s.createdAt.toISOString(),
         }))}
         groups={groups}

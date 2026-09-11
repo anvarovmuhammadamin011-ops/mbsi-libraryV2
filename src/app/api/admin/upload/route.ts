@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { requireRole } from "@/lib/server/auth";
+import { requireBookManager } from "@/lib/server/auth";
 import { prisma } from "@/lib/db";
 import { savePdf, saveCover } from "@/lib/server/storage";
 import { createBook } from "@/lib/server/books";
@@ -29,7 +29,7 @@ async function detectPageCount(buf: Buffer, fallback: number): Promise<number> {
 }
 
 export async function POST(req: NextRequest) {
-  const user = await requireRole("ADMIN");
+  const user = await requireBookManager();
   if (!user) throw new ApiError(ERROR_CODES.FORBIDDEN, "Ruxsat yo'q", 403);
 
   const form = await req.formData();

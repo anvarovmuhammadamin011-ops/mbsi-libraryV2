@@ -7,6 +7,8 @@ export const ROLES = {
   STUDENT: "STUDENT",
   TEACHER: "TEACHER",
   ADMIN: "ADMIN",
+  BOOK_MANAGER: "BOOK_MANAGER",
+  REGISTRAR: "REGISTRAR",
 } as const;
 
 export type UserRole = (typeof ROLES)[keyof typeof ROLES];
@@ -15,13 +17,40 @@ export const ROLE_LABELS: Record<UserRole, string> = {
   STUDENT: "O'quvchi",
   TEACHER: "O'qituvchi",
   ADMIN: "Admin",
+  BOOK_MANAGER: "Kitob menejeri",
+  REGISTRAR: "O'quvchi qo'shuvchi",
 };
 
 export const ROLE_ICONS: Record<UserRole, string> = {
   STUDENT: "👨‍🎓",
   TEACHER: "👨‍🏫",
   ADMIN: "🛠",
+  BOOK_MANAGER: "📚",
+  REGISTRAR: "📝",
 };
+
+// Demo login uchun ruxsat etilgan rollar (har biriga kamida 1 ta demo account bor)
+export const LOGIN_ROLES = [
+  "STUDENT",
+  "TEACHER",
+  "ADMIN",
+  "BOOK_MANAGER",
+  "REGISTRAR",
+] as const satisfies readonly UserRole[];
+
+// Ushbu rolga tegishli bosh sahifa/panel URL'i
+export function roleHome(role: UserRole): string {
+  switch (role) {
+    case "ADMIN":
+      return "/admin";
+    case "BOOK_MANAGER":
+      return "/manager";
+    case "REGISTRAR":
+      return "/registrar";
+    default:
+      return "/home";
+  }
+}
 
 // ─── Languages ──────────────────────────────────────────────
 export const LANGUAGES = {
@@ -79,6 +108,8 @@ export interface Book {
   categoryId: string;
   category?: Category;
   isPublished: boolean;
+  /** Kitob menejeri statusi: ACTIVE (ko'rinadi) | HIDDEN (yashirilgan) | DRAFT (qoralama) */
+  status?: string;
   averageRating?: number;
   ratingCount?: number;
   readerCount?: number;
@@ -212,6 +243,37 @@ export interface RankingEntry {
   readingTime: number;
   streak: number;
   balls?: number;
+}
+
+// ─── Book Status (kitob menejeri) ───────────────────────────
+export const BOOK_STATUSES = {
+  ACTIVE: "ACTIVE", // o'quvchilar ko'ra va o'qiy oladi
+  HIDDEN: "HIDDEN", // o'quvchilarga ko'rinmaydi
+  DRAFT: "DRAFT", // hali tayyor emas
+} as const;
+
+export type BookStatus = (typeof BOOK_STATUSES)[keyof typeof BOOK_STATUSES];
+
+export const BOOK_STATUS_LABELS: Record<BookStatus, string> = {
+  ACTIVE: "Faol",
+  HIDDEN: "Yashirilgan",
+  DRAFT: "Qoralama",
+};
+
+// ─── Pending Student Request ────────────────────────────────
+export interface PendingStudentRequest {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email?: string | null;
+  phone?: string | null;
+  group?: string | null;
+  age?: number | null;
+  gender?: string | null;
+  avatarUrl?: string | null;
+  status: "PENDING" | "APPROVED" | "REJECTED";
+  submittedBy?: { id: string; name: string } | null;
+  createdAt: string;
 }
 
 // ─── API Response ───────────────────────────────────────────

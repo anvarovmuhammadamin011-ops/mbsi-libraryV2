@@ -3,7 +3,7 @@ import { z } from "zod";
 export const MAX_ACTIVE_BOOKS = 3;
 
 export const loginSchema = z.object({
-  role: z.enum(["STUDENT", "TEACHER", "ADMIN"]),
+  role: z.enum(["STUDENT", "TEACHER", "ADMIN", "BOOK_MANAGER", "REGISTRAR"]),
 });
 
 export const bookCreateSchema = z.object({
@@ -21,7 +21,12 @@ export const bookUpdateSchema = bookCreateSchema
   .extend({
     coverChanged: z.boolean().optional(),
     pdfChanged: z.boolean().optional(),
+    status: z.enum(["ACTIVE", "HIDDEN", "DRAFT"]).optional(),
   });
+
+export const bookStatusSchema = z.object({
+  status: z.enum(["ACTIVE", "HIDDEN", "DRAFT"]),
+});
 
 export const ratingSchema = z.object({
   rating: z.number().int().min(1).max(5),
@@ -65,7 +70,7 @@ export const userUpdateSchema = z.object({
   about: z.string().max(2000).optional().nullable(),
 });
 
-// ─── O'quvchi qo'shish formasi (Admin → PendingStudent) ───
+// ─── O'quvchi qo'shish formasi (Admin/REGISTRAR → PendingStudent) ───
 export const pendingStudentSchema = z.object({
   firstName: z.string().min(2, "Ism kamida 2 harf").max(100),
   lastName: z.string().min(2, "Familya kamida 2 harf").max(100),
@@ -78,6 +83,7 @@ export const pendingStudentSchema = z.object({
   parentContact: z.string().max(200).optional().default(""),
   healthNote: z.string().max(1000).optional().default(""),
   about: z.string().max(2000).optional().default(""),
+  avatarUrl: z.string().max(500).optional().default(""),
 });
 
 export const authorSchema = z.object({

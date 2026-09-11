@@ -81,8 +81,32 @@ export async function requireAdmin(): Promise<User> {
   return user;
 }
 
+/** Admin yoki Kitob menejeri — kitob kontenti API'lari uchun. */
+export async function requireBookManager(): Promise<User> {
+  const user = await requireUser();
+  if (user.role !== "ADMIN" && user.role !== "BOOK_MANAGER")
+    throw new ApiError(ERROR_CODES.FORBIDDEN, "Ruxsat yo'q", 403);
+  return user;
+}
+
+/** Admin yoki O'quvchi qo'shuvchi (REGISTRAR) — ariza yuborish uchun. */
+export async function requireRegistrar(): Promise<User> {
+  const user = await requireUser();
+  if (user.role !== "ADMIN" && user.role !== "REGISTRAR")
+    throw new ApiError(ERROR_CODES.FORBIDDEN, "Ruxsat yo'q", 403);
+  return user;
+}
+
 export async function requireRole(role: UserRole): Promise<User | null> {
   const u = await getSessionUser();
   if (!u || u.role !== role) return null;
+  return u;
+}
+
+export async function requireAnyRole(
+  roles: UserRole[]
+): Promise<User | null> {
+  const u = await getSessionUser();
+  if (!u || !roles.includes(u.role as UserRole)) return null;
   return u;
 }

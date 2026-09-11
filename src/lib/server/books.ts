@@ -93,6 +93,7 @@ export function toApiBook(row: BookRow, stat?: BookStat): Book {
         }
       : undefined,
     isPublished: row.isPublished,
+    status: row.status,
     averageRating: stat?.avg ?? 0,
     ratingCount: stat?.count ?? 0,
     readerCount: stat?.readers ?? 0,
@@ -118,7 +119,12 @@ export async function listBooks(
   } = query;
 
   const baseWhere: Prisma.BookWhereInput = {};
-  if (publishedOnly && !opts?.includeUnpublished) baseWhere.isPublished = true;
+  if (publishedOnly && !opts?.includeUnpublished) {
+    // Student-facing: faqat nashr etilgan va ACTIVE holatdagi kitoblar ko'rinadi
+    // (HIDDEN — yashirilgan, DRAFT — hali tayyor emas)
+    baseWhere.isPublished = true;
+    baseWhere.status = "ACTIVE";
+  }
   if (language) baseWhere.language = language;
   if (categoryId) baseWhere.categoryId = categoryId;
   if (authorId) baseWhere.authorId = authorId;

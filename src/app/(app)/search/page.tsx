@@ -47,10 +47,18 @@ function ResultRow({ book, onSelect }: { book: Book; onSelect: (b: Book) => void
           {book.author?.name ?? "Noma'lum muallif"}
         </p>
         <div className="flex items-center gap-1 mt-1.5">
-          <Star size={12} className="fill-yellow-400 text-yellow-400" />
-          <span className="text-xs font-medium text-foreground">
-            {book.averageRating ? Number(book.averageRating).toFixed(1) : "—"}
-          </span>
+          {book.averageRating ? (
+            <>
+              <Star size={12} className="fill-yellow-400 text-yellow-400" />
+              <span className="text-xs font-medium text-foreground">
+                {Number(book.averageRating).toFixed(1)}
+              </span>
+            </>
+          ) : (
+            <span className="rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-semibold text-blue-600 dark:bg-blue-950/40 dark:text-blue-300">
+              Yangi
+            </span>
+          )}
           {book.category?.name && (
             <>
               <span className="text-[11px] text-muted-foreground mx-1">·</span>
@@ -352,7 +360,7 @@ function SearchPageInner() {
       {/* ═══ Search focus overlay — recents + history-based books ═══ */}
       {focused && (
         <div className="fixed inset-0 z-50 bg-background overflow-y-auto animate-fade-in">
-          <div className="mx-auto max-w-2xl md:max-w-3xl lg:max-w-4xl px-4 pt-2 pb-20">
+          <div className="mx-auto max-w-2xl md:max-w-3xl lg:max-w-4xl px-4 pt-2 pb-28">
             {/* Overlay search bar */}
             <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-md pb-3 pt-1">
               <div className="flex items-center gap-3 mb-3">
@@ -498,7 +506,7 @@ function SearchPageInner() {
               ))}
             </div>
           ) : defaultBooks.length > 0 ? (
-            <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
               {defaultBooks.map((book) => {
                 const avg = book.averageRating ? Number(book.averageRating).toFixed(1) : null;
                 return (
@@ -522,19 +530,22 @@ function SearchPageInner() {
                         </div>
                       )}
                     </div>
+                    {/* Fixed-height blocks so every card is the same size */}
                     <div className="pt-2">
-                      <p className="text-sm font-semibold text-foreground line-clamp-2 leading-tight">
+                      <p className="h-10 text-sm font-semibold text-foreground line-clamp-2 leading-tight">
                         {book.title}
                       </p>
-                      <p className="text-xs text-muted-foreground mt-0.5 truncate">
+                      <p className="mt-0.5 h-5 truncate text-xs text-muted-foreground">
                         {book.author?.name ?? "Noma'lum"}
                       </p>
-                      {avg && (
-                        <div className="flex items-center gap-1 mt-1">
-                          <Star size={12} className="fill-yellow-400 text-yellow-400" />
-                          <span className="text-xs font-medium">{avg}</span>
-                        </div>
-                      )}
+                      <div className="mt-1 flex h-5 items-center gap-1">
+                        {avg && (
+                          <>
+                            <Star size={12} className="fill-yellow-400 text-yellow-400" />
+                            <span className="text-xs font-medium">{avg}</span>
+                          </>
+                        )}
+                      </div>
                     </div>
                   </Link>
                 );

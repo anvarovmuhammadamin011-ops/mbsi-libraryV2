@@ -9,11 +9,13 @@ import {
   Loader2,
   BookOpen,
   GraduationCap,
-  BookMarked,
   ShieldCheck,
+  BookMarked,
+  UserPlus,
   ChevronRight,
 } from "lucide-react";
 import type { UserRole } from "@/types";
+import { roleHome } from "@/types";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -40,14 +42,6 @@ export default function LoginPage() {
       bgColor: "bg-blue-50 dark:bg-blue-950/30",
     },
     {
-      role: "TEACHER",
-      title: t.login.teacher,
-      desc: t.login.teacherDesc,
-      icon: <BookMarked className="h-5 w-5" />,
-      color: "text-emerald-600",
-      bgColor: "bg-emerald-50 dark:bg-emerald-950/30",
-    },
-    {
       role: "ADMIN",
       title: t.login.admin,
       desc: t.login.adminDesc,
@@ -55,12 +49,27 @@ export default function LoginPage() {
       color: "text-amber-600",
       bgColor: "bg-amber-50 dark:bg-amber-950/30",
     },
+    {
+      role: "BOOK_MANAGER",
+      title: t.login.manager,
+      desc: t.login.managerDesc,
+      icon: <BookMarked className="h-5 w-5" />,
+      color: "text-emerald-600",
+      bgColor: "bg-emerald-50 dark:bg-emerald-950/30",
+    },
+    {
+      role: "REGISTRAR",
+      title: t.login.registrar,
+      desc: t.login.registrarDesc,
+      icon: <UserPlus className="h-5 w-5" />,
+      color: "text-violet-600",
+      bgColor: "bg-violet-50 dark:bg-violet-950/30",
+    },
   ];
 
   useEffect(() => {
-    if (isAuthenticated) {
-      const role = user?.role;
-      router.replace(role === "ADMIN" ? "/admin" : "/home");
+    if (isAuthenticated && user) {
+      router.replace(roleHome(user.role));
     }
   }, [isAuthenticated, router, user]);
 
@@ -68,7 +77,7 @@ export default function LoginPage() {
     setLoading(role);
     const ok = await login(role);
     setLoading(null);
-    if (ok) router.push(role === "ADMIN" ? "/admin" : "/home");
+    if (ok) router.push(roleHome(role));
   }
 
   return (
@@ -129,8 +138,26 @@ export default function LoginPage() {
         <p className="mt-8 text-center text-xs text-muted-foreground">
           {t.login.demoNote}
         </p>
-        {/* Quick access: admin & teacher */}
-        <div className="mt-3 flex items-center justify-center gap-4 text-xs text-muted-foreground">
+        {/* Tezkor login — barcha rollar (demo) */}
+        <div className="mt-3 flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5 text-xs text-muted-foreground">
+          <button
+            type="button"
+            onClick={() => handle("STUDENT")}
+            disabled={loading !== null}
+            className="underline underline-offset-2 hover:text-blue-600 transition-colors disabled:opacity-60"
+          >
+            {t.login.student} →
+          </button>
+          <span aria-hidden>·</span>
+          <button
+            type="button"
+            onClick={() => handle("TEACHER")}
+            disabled={loading !== null}
+            className="underline underline-offset-2 hover:text-teal-600 transition-colors disabled:opacity-60"
+          >
+            {t.login.teacher} →
+          </button>
+          <span aria-hidden>·</span>
           <button
             type="button"
             onClick={() => handle("ADMIN")}
@@ -142,11 +169,20 @@ export default function LoginPage() {
           <span aria-hidden>·</span>
           <button
             type="button"
-            onClick={() => handle("TEACHER")}
+            onClick={() => handle("BOOK_MANAGER")}
             disabled={loading !== null}
             className="underline underline-offset-2 hover:text-emerald-600 transition-colors disabled:opacity-60"
           >
-            {t.login.teacher} →
+            {t.login.manager} →
+          </button>
+          <span aria-hidden>·</span>
+          <button
+            type="button"
+            onClick={() => handle("REGISTRAR")}
+            disabled={loading !== null}
+            className="underline underline-offset-2 hover:text-violet-600 transition-colors disabled:opacity-60"
+          >
+            {t.login.registrar} →
           </button>
         </div>
       </div>

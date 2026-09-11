@@ -28,5 +28,11 @@ export const env = {
 };
 
 export const SESSION_COOKIE = "mbsi_session";
-export const ROLES = ["STUDENT", "TEACHER", "ADMIN"] as const;
+export const ROLES = [
+  "STUDENT",
+  "TEACHER",
+  "ADMIN",
+  "BOOK_MANAGER",
+  "REGISTRAR",
+] as const;
 export type AppRole = (typeof ROLES)[number];

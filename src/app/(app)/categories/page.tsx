@@ -10,20 +10,26 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Categories — MBSI Library" };
 
 export default async function CategoriesPage() {
+  // Only show categories that actually contain published books
   const categories = await prisma.category.findMany({
     orderBy: { name: "asc" },
+    where: {
+      books: { some: { isPublished: true } },
+    },
     include: {
-      _count: { select: { books: true } },
+      _count: { select: { books: { where: { isPublished: true } } } },
     },
   });
 
   // Get first 3 book covers per category for preview
   const categoryIds = categories.map((c) => c.id);
-  const categoryBooks = await prisma.book.findMany({
-    where: { categoryId: { in: categoryIds }, isPublished: true },
-    select: { categoryId: true, coverUrl: true, title: true },
-    orderBy: { createdAt: "desc" },
-  });
+  const categoryBooks = categoryIds.length
+    ? await prisma.book.findMany({
+        where: { categoryId: { in: categoryIds }, isPublished: true },
+        select: { categoryId: true, coverUrl: true, title: true },
+        orderBy: { createdAt: "desc" },
+      })
+    : [];
 
   const coverMap: Record<string, string[]> = {};
   for (const b of categoryBooks) {
@@ -34,7 +40,7 @@ export default async function CategoriesPage() {
   }
 
   return (
-    <div className="space-y-6 animate-fade-in pb-20 md:pb-6 max-w-2xl md:max-w-4xl lg:max-w-5xl mx-auto">
+    <div className="space-y-6 animate-fade-in pb-28 md:pb-6 max-w-2xl md:max-w-4xl lg:max-w-5xl mx-auto">
       {/* Header */}
       <div>
         <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">

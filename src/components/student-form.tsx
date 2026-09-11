@@ -24,7 +24,12 @@ const EMPTY = {
   about: "",
 };
 
-export function StudentForm() {
+export function StudentForm({
+  redirectTo = "/admin/students/pending",
+}: {
+  /** Ariza yuborilgandan keyin o'tiladigan sahifa. */
+  redirectTo?: string;
+}) {
   const router = useRouter();
   const [form, setForm] = useState(EMPTY);
   const [saving, setSaving] = useState(false);
@@ -52,7 +57,7 @@ export function StudentForm() {
     }
     setSaving(true);
     try {
-      await api.post("/api/admin/students/pending", {
+      await api.post("/api/students/pending", {
         firstName: form.firstName.trim(),
         lastName: form.lastName.trim(),
         email: form.email.trim(),
@@ -66,7 +71,7 @@ export function StudentForm() {
         about: form.about.trim(),
       });
       toast.success("Ariza qabul qilindi — tasdiqlash kutilmoqda");
-      router.push("/admin/students/pending");
+      router.push(redirectTo);
     } catch (e: any) {
       toast.error(e.message || "Xatolik");
     } finally {

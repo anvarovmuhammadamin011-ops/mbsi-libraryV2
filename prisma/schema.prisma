@@ -16,8 +16,9 @@ datasource db {
 }
 
 // ─── Enums (stored as String for provider portability) ──────
-// USER.role        : STUDENT | TEACHER | ADMIN
+// USER.role        : STUDENT | TEACHER | ADMIN | BOOK_MANAGER | REGISTRAR
 // BOOK.language    : UZ | RU | EN
+// BOOK.status      : ACTIVE | HIDDEN | DRAFT (derived from isPublished for legacy rows)
 
 model User {
   id              String   @id @default(cuid())
@@ -53,6 +54,7 @@ model User {
   auditLogs         AuditLog[]
   ballTransactions  BallTransaction[]
   searchLogs        SearchLog[]
+  submittedRequests PendingStudent[] @relation("PendingStudentSubmitter")
 
   @@index([role])
   @@index([isActive])
@@ -100,6 +102,8 @@ model Book {
   authorId    String   @map("author_id")
   categoryId  String   @map("category_id")
   isPublished Boolean  @default(false) @map("is_published")
+  // Kitob menejeri statusi: ACTIVE (o'quvchilar ko'radi) | HIDDEN (ko'rinmaydi) | DRAFT (tayyor emas)
+  status      String   @default("ACTIVE") @map("status")
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
@@ -119,6 +123,7 @@ model Book {
   @@index([categoryId])
   @@index([language])
   @@index([isPublished])
+  @@index([status])
   @@map("books")
 }
 
@@ -373,8 +378,9 @@ model BallTransaction {
   @@map("ball_transactions")
 }
 
-// Tasdiqlanmagan o'quvchi arizalari — Admin "O'quvchi qo'shish" seksiyasi.
-// Confirm → User yaratiladi, Reject → o'chiriladi.
+// Tasdiqlanmagan o'quvchi arizalari — "O'quvchi qo'shuvchi" (REGISTRAR) yuboradi,
+// Admin tasdiqlaydi/rad etadi (paneldan yoki Telegram bot orqali).
+// Approve → User (STUDENT) yaratiladi, Reject → status REJECTED bo'ladi.
 model PendingStudent {
   id            String   @id @default(cuid())
   firstName     String   @map("first_name")
@@ -388,11 +394,18 @@ model PendingStudent {
   parentContact String?  @map("parent_contact")
   healthNote    String?  @map("health_note")
   about         String?
+  avatarUrl     String?  @map("avatar_url") // profil rasmi (ixtiyoriy)
+  submittedById String?  @map("submitted_by_id") // kim yubordi (REGISTRAR)
+  studentId     String?  @map("student_id") // tasdiqlanganda yaratilgan User id
   status        String   @default("PENDING") // PENDING | APPROVED | REJECTED
+  decidedById   String?  @map("decided_by_id") // qaror kim tomonidan (panel/telegram)
   createdAt     DateTime @default(now()) @map("created_at")
   updatedAt     DateTime @updatedAt @map("updated_at")
 
+  submittedBy   User?    @relation("PendingStudentSubmitter", fields: [submittedById], references: [id], onDelete: SetNull)
+
   @@index([status])
+  @@index([submittedById])
   @@map("pending_students")
 }
 

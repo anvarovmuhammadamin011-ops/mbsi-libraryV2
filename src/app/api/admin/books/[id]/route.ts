@@ -1,5 +1,5 @@
 import { route } from "@/lib/server/handler";
-import { requireRole } from "@/lib/server/auth";
+import { requireBookManager } from "@/lib/server/auth";
 import { updateBook, deleteBook } from "@/lib/server/books";
 import { deletePrivate, deleteCover, saveCover } from "@/lib/server/storage";
 import { ApiError, ERROR_CODES, success } from "@/lib/server/errors";
@@ -14,8 +14,7 @@ async function resolveAuthor(name: string): Promise<string> {
 }
 
 export const PATCH = route(async (req, ctx) => {
-  const admin = await requireRole("ADMIN");
-  if (!admin) throw new ApiError(ERROR_CODES.FORBIDDEN, "Ruxsat yo'q", 403);
+  const admin = await requireBookManager();
   const { id } = await ctx.params;
   const form = await req.formData();
 
@@ -87,8 +86,7 @@ export const PATCH = route(async (req, ctx) => {
 });
 
 export const DELETE = route(async (req, ctx) => {
-  const admin = await requireRole("ADMIN");
-  if (!admin) throw new ApiError(ERROR_CODES.FORBIDDEN, "Ruxsat yo'q", 403);
+  const admin = await requireBookManager();
   const { id } = await ctx.params;
   const existing = await prisma.book.findUnique({ where: { id } });
   await deleteBook(id, admin.id);

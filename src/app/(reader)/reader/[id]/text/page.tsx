@@ -15,6 +15,13 @@ export default async function TextReaderPage({
 
   const book = await getBookBySlug(id);
   if (!book) notFound();
+  // Yashirilgan/qoralama kitoblarni o'qish faqat ADMIN va BOOK_MANAGER uchun
+  const canSeeHidden =
+    user.role === "ADMIN" || user.role === "BOOK_MANAGER";
+  const isHiddenOrDraft =
+    !book.isPublished ||
+    (book.status === "HIDDEN" || book.status === "DRAFT");
+  if (!canSeeHidden && isHiddenOrDraft) notFound();
 
   const pdfUrl = book.pdfUrl ? signPdfAccess(book.id, 7200) : undefined;
 

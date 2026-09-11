@@ -42,6 +42,13 @@ export default async function BookDetailPage({
   if (!user) return null;
   const book = await getBookBySlug(id);
   if (!book) notFound();
+  // Yashirilgan/qoralama kitoblar faqat ADMIN va BOOK_MANAGER uchun ko'rinadi
+  const canSeeHidden =
+    user.role === "ADMIN" || user.role === "BOOK_MANAGER";
+  const isHiddenOrDraft =
+    !book.isPublished ||
+    (book.status === "HIDDEN" || book.status === "DRAFT");
+  if (!canSeeHidden && isHiddenOrDraft) notFound();
 
   const fav = await isFavorite(user.id, book.id);
 

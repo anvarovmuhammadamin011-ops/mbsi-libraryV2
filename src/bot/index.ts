@@ -7,6 +7,8 @@
 
 import { Bot, InlineKeyboard } from "grammy";
 import { prisma } from "../lib/db";
+import { decidePendingStudent, requestSummary } from "../lib/server/pending-students";
+import { notifyRequestDecided } from "../lib/server/notify";
 
 const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || "";
 const MINI_APP_URL = process.env.MINI_APP_URL || "http://localhost:3000";
@@ -37,6 +39,28 @@ async function getUserByTelegramId(telegramId: number) {
 function miniAppButton(label: string, path: string = "") {
   return { web_app: { url: `${MINI_APP_URL}${path}` } };
 }
+
+// ─── /id — chat ID ni ko'rsatish (admin sozlashi uchun) ────
+
+bot.command("id", async (ctx) => {
+  const chat = ctx.chat;
+  if (!chat) return;
+  const chatId = String(chat.id);
+  const user = await getUserByTelegramId(ctx.from?.id ?? 0);
+  const lines =
+    `🆔 <b>Sizning Chat ID:</b> <code>${chatId}</code>\n\n` +
+    `Bu ID ni .env faylidagi <code>TELEGRAM_ADMIN_CHAT_ID</code> ga qo'ying:\n` +
+    `<code>TELEGRAM_ADMIN_CHAT_ID=${chatId}</code>\n\n` +
+    `Keyin ilovani qayta ishga tushirsangiz, yangi o'quvchi arizalari shu chatga keladi.`;
+  if (user) {
+    await ctx.reply(lines, { parse_mode: "HTML" });
+  } else if (chat.type === "private") {
+    // ID ni har kim olishi mumkin, lekin eslatma qo'shamiz
+    await ctx.reply(lines, { parse_mode: "HTML" });
+  } else {
+    await ctx.reply(lines, { parse_mode: "HTML" });
+  }
+});
 
 // ─── /start ─────────────────────────────────────────────────
 
@@ -499,6 +523,47 @@ bot.callbackQuery(/^fav_(.+)$/, async (ctx) => {
 bot.callbackQuery(/^bm_(.+)$/, async (ctx) => {
   const bookId = ctx.match[1];
   await ctx.answerCallbackQuery({ text: "🔖 Bookmark saqlandi!" });
+});
+
+// ─── Admin: yangi o'quvchi arizasini tasdiqlash/rad etish ───
+// Tugmalar: st_ap_<id> (✅ Qo'shish) / st_rj_<id> (❌ Rad etish)
+// Faqat ADMIN chat ID'sidagi xabardagi tugmalar ishlaydi.
+
+bot.callbackQuery(/^st_(ap|rj)_(.+)$/, async (ctx) => {
+  const kind = ctx.match[1];
+  const id = ctx.match[2];
+  const adminChatId = process.env.TELEGRAM_ADMIN_CHAT_ID?.trim();
+  if (!adminChatId || String(ctx.chat?.id ?? "") !== adminChatId) {
+    await ctx.answerCallbackQuery({ text: "⛔ Ruxsat yo'q", show_alert: true });
+    return;
+  }
+
+  const action = kind === "ap" ? "approve" : "reject";
+  try {
+    const pending = await prisma.pendingStudent.findUnique({ where: { id } });
+    if (!pending || pending.status !== "PENDING") {
+      await ctx.answerCallbackQuery({ text: "Ariza topilmadi yoki allaqachon ko'rib chiqilgan", show_alert: true });
+      return;
+    }
+
+    const result = await decidePendingStudent(id, action, null, "telegram");
+    await ctx.answerCallbackQuery({
+      text: result.approved ? "✅ O'quvchi qo'shildi" : "❌ Ariza rad etildi",
+    });
+
+    // Xabarni yangilab, tugmalarni olib tashlash
+    await notifyRequestDecided(
+      ctx.msg?.message_id,
+      requestSummary(pending),
+      result.approved
+    );
+  } catch (e) {
+    console.error("Telegram decision failed:", e);
+    await ctx.answerCallbackQuery({
+      text: "Xatolik yuz berdi",
+      show_alert: true,
+    });
+  }
 });
 
 // ─── Help ───────────────────────────────────────────────────

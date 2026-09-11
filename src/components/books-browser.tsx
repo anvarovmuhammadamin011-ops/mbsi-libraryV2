@@ -134,6 +134,11 @@ export function BooksBrowser({ categories, authors, initial }: Props) {
     };
   }, [debouncedQ, language, categoryId, authorId, sort, page, refreshKey]);
 
+  // Auto-capitalize author name as the admin types ("james clear" → "James Clear")
+  function titleCaseAuthor(v: string) {
+    return v.replace(/\S+/g, (w) => w.charAt(0).toUpperCase() + w.slice(1));
+  }
+
   function resetPage(setter: (v: string) => void) {
     return (v: string | null) => {
       setter(v ?? "");
@@ -153,6 +158,14 @@ export function BooksBrowser({ categories, authors, initial }: Props) {
     }
     if (!form.categoryId && !showNewCategory) {
       toast.error("Kategoriya tanlang yoki yangi nom yozing");
+      return;
+    }
+    if (!form.author.trim()) {
+      toast.error("Muallif ismini kiriting");
+      return;
+    }
+    if (/[^\p{L}\s.'-]/u.test(form.author.trim())) {
+      toast.error("Muallif ismi faqat harflardan iborat bo'lishi kerak");
       return;
     }
     setSaving(true);
@@ -246,13 +259,17 @@ export function BooksBrowser({ categories, authors, initial }: Props) {
 
                 {/* Author */}
                 <div className="space-y-1.5">
-                  <Label>Muallif</Label>
+                  <Label>
+                    Muallif <span className="text-destructive">*</span>
+                  </Label>
                   <Input
                     value={form.author}
                     onChange={(e) =>
-                      setForm({ ...form, author: e.target.value })
+                      setForm({ ...form, author: titleCaseAuthor(e.target.value) })
                     }
-                    placeholder="Muallif ismi (yangi bo'lsa yaratiladi)"
+                    placeholder="Masalan: Robert Kiyosaki"
+                    autoCapitalize="words"
+                    required
                   />
                 </div>
 
@@ -592,8 +609,8 @@ export function BooksBrowser({ categories, authors, initial }: Props) {
 
       {/* Results */}
       {loading ? (
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-          {Array.from({ length: 10 }).map((_, i) => (
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+          {Array.from({ length: 12 }).map((_, i) => (
             <div key={i} className="space-y-2">
               <Skeleton className="aspect-[3/4] w-full rounded-2xl" />
               <Skeleton className="h-3 w-3/4 rounded" />
@@ -612,7 +629,7 @@ export function BooksBrowser({ categories, authors, initial }: Props) {
           <p className="text-sm text-muted-foreground">
             {data.length} ta kitob topildi
           </p>
-          <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
             {data.map((b) => (
               <BookCardView key={b.id} book={b} />
             ))}

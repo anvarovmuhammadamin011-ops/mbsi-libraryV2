@@ -99,7 +99,7 @@ export default async function ProfilePage() {
   const monthMinutes = Math.floor((monthSeconds % 3600) / 60);
 
   return (
-    <div className="max-w-md md:max-w-lg lg:max-w-xl mx-auto animate-fade-in space-y-4 pb-20 md:pb-0">
+    <div className="max-w-md md:max-w-lg lg:max-w-xl mx-auto animate-fade-in space-y-4 pb-28 md:pb-0">
       {/* Hero Card */}
       <div className="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
         <div className="flex flex-col items-center px-6 py-8 text-center">

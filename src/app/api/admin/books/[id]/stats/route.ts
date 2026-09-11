@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { requireRole } from "@/lib/server/auth";
+import { requireBookManager } from "@/lib/server/auth";
 import { prisma } from "@/lib/db";
 
 // GET /api/admin/books/[id]/stats — Kitob Menejeri: bitta kitob statistikasi
@@ -7,7 +7,7 @@ export async function GET(
   _req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const admin = await requireRole("ADMIN");
+  const admin = await requireBookManager();
   if (!admin) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
