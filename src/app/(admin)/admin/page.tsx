@@ -6,6 +6,7 @@ import {
   Tags,
   BookPlus,
   UserPlus,
+  UserCheck,
   Bell,
   TriangleAlert,
   Plus,
@@ -198,6 +199,27 @@ export default async function AdminDashboard() {
             className="inline-flex items-center gap-1.5 rounded-xl border border-border px-4 py-2.5 text-sm font-semibold hover:bg-muted"
           >
             <Plus size={16} /> Yangi kategoriya
+          </Link>
+          <Link
+            href="/admin/students"
+            className="inline-flex items-center gap-1.5 rounded-xl border border-border px-4 py-2.5 text-sm font-semibold hover:bg-muted"
+          >
+            <Users size={16} /> O&apos;quvchilar
+          </Link>
+          <Link
+            href="/admin/students/pending"
+            className={`inline-flex items-center gap-1.5 rounded-xl border px-4 py-2.5 text-sm font-semibold transition-colors ${
+              pendingCount > 0
+                ? "border-amber-500/40 bg-amber-500/10 text-amber-700 hover:bg-amber-500/20 dark:text-amber-300"
+                : "border-border hover:bg-muted"
+            }`}
+          >
+            <UserCheck size={16} /> Kutilayotganlar
+            {pendingCount > 0 && (
+              <span className="rounded-full bg-amber-500 px-1.5 py-0.5 text-[11px] font-bold tabular-nums text-white">
+                {pendingCount}
+              </span>
+            )}
           </Link>
         </div>
       </div>

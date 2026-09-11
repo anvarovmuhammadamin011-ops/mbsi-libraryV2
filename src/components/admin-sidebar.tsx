@@ -13,6 +13,7 @@ import {
   Tags,
   MessageSquare,
   UserPlus,
+  UserCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -24,6 +25,7 @@ interface NavItem {
   label: string;
   href: string;
   icon: React.ComponentType<{ size?: number; className?: string }>;
+  exact?: boolean;
 }
 
 // Admin navigation: Dashboard, Kitoblar, Kategoriyalar, O'quvchilar, Yangi o'quvchi, Sharhlar, Sozlamalar
@@ -31,11 +33,17 @@ const NAV_ITEMS: NavItem[] = [
   { label: "Boshqaruv paneli", href: "/admin", icon: LayoutDashboard },
   { label: "Kitoblar", href: "/admin/books", icon: BookMarked },
   { label: "Kategoriyalar", href: "/admin/categories", icon: Tags },
-  { label: "O'quvchilar", href: "/admin/students", icon: Users },
-  { label: "Yangi o'quvchi", href: "/admin/students/new", icon: UserPlus },
+  { label: "O'quvchilar", href: "/admin/students", icon: Users, exact: true },
+  { label: "Kutilayotganlar", href: "/admin/students/pending", icon: UserCheck, exact: true },
+  { label: "Yangi o'quvchi", href: "/admin/students/new", icon: UserPlus, exact: true },
   { label: "Sharhlar", href: "/admin/reviews", icon: MessageSquare },
   { label: "Sozlamalar", href: "/admin/settings", icon: Settings },
 ];
+
+function isNavActive(pathname: string, item: NavItem): boolean {
+  if (item.exact) return pathname === item.href;
+  return pathname === item.href || (item.href !== "/admin" && pathname.startsWith(item.href));
+}
 
 export function AdminSidebar() {
   const pathname = usePathname();
@@ -71,9 +79,7 @@ export function AdminSidebar() {
         </div>
         <nav className="flex gap-1 overflow-x-auto px-3 pb-2.5 scrollbar-thin">
           {NAV_ITEMS.map((item) => {
-            const isActive =
-              pathname === item.href ||
-              (item.href !== "/admin" && pathname.startsWith(item.href));
+            const isActive = isNavActive(pathname, item);
             const Icon = item.icon;
             return (
               <Link
@@ -136,9 +142,7 @@ export function AdminSidebar() {
       <ScrollArea className="flex-1 py-3 px-2">
         <nav className="flex flex-col gap-0.5">
           {NAV_ITEMS.map((item) => {
-            const isActive =
-              pathname === item.href ||
-              (item.href !== "/admin" && pathname.startsWith(item.href));
+            const isActive = isNavActive(pathname, item);
             const Icon = item.icon;
 
             return (
