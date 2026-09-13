@@ -14,5 +14,7 @@ export const POST = route(async (req) => {
     throw new ApiError(ERROR_CODES.VALIDATION, "Ma'lumotlar noto'g'ri", 400);
   }
   const item = await createPendingStudent(parsed.data, user.id);
-  return success(item, 201);
+  // passwordHash/passwordEnc client'ga yuborilmaydi
+  const { passwordHash: _ph, passwordEnc: _pe, ...safe } = item;
+  return success(safe, 201);
 });
