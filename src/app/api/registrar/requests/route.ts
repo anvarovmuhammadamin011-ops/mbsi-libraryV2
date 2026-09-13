@@ -10,6 +10,25 @@ export const GET = route(async () => {
     where: { submittedById: user.id },
     orderBy: { createdAt: "desc" },
     take: 100,
+    select: {
+      id: true,
+      firstName: true,
+      lastName: true,
+      login: true,
+      email: true,
+      phone: true,
+      group: true,
+      age: true,
+      gender: true,
+      address: true,
+      parentContact: true,
+      healthNote: true,
+      about: true,
+      avatarUrl: true,
+      status: true,
+      createdAt: true,
+      updatedAt: true,
+    },
   });
   return success(items);
 });

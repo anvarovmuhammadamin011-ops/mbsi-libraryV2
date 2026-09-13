@@ -10,12 +10,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Eye, FileText, Clock, CheckCircle2, XCircle, Loader2 } from "lucide-react";
+import { Eye, FileText, Clock, CheckCircle2, XCircle, Copy } from "lucide-react";
 
 export interface RegistrarRequestRow {
   id: string;
   firstName: string;
   lastName: string;
+  login: string;
   group: string | null;
   age: number | null;
   status: string;
@@ -45,6 +46,86 @@ const STATUS_META: Record<
     icon: <XCircle size={12} />,
   },
 };
+
+/** Tasdiqlangan ariza uchun login/parol ko'rsatish (server guard: ADMIN/REGISTRAR). */
+function ApprovedCredentials({ pendingId }: { pendingId: string }) {
+  const [cred, setCred] = useState<{ username: string | null; password: string | null } | null>(
+    null
+  );
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function reveal() {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/registrar/requests/${pendingId}/credentials`);
+      const body = await res.json();
+      if (body?.success && body.data) {
+        setCred(body.data);
+      } else {
+        setError(body?.error?.message ?? "Ko'rish uchun ruxsat yo'q");
+      }
+    } catch {
+      setError("Xatolik");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  if (cred) {
+    return (
+      <div className="rounded-xl border border-primary/20 bg-primary/5 p-3">
+        <p className="mb-2 text-xs font-semibold">🔐 Kirish ma'lumotlari</p>
+        <div className="grid grid-cols-[70px_1fr] items-center gap-y-1.5 text-sm">
+          <span className="text-muted-foreground">Login</span>
+          <div className="flex items-center gap-2">
+            <code className="font-semibold">{cred.username ?? "—"}</code>
+            {cred.username && <CopyMini value={cred.username} />}
+          </div>
+          <span className="text-muted-foreground">Parol</span>
+          <div className="flex items-center gap-2">
+            <code className="font-semibold">{cred.password ?? "—"}</code>
+            {cred.password && <CopyMini value={cred.password} />}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="rounded-xl border border-primary/20 bg-primary/5 p-3">
+      <div className="flex items-center justify-between gap-2">
+        <p className="text-xs font-semibold">🔐 Kirish ma'lumotlari</p>
+        <Button
+          variant="outline"
+          size="sm"
+          className="h-7 gap-1.5 text-xs"
+          onClick={reveal}
+          disabled={loading}
+        >
+          <Eye size={12} /> {loading ? "O'qilmoqda..." : "Ko'rsatish"}
+        </Button>
+      </div>
+      {error && <p className="mt-1 text-xs text-destructive">{error}</p>}
+    </div>
+  );
+}
+
+function CopyMini({ value }: { value: string }) {
+  return (
+    <button
+      type="button"
+      className="rounded-md p-1 text-muted-foreground transition-colors hover:text-foreground"
+      onClick={() => {
+        navigator.clipboard.writeText(value).catch(() => {});
+      }}
+      aria-label="Nusxalash"
+    >
+      <Copy size={13} />
+    </button>
+  );
+}
 
 export function RegistrarRequestsList({ items }: { items: RegistrarRequestRow[] }) {
   const [viewing, setViewing] = useState<RegistrarRequestRow | null>(null);
@@ -143,6 +224,7 @@ export function RegistrarRequestsList({ items }: { items: RegistrarRequestRow[] 
                 {(
                   [
                     ["Ism", `${viewing.firstName} ${viewing.lastName}`],
+                    ["Login", viewing.login],
                     ["Guruh", viewing.group ?? "—"],
                     ["Yosh", viewing.age?.toString() ?? "—"],
                     ["Telefon", viewing.phone ?? "—"],
@@ -175,6 +257,9 @@ export function RegistrarRequestsList({ items }: { items: RegistrarRequestRow[] 
                       : "Bu ariza rad etilgan."}
                 </p>
               </div>
+              {viewing.status === "APPROVED" && (
+                <ApprovedCredentials pendingId={viewing.id} />
+              )}
             </div>
           )}
         </DialogContent>

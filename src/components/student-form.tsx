@@ -8,11 +8,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader2 } from "lucide-react";
+import { Loader2, Eye, EyeOff } from "lucide-react";
 
 const EMPTY = {
   firstName: "",
   lastName: "",
+  login: "",
+  password: "",
   email: "",
   phone: "",
   group: "",
@@ -34,6 +36,7 @@ export function StudentForm({
   const [form, setForm] = useState(EMPTY);
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
+  const [showPassword, setShowPassword] = useState(false);
 
   function set<K extends keyof typeof EMPTY>(k: K, v: string) {
     setForm((f) => ({ ...f, [k]: v }));
@@ -45,6 +48,9 @@ export function StudentForm({
     const errs: string[] = [];
     if (form.firstName.trim().length < 2) errs.push("Ism kamida 2 harf bo'lsin");
     if (form.lastName.trim().length < 2) errs.push("Familya kamida 2 harf bo'lsin");
+    if (!/^[a-zA-Z0-9._-]{3,50}$/.test(form.login.trim()))
+      errs.push("Login kamida 3 belgi — faqat harflar, raqamlar, . _ -");
+    if (form.password.length < 4) errs.push("Parol kamida 4 belgi bo'lsin");
     if (!form.group.trim()) errs.push("Guruhni kiriting");
     const age = Number(form.age);
     if (!form.age || !Number.isInteger(age) || age < 5 || age > 100)
@@ -60,6 +66,8 @@ export function StudentForm({
       await api.post("/api/students/pending", {
         firstName: form.firstName.trim(),
         lastName: form.lastName.trim(),
+        login: form.login.trim(),
+        password: form.password,
         email: form.email.trim(),
         phone: form.phone.trim(),
         group: form.group.trim(),
@@ -80,6 +88,23 @@ export function StudentForm({
   }
 
   const input = "h-10";
+
+  function suggestLogin() {
+    const f = form.firstName.trim().toLowerCase().replace(/[^a-z]/g, "");
+    const l = form.lastName.trim().toLowerCase().replace(/[^a-z]/g, "");
+    if (!f && !l) return;
+    set("login", `${l || f}.${f || l}`.replace(/^\.+|\.+$/g, ""));
+  }
+
+  function generatePassword() {
+    const alphabet = "23456789ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz";
+    let out = "";
+    for (let i = 0; i < 10; i++) {
+      out += alphabet[Math.floor(Math.random() * alphabet.length)];
+    }
+    set("password", `${out.slice(0, 5)}-${out.slice(5)}`);
+    setShowPassword(true);
+  }
   return (
     <form onSubmit={submit} className="space-y-4">
       {errors.length > 0 && (
@@ -109,6 +134,63 @@ export function StudentForm({
             onChange={(e) => set("lastName", e.target.value)}
             placeholder="Masalan: Valiyev"
           />
+        </div>
+      </div>
+      <div className="rounded-xl border border-primary/20 bg-primary/5 p-4">
+        <p className="mb-3 flex items-center gap-1.5 text-sm font-medium">
+          🔐 Tizimga kirish ma&apos;lumotlari
+        </p>
+        <p className="mb-3 text-xs text-muted-foreground">
+          O&apos;quvchi tasdiqlangach, shu login va parol orqali ilovaga kira
+          oladi.
+        </p>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="space-y-1.5">
+            <Label>Login *</Label>
+            <div className="flex gap-2">
+              <Input
+                className={input}
+                value={form.login}
+                onChange={(e) => set("login", e.target.value.toLowerCase())}
+                onBlur={suggestLogin}
+                placeholder="masalan: valiyev.ali"
+                autoCapitalize="none"
+                spellCheck={false}
+                required
+              />
+            </div>
+          </div>
+          <div className="space-y-1.5">
+            <Label>Parol *</Label>
+            <div className="flex gap-2">
+              <Input
+                className={input}
+                type={showPassword ? "text" : "password"}
+                value={form.password}
+                onChange={(e) => set("password", e.target.value)}
+                placeholder="Kamida 4 belgi"
+                autoComplete="new-password"
+                required
+              />
+              <Button
+                type="button"
+                variant="outline"
+                className="h-10 shrink-0 text-xs"
+                onClick={generatePassword}
+              >
+                Avtomatik
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                className="h-10 shrink-0 px-2"
+                onClick={() => setShowPassword((v) => !v)}
+                aria-label={showPassword ? "Parolni yashirish" : "Parolni ko'rsatish"}
+              >
+                {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
       <div className="grid gap-4 sm:grid-cols-2">

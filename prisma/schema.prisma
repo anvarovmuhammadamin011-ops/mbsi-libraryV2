@@ -23,6 +23,11 @@ datasource db {
 model User {
   id              String   @id @default(cuid())
   name            String
+  username        String?  @unique
+  passwordHash    String?  @map("password_hash")
+  // Parolning AES-256-GCM shifrlangan nusxasi — faqat ADMIN/REGISTRAR
+  // "parolni ko'rsatish" funksiyasi uchun (scrypt hash ochilmaydi).
+  passwordEnc     String?  @map("password_enc")
   role            String   @default("STUDENT") // STUDENT | TEACHER | ADMIN
   avatar          String?
   externalUserId  String?  @map("external_user_id") // future MBSI SSO link
@@ -385,6 +390,9 @@ model PendingStudent {
   id            String   @id @default(cuid())
   firstName     String   @map("first_name")
   lastName      String   @map("last_name")
+  login         String   @unique
+  passwordHash  String   @map("password_hash")
+  passwordEnc   String?  @map("password_enc")
   email         String?
   phone         String?
   group         String?

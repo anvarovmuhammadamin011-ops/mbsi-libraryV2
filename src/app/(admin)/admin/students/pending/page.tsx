@@ -12,6 +12,22 @@ export default async function PendingStudentsPage() {
   const items = await prisma.pendingStudent.findMany({
     where: { status: "PENDING" },
     orderBy: { createdAt: "desc" },
+    select: {
+      id: true,
+      firstName: true,
+      lastName: true,
+      login: true,
+      email: true,
+      phone: true,
+      group: true,
+      age: true,
+      gender: true,
+      address: true,
+      parentContact: true,
+      healthNote: true,
+      about: true,
+      createdAt: true,
+    },
   });
 
   return (

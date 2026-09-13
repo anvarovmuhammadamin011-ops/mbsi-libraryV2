@@ -10,7 +10,24 @@ export const GET = route(async () => {
   const items = await prisma.pendingStudent.findMany({
     where: { status: "PENDING" },
     orderBy: { createdAt: "desc" },
-    include: {
+    select: {
+      id: true,
+      firstName: true,
+      lastName: true,
+      login: true,
+      email: true,
+      phone: true,
+      group: true,
+      age: true,
+      gender: true,
+      address: true,
+      parentContact: true,
+      healthNote: true,
+      about: true,
+      avatarUrl: true,
+      status: true,
+      createdAt: true,
+      updatedAt: true,
       submittedBy: { select: { id: true, name: true } },
     },
   });

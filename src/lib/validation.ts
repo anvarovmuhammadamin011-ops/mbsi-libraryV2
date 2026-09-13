@@ -3,7 +3,8 @@ import { z } from "zod";
 export const MAX_ACTIVE_BOOKS = 3;
 
 export const loginSchema = z.object({
-  role: z.enum(["STUDENT", "TEACHER", "ADMIN", "BOOK_MANAGER", "REGISTRAR"]),
+  username: z.string().min(1, "Login kiriting").max(100),
+  password: z.string().min(1, "Parol kiriting").max(200),
 });
 
 export const bookCreateSchema = z.object({
@@ -71,20 +72,32 @@ export const userUpdateSchema = z.object({
 });
 
 // ─── O'quvchi qo'shish formasi (Admin/REGISTRAR → PendingStudent) ───
-export const pendingStudentSchema = z.object({
-  firstName: z.string().min(2, "Ism kamida 2 harf").max(100),
-  lastName: z.string().min(2, "Familya kamida 2 harf").max(100),
-  email: z.string().email("Noto'g'ri email").max(200).optional().or(z.literal("")),
-  phone: z.string().max(50).optional().default(""),
-  group: z.string().min(1, "Guruh tanlang").max(50),
-  age: z.coerce.number().int().min(5, "Yosh 5 dan kichik bo'lmasligi kerak").max(100),
-  gender: z.enum(["MALE", "FEMALE"]).optional(),
-  address: z.string().max(500).optional().default(""),
-  parentContact: z.string().max(200).optional().default(""),
-  healthNote: z.string().max(1000).optional().default(""),
-  about: z.string().max(2000).optional().default(""),
-  avatarUrl: z.string().max(500).optional().default(""),
-});
+// login + parol majburiy: tasdiqlanganda o'quvchi shu login/parol orqali tizimga kiradi.
+export const pendingStudentSchema = z
+  .object({
+    firstName: z.string().min(2, "Ism kamida 2 harf").max(100),
+    lastName: z.string().min(2, "Familya kamida 2 harf").max(100),
+    login: z
+      .string()
+      .min(3, "Login kamida 3 belgi")
+      .max(50, "Login juda uzun")
+      .regex(
+        /^[a-zA-Z0-9._-]+$/,
+        "Login faqat harflar, raqamlar, . _ - dan iborat bo'lsin"
+      ),
+    password: z.string().min(4, "Parol kamida 4 belgi").max(200),
+    email: z.string().email("Noto'g'ri email").max(200).optional().or(z.literal("")),
+    phone: z.string().max(50).optional().default(""),
+    group: z.string().min(1, "Guruh tanlang").max(50),
+    age: z.coerce.number().int().min(5, "Yosh 5 dan kichik bo'lmasligi kerak").max(100),
+    gender: z.enum(["MALE", "FEMALE"]).optional(),
+    address: z.string().max(500).optional().default(""),
+    parentContact: z.string().max(200).optional().default(""),
+    healthNote: z.string().max(1000).optional().default(""),
+    about: z.string().max(2000).optional().default(""),
+    avatarUrl: z.string().max(500).optional().default(""),
+  })
+  .strict();
 
 export const authorSchema = z.object({
   name: z.string().min(2).max(200),

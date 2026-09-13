@@ -70,6 +70,7 @@ export default async function AdminStudentsPage() {
         students={students.map((s) => ({
           id: s.id,
           name: s.name,
+          username: s.username,
           email: s.email,
           phone: s.phone,
           group: s.group,

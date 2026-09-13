@@ -2,6 +2,8 @@ import { prisma } from "@/lib/db";
 import { pendingStudentSchema } from "@/lib/validation";
 import { ApiError, ERROR_CODES } from "./errors";
 import { notifyNewStudentRequest } from "./notify";
+import { hashPassword } from "./password";
+import { encryptPassword } from "./password-crypto";
 
 export type PendingInput = ReturnType<typeof pendingStudentSchema.parse>;
 
@@ -10,10 +12,28 @@ export async function createPendingStudent(
   input: PendingInput,
   submittedById: string | null
 ) {
+  const login = input.login.trim().toLowerCase();
+
+  // Login band emasligini tekshiramiz (pending va user jadvallarida)
+  const [loginTakenPending, loginTakenUser] = await Promise.all([
+    prisma.pendingStudent.findFirst({ where: { login, status: "PENDING" } }),
+    prisma.user.findUnique({ where: { username: login } }),
+  ]);
+  if (loginTakenPending || loginTakenUser) {
+    throw new ApiError(
+      ERROR_CODES.VALIDATION,
+      "Bu login band qilingan — boshqa login tanlang",
+      409
+    );
+  }
+
   const item = await prisma.pendingStudent.create({
     data: {
       firstName: input.firstName.trim(),
       lastName: input.lastName.trim(),
+      login,
+      passwordHash: hashPassword(input.password),
+      passwordEnc: encryptPassword(input.password),
       email: input.email?.trim() || null,
       phone: input.phone?.trim() || null,
       group: input.group.trim(),
@@ -75,6 +95,9 @@ export async function decidePendingStudent(
     data: {
       name,
       role: "STUDENT",
+      username: pending.login,
+      passwordHash: pending.passwordHash,
+      passwordEnc: pending.passwordEnc,
       avatar: pending.avatarUrl,
       email: pending.email,
       phone: pending.phone,

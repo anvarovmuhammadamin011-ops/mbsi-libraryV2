@@ -8,7 +8,7 @@ interface AuthState {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (role: UserRole) => Promise<boolean>;
+  login: (username: string, password: string) => Promise<boolean>;
   logout: () => Promise<void>;
   loadUser: () => Promise<void>;
   setUser: (user: User | null) => void;
@@ -25,12 +25,12 @@ export const useAuthStore = create<AuthState>()(
       isAuthenticated: false,
       isLoading: true,
 
-      login: async (role: UserRole): Promise<boolean> => {
+      login: async (username: string, password: string): Promise<boolean> => {
         try {
           const res = await fetch("/api/auth/login", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ role }),
+            body: JSON.stringify({ username, password }),
           });
           const json = await res.json();
           if (json.success && json.data) {

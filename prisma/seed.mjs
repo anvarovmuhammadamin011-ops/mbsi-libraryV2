@@ -7,6 +7,8 @@
 
 import { PrismaClient } from "@prisma/client";
 
+import { fileURLToPath } from "node:url";
+
 const prisma = new PrismaClient();
 
 // ─── Helpers ──────────────────────────────────────────────
@@ -996,11 +998,17 @@ async function main() {
   console.log(`   📝 Audit Logs:     ${auditEntries.length}`);
 }
 
-main()
-  .catch((e) => {
-    console.error("❌ Seed failed:", e);
-    process.exit(1);
-  })
-  .finally(async () => {
-    await prisma.$disconnect();
-  });
+const isDirectRun = process.argv[1] === fileURLToPath(import.meta.url);
+if (isDirectRun) {
+  main()
+    .catch((e) => {
+      console.error("❌ Seed failed:", e);
+      process.exit(1);
+    })
+    .finally(async () => {
+      await prisma.$disconnect();
+    });
+}
+
+// ─── Eksport (restore skriptlari uchun — faqat kitob/muallif/kategoriya/reyting) ───
+export { USERS, AUTHORS, CATEGORIES, BOOKS, RATINGS };

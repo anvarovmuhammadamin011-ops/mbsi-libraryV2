@@ -2,24 +2,17 @@ import { route, json, readJson } from "@/lib/server/handler";
 import { setSessionCookie, clearSessionCookie } from "@/lib/server/auth";
 import { prisma } from "@/lib/db";
 import { loginSchema } from "@/lib/validation";
-import { ERROR_CODES, ApiError } from "@/lib/server/errors";
+import { ERROR_CODES } from "@/lib/server/errors";
+import crypto from "node:crypto";
 import type { User } from "@/types";
-
-const DEMO_NAMES: Record<string, string> = {
-  STUDENT: "Muhammadamin Toshtemirov",
-  TEACHER: "Dilshod Mirzayev",
-  ADMIN: "Alisher Navoiy",
-  BOOK_MANAGER: "Zilola Rahimova",
-  REGISTRAR: "Sanjar Tolibov",
-};
 
 function toUser(u: {
   id: string;
   name: string;
   role: string;
   avatar: string | null;
-  coins: number;
-  balls: number;
+  coins: number | null;
+  balls: number | null;
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -37,33 +30,39 @@ function toUser(u: {
   };
 }
 
+function verifyPassword(password: string, stored: string | null): boolean {
+  if (!stored) return false;
+  const [salt, hash] = stored.split(":");
+  if (!salt || !hash) return false;
+  const candidate = crypto.scryptSync(password, salt, 64);
+  const expected = Buffer.from(hash, "hex");
+  if (candidate.length !== expected.length) return false;
+  return crypto.timingSafeEqual(candidate, expected);
+}
+
 export const POST = route(async (req) => {
-  const body = await readJson<{ role: string }>(req);
+  const body = await readJson<{ username: string; password: string }>(req);
   const parsed = loginSchema.safeParse(body);
   if (!parsed.success) {
     return json(
-      { success: false, error: { code: ERROR_CODES.VALIDATION, message: "Noto'g'ri rol" } },
+      { success: false, error: { code: ERROR_CODES.VALIDATION, message: "Login va parolni kiriting" } },
       400
     );
   }
-  let user = await prisma.user.findFirst({
-    where: { role: parsed.data.role, isActive: true },
-    orderBy: { createdAt: "asc" },
+
+  const user = await prisma.user.findUnique({
+    where: { username: parsed.data.username.trim().toLowerCase() },
   });
 
-  // Demo rejim: rolda faol foydalanuvchi bo'lmasa — demo account yaratamiz,
-  // shunda barcha panellar har doim tekshirilishi mumkin.
-  if (!user) {
-    user = await prisma.user.create({
-      data: {
-        name: DEMO_NAMES[parsed.data.role] ?? "Demo foydalanuvchi",
-        role: parsed.data.role,
-        isActive: true,
-      },
-    });
+  // Parol noto'g'ri bo'lsa ham xuddi shu xabarni qaytaramiz (username enumeration oldini olish)
+  if (!user || !user.isActive || !verifyPassword(parsed.data.password, user.passwordHash)) {
+    return json(
+      { success: false, error: { code: ERROR_CODES.UNAUTHORIZED, message: "Login yoki parol noto'g'ri" } },
+      401
+    );
   }
 
-  const res = json({ success: true, data: toUser(user as any) });
+  const res = json({ success: true, data: toUser(user) });
   setSessionCookie(res, user.id);
   return res;
 });

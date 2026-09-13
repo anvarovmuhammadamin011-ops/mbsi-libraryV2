@@ -31,11 +31,13 @@ import {
   CheckCircle2,
   Pencil,
   Loader2,
+  Copy,
 } from "lucide-react";
 
 export interface StudentRow {
   id: string;
   name: string;
+  username: string | null;
   email: string | null;
   phone: string | null;
   group: string | null;
@@ -49,6 +51,13 @@ export interface StudentRow {
   bookCount: number;
   lastActiveAt: string | null;
   createdAt: string;
+}
+
+interface CredentialInfo {
+  id: string;
+  name: string;
+  username: string | null;
+  password: string | null;
 }
 
 const PAGE_SIZE = 10;
@@ -71,6 +80,7 @@ export function AdminStudentsTable({
   const [busyId, setBusyId] = useState<string | null>(null);
   const [editing, setEditing] = useState<StudentRow | null>(null);
   const [saving, setSaving] = useState(false);
+  const [credentials, setCredentials] = useState<Record<string, CredentialInfo>>({});
 
   const filtered = useMemo(() => {
     const needle = q.trim().toLowerCase();
@@ -96,6 +106,24 @@ export function AdminStudentsTable({
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const safePage = Math.min(page, totalPages);
   const paged = filtered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
+
+  /** Parolni ko'rsatish — server faqat ADMIN/REGISTRAR uchun ruxsat beradi. */
+  async function revealPassword(s: StudentRow): Promise<CredentialInfo | null> {
+    if (credentials[s.id]) return credentials[s.id];
+    try {
+      const res = await fetch(`/api/admin/students/credentials?ids=${s.id}`);
+      const body = await res.json();
+      if (body?.success && body.data?.[0]) {
+        const info = body.data[0] as CredentialInfo;
+        setCredentials((c) => ({ ...c, [s.id]: info }));
+        return info;
+      }
+      toast.error("Parolni ko'rish uchun ruxsat yo'q");
+    } catch {
+      toast.error("Xatolik");
+    }
+    return null;
+  }
 
   async function toggleBlock(s: StudentRow) {
     setBusyId(s.id);
@@ -346,7 +374,9 @@ export function AdminStudentsTable({
             <DialogTitle>O&apos;quvchi profili</DialogTitle>
           </DialogHeader>
           {viewing && (
-            <dl className="grid grid-cols-[130px_1fr] gap-x-3 gap-y-2 text-sm">
+            <div className="space-y-4">
+              <CredentialBlock student={viewing} onReveal={revealPassword} />
+              <dl className="grid grid-cols-[130px_1fr] gap-x-3 gap-y-2 text-sm">
               {(
                 [
                   ["Ism", viewing.name],
@@ -379,7 +409,8 @@ export function AdminStudentsTable({
                   <dd className="font-medium break-words">{v}</dd>
                 </div>
               ))}
-            </dl>
+              </dl>
+            </div>
           )}
         </DialogContent>
       </Dialog>
@@ -462,5 +493,88 @@ export function AdminStudentsTable({
         </DialogContent>
       </Dialog>
     </div>
+  );
+}
+
+/** Login + parolni ko'rsatish bloki (faqat admin/registrar UI'da chiqadi). */
+function CredentialBlock({
+  student,
+  onReveal,
+}: {
+  student: StudentRow;
+  onReveal: (s: StudentRow) => Promise<CredentialInfo | null>;
+}) {
+  const [shown, setShown] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [cred, setCred] = useState<CredentialInfo | null>(null);
+
+  async function handleReveal() {
+    setLoading(true);
+    const info = await onReveal(student);
+    setLoading(false);
+    if (info) {
+      setCred(info);
+      setShown(true);
+    }
+  }
+
+  return (
+    <div className="rounded-xl border border-border bg-muted/30 p-3">
+      <div className="flex items-center justify-between gap-2">
+        <p className="text-xs font-semibold text-muted-foreground">
+          🔐 Tizimga kirish ma&apos;lumotlari
+        </p>
+        {!shown && (
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-7 gap-1.5 text-xs"
+            onClick={handleReveal}
+            disabled={loading}
+          >
+            {loading ? (
+              <Loader2 size={12} className="animate-spin" />
+            ) : (
+              <Eye size={12} />
+            )}
+            Ko&apos;rsatish
+          </Button>
+        )}
+      </div>
+      {shown && cred ? (
+        <div className="mt-2 grid grid-cols-[90px_1fr] items-center gap-x-3 gap-y-1.5 text-sm">
+          <span className="text-muted-foreground">Login</span>
+          <div className="flex items-center gap-2">
+            <code className="font-semibold">{cred.username ?? "—"}</code>
+            <CopyBtn value={cred.username ?? ""} />
+          </div>
+          <span className="text-muted-foreground">Parol</span>
+          <div className="flex items-center gap-2">
+            <code className="font-semibold">{cred.password ?? "—"}</code>
+            {cred.password && <CopyBtn value={cred.password} />}
+          </div>
+        </div>
+      ) : (
+        <p className="mt-1 text-xs text-muted-foreground">
+          Parol yashirilgan — ko&apos;rsatish uchun ruxsat kerak.
+        </p>
+      )}
+    </div>
+  );
+}
+
+function CopyBtn({ value }: { value: string }) {
+  return (
+    <button
+      type="button"
+      className="rounded-md p-1 text-muted-foreground transition-colors hover:text-foreground"
+      onClick={() => {
+        navigator.clipboard.writeText(value).catch(() => {});
+        toast.success("Nusxalandi");
+      }}
+      aria-label="Nusxalash"
+    >
+      <Copy size={13} />
+    </button>
   );
 }
