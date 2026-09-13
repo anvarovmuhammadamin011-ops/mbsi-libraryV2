@@ -1,4 +1,7 @@
+import { requireRole } from "@/lib/server/auth";
 import { prisma } from "@/lib/db";
+import { getAdminStats, type AdminStats } from "@/lib/server/admin-stats";
+import { AdminActivityChart } from "@/components/admin-activity-chart";
 import Link from "next/link";
 import {
   Users,
@@ -11,51 +14,20 @@ import {
   TrendingUp,
   Flame,
   Clock,
+  GraduationCap,
+  Briefcase,
+  Award,
+  Swords,
 } from "lucide-react";
-import { AdminActivityChart } from "@/components/admin-activity-chart";
 
 export const dynamic = "force-dynamic";
 
-function formatDuration(seconds: number): string {
-  if (!seconds || seconds <= 0) return "0 daq";
-  const h = Math.floor(seconds / 3600);
-  const m = Math.round((seconds % 3600) / 60);
-  if (h > 0) return `${h} soat${m > 0 ? ` ${m} daq` : ""}`;
-  return `${m} daq`;
-}
-
 export default async function AdminDashboard() {
-  const now = new Date();
-  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const weekAgo = new Date(now.getTime() - 7 * 86400000);
-  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  const admin = await requireRole("ADMIN");
+  if (!admin) return null;
 
-  const [
-    totalStudents,
-    activeStudents,
-    completedBooks,
-    totalBooks,
-    todayActive,
-    newThisWeek,
-    pendingCount,
-    topBookAgg,
-    topStudentAgg,
-    avgAgg,
-    sessions30,
-  ] = await Promise.all([
-    prisma.user.count({ where: { role: "STUDENT" } }),
-    prisma.user.count({ where: { role: "STUDENT", isActive: true } }),
-    prisma.readingProgress.count({ where: { completedAt: { not: null } } }),
-    prisma.book.count({ where: { status: "ACTIVE" } }),
-    prisma.readingSession.findMany({
-      where: { startedAt: { gte: todayStart } },
-      select: { userId: true },
-      distinct: ["userId"],
-    }),
-    prisma.user.count({
-      where: { role: "STUDENT", createdAt: { gte: weekAgo } },
-    }),
-    prisma.pendingStudent.count({ where: { status: "PENDING" } }),
+  const [stats, topBookAgg, topStudentAgg, pendingCount] = await Promise.all([
+    getAdminStats(),
     prisma.readingSession.groupBy({
       by: ["bookId"],
       _count: { bookId: true },
@@ -65,117 +37,112 @@ export default async function AdminDashboard() {
     prisma.readingSession.groupBy({
       by: ["userId"],
       _sum: { pagesRead: true },
+      where: { user: { role: "STUDENT" } },
       orderBy: { _sum: { pagesRead: "desc" } },
       take: 5,
     }),
-    prisma.readingSession.aggregate({ _avg: { pagesRead: true, duration: true } }),
-    prisma.readingSession.findMany({
-      where: { startedAt: { gte: new Date(now.getTime() - 30 * 86400000) } },
-      select: { startedAt: true },
-    }),
+    prisma.pendingStudent.count({ where: { status: "PENDING" } }),
   ]);
 
-  const [topBooks, topUsers] = await Promise.all([
-    topBookAgg.length
+  const bookIds = topBookAgg.map((r) => r.bookId);
+  const studentIds = topStudentAgg.map((r) => r.userId);
+  const [topBooks, topStudents] = await Promise.all([
+    bookIds.length > 0
       ? prisma.book.findMany({
-          where: { id: { in: topBookAgg.map((r) => r.bookId) } },
+          where: { id: { in: bookIds } },
           select: { id: true, title: true, author: { select: { name: true } } },
         })
-      : [],
-    topStudentAgg.length
+      : Promise.resolve([] as { id: string; title: string; author: { name: string } | null }[]),
+    studentIds.length > 0
       ? prisma.user.findMany({
-          where: { id: { in: topStudentAgg.map((r) => r.userId) } },
+          where: { id: { in: studentIds } },
           select: { id: true, name: true, group: true },
         })
-      : [],
+      : Promise.resolve([] as { id: string; name: string; group: string | null }[]),
   ]);
-  const bookMap = new Map(topBooks.map((b) => [b.id, b]));
-  const userMap = new Map(topUsers.map((u) => [u.id, u]));
 
-  const stats = [
+  const bookMap = new Map(topBooks.map((b) => [b.id, b]));
+  const userMap = new Map(topStudents.map((u) => [u.id, u]));
+
+  const fmt = (s: number) => {
+    const h = Math.floor(s / 3600);
+    const m = Math.round((s % 3600) / 60);
+    return h > 0 ? `${h} soat ${m > 0 ? `${m} daq` : ""}`.trim() : `${m} daq`;
+  };
+
+  const kpis = [
     {
-      label: "Jami o'quvchilar",
-      value: totalStudents,
-      sub: `+${newThisWeek} shu hafta`,
+      label: "Jami foydalanuvchilar",
+      value: stats.totals.totalUsers,
+      sub: `${stats.totals.students} o'quvchi · ${stats.totals.teachers} o'qituvchi · ${stats.totals.staff} xodim`,
       icon: Users,
-      href: "/admin/students",
       color: "text-primary",
+      href: "/admin/users",
     },
     {
-      label: "Faol o'quvchilar",
-      value: activeStudents,
-      sub: "tizimga kirish huquqi bor",
+      label: "O'quvchilar",
+      value: stats.totals.students,
+      sub: `${stats.comparison.student.activeUsers} faol (30 kun)`,
+      icon: GraduationCap,
+      color: "text-blue-600",
+      href: "/admin/users?tab=students",
+    },
+    {
+      label: "O'qituvchilar",
+      value: stats.totals.teachers,
+      sub: `${stats.comparison.teacher.activeUsers} faol (30 kun)`,
+      icon: Star,
+      color: "text-violet-600",
+      href: "/admin/users?tab=teachers",
+    },
+    {
+      label: "Faol foydalanuvchilar",
+      value: stats.totals.activeUsers,
+      sub: "oxirgi 30 kun",
       icon: UserCheck,
-      href: "/admin/students",
       color: "text-green-600",
     },
     {
-      label: "Tugatilgan kitoblar",
-      value: completedBooks,
-      sub: "oxirgi g'oyacha",
+      label: "Jami kitob o'qishlar",
+      value: stats.totals.totalSessions,
+      sub: `${stats.totals.totalPagesRead.toLocaleString()} sahifa o'qildi`,
       icon: BookOpen,
-      href: undefined,
       color: "text-orange-500",
     },
     {
-      label: "Jami kitoblar",
-      value: totalBooks,
-      sub: "faol kutubxonada",
-      icon: BookMarked,
-      href: undefined,
-      color: "text-violet-600",
-    },
-    {
-      label: "Bugun faol",
-      value: todayActive.length,
-      sub: "o'quvchi o'qidi",
-      icon: Activity,
-      href: undefined,
-      color: "text-blue-600",
-    },
-    {
-      label: "Yangi o'quvchilar",
-      value: newThisWeek,
+      label: "Yangi foydalanuvchilar",
+      value: stats.totals.newThisWeek,
       sub: "shu hafta qo'shildi",
       icon: UserPlus,
-      href: "/admin/students/pending",
       color: "text-amber-600",
+      href: "/admin/users",
     },
   ];
 
-  // 30 kunlik o'qish faolligi
-  const days: { date: string; label: string; sessions: number }[] = [];
-  for (let i = 29; i >= 0; i--) {
-    const d = new Date(now.getTime() - i * 86400000);
-    days.push({
-      date: d.toISOString().slice(0, 10),
-      label: d.toLocaleDateString("uz-UZ", { day: "numeric", month: "short" }),
-      sessions: 0,
-    });
-  }
-  const idx = new Map(days.map((d, i) => [d.date, i]));
-  for (const s of sessions30) {
-    const i = idx.get(s.startedAt.toISOString().slice(0, 10));
-    if (i !== undefined) days[i].sessions++;
-  }
+  const todayKpis = [
+    { label: "Bugun kirganlar", value: stats.today.logins, icon: UserCheck },
+    { label: "Kitob ochildi", value: stats.today.booksOpened, icon: BookMarked },
+    { label: "Kitob o'qildi", value: stats.today.booksRead, icon: BookOpen },
+    { label: "Kitob tugatildi", value: stats.today.booksCompleted, icon: Award },
+  ];
 
   return (
     <div className="space-y-6 animate-fade-in">
       <div>
         <h1 className="text-2xl font-bold text-foreground">Boshqaruv paneli</h1>
         <p className="text-sm text-muted-foreground mt-1">
-          Maktab kutubxonasidan hozir qanday foydalanilyapti — bir qarashda
+          Maktab kutubxonasining hozirgi holati — bir qarashda
         </p>
       </div>
 
-      {/* ─── KPI kartalar ─── */}
+      {/* ─── Asosiy KPI kartalar ─── */}
       <div className="grid gap-3 grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-        {stats.map((s) => {
+        {kpis.map((s) => {
           const Icon = s.icon;
           const inner = (
             <>
               <div className="flex items-center justify-between">
-                <p className="text-xs font-medium text-muted-foreground leading-snug">
+                <p className="text-[11px] font-medium text-muted-foreground leading-snug">
                   {s.label}
                 </p>
                 <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-muted/60 ${s.color}`}>
@@ -185,7 +152,7 @@ export default async function AdminDashboard() {
               <p className="mt-2 text-2xl font-bold tabular-nums">
                 {s.value.toLocaleString()}
               </p>
-              <p className="mt-0.5 text-[11px] text-muted-foreground">{s.sub}</p>
+              <p className="mt-0.5 text-[11px] text-muted-foreground line-clamp-1">{s.sub}</p>
             </>
           );
           return s.href ? (
@@ -204,54 +171,87 @@ export default async function AdminDashboard() {
         })}
       </div>
 
-      {/* ─── O'quvchilar statistikasi ─── */}
+      {/* ─── Bugungi faoliyat ─── */}
+      <div className="grid gap-3 grid-cols-2 sm:grid-cols-4">
+        {todayKpis.map((k) => {
+          const Icon = k.icon;
+          return (
+            <div key={k.label} className="rounded-2xl border border-border bg-card p-4">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-medium text-muted-foreground">{k.label}</span>
+                <Icon size={15} className="text-muted-foreground" />
+              </div>
+              <p className="text-2xl font-bold tabular-nums">{k.value}</p>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* ─── Grafik + Battle ─── */}
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2 rounded-2xl border border-border bg-card p-5">
           <div className="mb-4 flex items-center gap-2">
             <TrendingUp size={16} className="text-primary" />
-            <h2 className="text-base font-semibold">O'qish faolligi (30 kun)</h2>
+            <h2 className="text-base font-semibold">Foydalanuvchilar faolligi (7 kun)</h2>
           </div>
-          <AdminActivityChart data={days} />
+          <AdminActivityChart
+            data={stats.graph.map((d) => ({ date: d.date, label: d.label, sessions: d.sessions }))}
+          />
         </div>
 
+        {/* Battle preview */}
         <div className="rounded-2xl border border-border bg-card p-5">
           <div className="mb-4 flex items-center gap-2">
-            <Flame size={16} className="text-primary" />
-            <h2 className="text-base font-semibold">O'rtacha faollik</h2>
+            <Swords size={16} className="text-primary" />
+            <h2 className="text-base font-semibold">Battle — O&apos;quvchilar vs O&apos;qituvchilar</h2>
           </div>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <BookOpen size={15} /> Sessiyaga sahifa
-              </div>
-              <span className="text-lg font-bold tabular-nums">
-                {Math.round(avgAgg._avg.pagesRead ?? 0)}
-              </span>
-            </div>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Clock size={15} /> Sessiya davomiyligi
-              </div>
-              <span className="text-lg font-bold tabular-nums">
-                {Math.round((avgAgg._avg.duration ?? 0) / 60)} daq
-              </span>
-            </div>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Activity size={15} /> Bugungi sessiyalar
-              </div>
-              <span className="text-lg font-bold tabular-nums">
-                {sessions30.filter((s) => s.startedAt >= todayStart).length}
-              </span>
-            </div>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Users size={15} /> Bugun faol o'quvchilar
-              </div>
-              <span className="text-lg font-bold tabular-nums">
-                {todayActive.length}
-              </span>
-            </div>
+          <BattleMini stats={stats.comparison} />
+          <Link
+            href="/admin/battle"
+            className="mt-3 inline-flex items-center gap-1.5 text-xs font-medium text-primary hover:underline"
+          >
+            Batafsil →
+          </Link>
+        </div>
+      </div>
+
+      {/* ─── Faollik taqqoslash ─── */}
+      <div className="grid gap-6 lg:grid-cols-2">
+        <div className="rounded-2xl border border-border bg-card p-5">
+          <div className="mb-3 flex items-center gap-2">
+            <GraduationCap size={16} className="text-primary" />
+            <h2 className="text-sm font-semibold">O&apos;quvchilar</h2>
+          </div>
+          <div className="space-y-2 text-sm">
+            <Row label="O'qish soni" value={`${stats.comparison.student.totalReads} ta sessiya`} />
+            <Row label="O'rtacha o'qishlar" value={stats.comparison.student.avgReads.toFixed(1)} />
+            <Row label="O'qilgan sahifalar" value={stats.comparison.student.totalPagesRead.toLocaleString()} />
+            <Row label="Tugatilgan" value={String(stats.comparison.student.totalCompleted)} />
+            {stats.comparison.student.top && (
+              <Row label="Eng faol" value={stats.comparison.student.top.name} />
+            )}
+          </div>
+        </div>
+        <div className="rounded-2xl border border-border bg-card p-5">
+          <div className="mb-3 flex items-center gap-2">
+            <Briefcase size={16} className="text-primary" />
+            <h2 className="text-sm font-semibold">O&apos;qituvchilar</h2>
+          </div>
+          <div className="space-y-2 text-sm">
+            <Row label="O'qish soni" value={`${stats.comparison.teacher.totalReads} ta sessiya`} />
+            <Row label="O'rtacha o'qishlar" value={stats.comparison.teacher.avgReads.toFixed(1)} />
+            <Row label="O'qilgan sahifalar" value={stats.comparison.teacher.totalPagesRead.toLocaleString()} />
+            <Row label="Tugatilgan" value={String(stats.comparison.teacher.totalCompleted)} />
+            {stats.comparison.teacher.top && (
+              <Row
+                label="Eng faol"
+                value={
+                  stats.comparison.teacher.top.position
+                    ? `${stats.comparison.teacher.top.name} (${stats.comparison.teacher.top.position})`
+                    : stats.comparison.teacher.top.name
+                }
+              />
+            )}
           </div>
         </div>
       </div>
@@ -263,23 +263,21 @@ export default async function AdminDashboard() {
           className="flex items-center gap-3 rounded-2xl border border-amber-500/40 bg-amber-500/10 p-4 font-medium text-amber-700 transition-colors hover:bg-amber-500/20 dark:text-amber-300"
         >
           <UserPlus size={18} />
-          {pendingCount} ta yangi o&apos;quvchi tasdiqlashni kutmoqda →
+          {pendingCount} ta yangi o&apos;quvchi arizasi tasdiqlashni kutmoqda →
         </Link>
       )}
 
       <div className="grid gap-6 lg:grid-cols-2">
-        {/* ─── Eng ko'p o'qilgan kitoblar (Top 5) ─── */}
+        {/* Eng ko'p o'qilgan kitoblar (Top 5) */}
         <div className="rounded-2xl border border-border bg-card p-5">
           <div className="mb-3 flex items-center justify-between">
-            <h2 className="flex items-center gap-2 text-base font-semibold">
-              <Star size={16} className="text-primary" />
+            <h2 className="flex items-center gap-2 text-sm font-semibold">
+              <Star size={15} className="text-primary" />
               Eng ko&apos;p o&apos;qilgan kitoblar
             </h2>
           </div>
           {topBookAgg.length === 0 ? (
-            <p className="py-6 text-center text-sm text-muted-foreground">
-              📚 Hozircha o&apos;qish statistikasi yo&apos;q
-            </p>
+            <p className="py-6 text-center text-sm text-muted-foreground">Hali o'qish statistikasi yo'q</p>
           ) : (
             <ol className="space-y-2.5">
               {topBookAgg.map((r, i) => {
@@ -290,12 +288,8 @@ export default async function AdminDashboard() {
                       {i + 1}
                     </span>
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-medium">
-                        {b?.title ?? "—"}
-                      </p>
-                      <p className="truncate text-xs text-muted-foreground">
-                        {b?.author?.name ?? "—"}
-                      </p>
+                      <p className="truncate text-sm font-medium">{b?.title ?? "—"}</p>
+                      <p className="truncate text-xs text-muted-foreground">{b?.author?.name ?? ""}</p>
                     </div>
                     <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-xs font-semibold tabular-nums">
                       {r._count.bookId} o&apos;qish
@@ -307,24 +301,19 @@ export default async function AdminDashboard() {
           )}
         </div>
 
-        {/* ─── Eng faol o'quvchilar (Top 5) ─── */}
+        {/* Eng faol o'quvchilar (Top 5) */}
         <div className="rounded-2xl border border-border bg-card p-5">
           <div className="mb-3 flex items-center justify-between">
-            <h2 className="flex items-center gap-2 text-base font-semibold">
-              <Users size={16} className="text-primary" />
+            <h2 className="flex items-center gap-2 text-sm font-semibold">
+              <Users size={15} className="text-primary" />
               Eng faol o&apos;quvchilar
             </h2>
-            <Link
-              href="/admin/students"
-              className="text-xs font-medium text-primary hover:underline"
-            >
+            <Link href="/admin/users?tab=students" className="text-xs font-medium text-primary hover:underline">
               Barchasi
             </Link>
           </div>
           {topStudentAgg.length === 0 ? (
-            <p className="py-6 text-center text-sm text-muted-foreground">
-              Hali faollik statistikasi yo&apos;q
-            </p>
+            <p className="py-6 text-center text-sm text-muted-foreground">Hali faollik statistikasi yo'q</p>
           ) : (
             <ol className="space-y-2.5">
               {topStudentAgg.map((r, i) => {
@@ -335,12 +324,8 @@ export default async function AdminDashboard() {
                       {i + 1}
                     </span>
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-medium">
-                        {u?.name ?? "—"}
-                      </p>
-                      <p className="truncate text-xs text-muted-foreground">
-                        {u?.group ?? "—"}
-                      </p>
+                      <p className="truncate text-sm font-medium">{u?.name ?? "—"}</p>
+<p className="truncate text-xs text-muted-foreground">{u?.group ?? ""}</p>
                     </div>
                     <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-xs font-semibold tabular-nums">
                       {(r._sum.pagesRead ?? 0).toLocaleString()} bet
@@ -352,6 +337,59 @@ export default async function AdminDashboard() {
           )}
         </div>
       </div>
+    </div>
+  );
+}
+
+function BattleMini({
+  stats,
+}: {
+  stats: AdminStats["comparison"];
+}) {
+  const student = stats.student;
+  const teacher = stats.teacher;
+  const totalScore = student.totalPagesRead + teacher.totalPagesRead || 1;
+  const sPct = Math.round((student.totalPagesRead / totalScore) * 100);
+  const tPct = 100 - sPct;
+  return (
+    <div className="space-y-3">
+      <div>
+        <div className="flex items-center justify-between text-xs">
+          <span className="font-semibold text-blue-600">STUDENTS</span>
+          <span className="font-semibold tabular-nums">{sPct}%</span>
+        </div>
+        <div className="mt-1 h-3 w-full overflow-hidden rounded-full bg-muted">
+          <div
+            className="h-full rounded-full bg-blue-600 transition-all duration-700"
+            style={{ width: `${sPct}%` }}
+          />
+        </div>
+      </div>
+      <div>
+        <div className="flex items-center justify-between text-xs">
+          <span className="font-semibold text-primary">TEACHERS</span>
+          <span className="font-semibold tabular-nums">{tPct}%</span>
+        </div>
+        <div className="mt-1 h-3 w-full overflow-hidden rounded-full bg-muted">
+          <div
+            className="h-full rounded-full bg-primary transition-all duration-700"
+            style={{ width: `${tPct}%` }}
+          />
+        </div>
+      </div>
+      <div className="flex justify-between text-xs text-muted-foreground">
+        <span>{student.totalPagesRead.toLocaleString()} bet</span>
+        <span>{teacher.totalPagesRead.toLocaleString()} bet</span>
+      </div>
+    </div>
+  );
+}
+
+function Row({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-center justify-between gap-2">
+      <span className="text-muted-foreground">{label}</span>
+      <span className="font-medium tabular-nums">{value}</span>
     </div>
   );
 }

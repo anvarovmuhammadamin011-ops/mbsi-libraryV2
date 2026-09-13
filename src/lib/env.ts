@@ -35,4 +35,12 @@ export const ROLES = [
   "BOOK_MANAGER",
   "REGISTRAR",
 ] as const;
+
+export const USER_TYPES = [
+  { value: "STUDENT", label: "O'quvchi" },
+  { value: "TEACHER", label: "O'qituvchi" },
+  { value: "ADMIN", label: "Admin" },
+  { value: "BOOK_MANAGER", label: "Kitob menejeri" },
+  { value: "STAFF", label: "Boshqa xodim" },
+] as const;
 export type AppRole = (typeof ROLES)[number];

@@ -106,7 +106,6 @@ export async function decidePendingStudent(
       gender: pending.gender,
       address: pending.address,
       parentContact: pending.parentContact,
-      healthNote: pending.healthNote,
       about: pending.about,
       isActive: true,
     },

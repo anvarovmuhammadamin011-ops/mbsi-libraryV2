@@ -9,7 +9,8 @@ import {
   Settings,
   ChevronLeft,
   ChevronRight,
-  UserCheck,
+  UserPlus,
+  Flame,
   LogOut,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -25,13 +26,14 @@ interface NavItem {
   exact?: boolean;
 }
 
-// Admin navigation — faqat eng kerakli bo'limlar:
-// Dashboard, O'quvchilar, Yangi o'quvchilar (tasdiqlash), Sozlamalar
+// Admin navigation — butun tizim boshqaruvi:
+// Dashboard, Foydalanuvchilar, Yangi foydalanuvchi, Battle, Tizim boshqaruvi
 const NAV_ITEMS: NavItem[] = [
   { label: "Boshqaruv paneli", href: "/admin", icon: LayoutDashboard },
-  { label: "O'quvchilar", href: "/admin/students", icon: Users, exact: true },
-  { label: "Yangi o'quvchilar", href: "/admin/students/pending", icon: UserCheck, exact: true },
-  { label: "Sozlamalar", href: "/admin/settings", icon: Settings },
+  { label: "Foydalanuvchilar", href: "/admin/users", icon: Users, exact: true },
+  { label: "Yangi foydalanuvchi", href: "/admin/users/add", icon: UserPlus, exact: true },
+  { label: "Battle", href: "/admin/battle", icon: Flame, exact: true },
+  { label: "Tizim boshqaruvi", href: "/admin/system", icon: Settings },
 ];
 
 function isNavActive(pathname: string, item: NavItem): boolean {

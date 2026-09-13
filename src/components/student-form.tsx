@@ -22,7 +22,6 @@ const EMPTY = {
   gender: "",
   address: "",
   parentContact: "",
-  healthNote: "",
   about: "",
 };
 
@@ -75,7 +74,6 @@ export function StudentForm({
         gender: form.gender || undefined,
         address: form.address.trim(),
         parentContact: form.parentContact.trim(),
-        healthNote: form.healthNote.trim(),
         about: form.about.trim(),
       });
       toast.success("Ariza qabul qilindi — tasdiqlash kutilmoqda");
@@ -259,15 +257,6 @@ export function StudentForm({
             </label>
           </div>
         </div>
-      </div>
-      <div className="space-y-1.5">
-        <Label>Salomatlik holati haqida qisqacha</Label>
-        <Input
-          className={input}
-          value={form.healthNote}
-          onChange={(e) => set("healthNote", e.target.value)}
-          placeholder="Masalan: allergiya yo'q"
-        />
       </div>
       <div className="space-y-1.5">
         <Label>Manzil</Label>

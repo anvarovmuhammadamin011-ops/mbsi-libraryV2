@@ -219,9 +219,8 @@ export function PendingStudentsTable({ items }: { items: PendingRow[] }) {
                           : "—",
                     ],
                     ["Manzil", viewing.address ?? "—"],
-                    ["Ota-ona", viewing.parentContact ?? "—"],
-                    ["Salomatlik", viewing.healthNote ?? "—"],
-                    ["Qo'shimcha", viewing.about ?? "—"],
+["Ota-ona", viewing.parentContact ?? "—"],
+                     ["Qo'shimcha", viewing.about ?? "—"],
                   ] as [string, string][]
                 ).map(([k, v]) => (
                   <div key={k} className="contents">

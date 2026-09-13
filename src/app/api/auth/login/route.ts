@@ -64,6 +64,13 @@ export const POST = route(async (req) => {
 
   const res = json({ success: true, data: toUser(user) });
   setSessionCookie(res, user.id);
+
+  // Oxirgi tizimga kirish vaqtini yozamiz (admin "Oxirgi login" ko'rsatishi uchun)
+  prisma.user.update({
+    where: { id: user.id },
+    data: { lastLoginAt: new Date() },
+  }).catch(() => {});
+
   return res;
 });
 

@@ -16,9 +16,9 @@ datasource db {
 }
 
 // ─── Enums (stored as String for provider portability) ──────
-// USER.role        : STUDENT | TEACHER | ADMIN | BOOK_MANAGER | REGISTRAR
-// BOOK.language    : UZ | RU | EN
-// BOOK.status      : ACTIVE | HIDDEN | DRAFT (derived from isPublished for legacy rows)
+// USER.role  : STUDENT | TEACHER | ADMIN | BOOK_MANAGER | REGISTRAR | STAFF
+// BOOK.language : UZ | RU | EN
+// BOOK.status : ACTIVE | HIDDEN | DRAFT (derived from isPublished for legacy rows)
 
 model User {
   id              String   @id @default(cuid())
@@ -26,22 +26,31 @@ model User {
   username        String?  @unique
   passwordHash    String?  @map("password_hash")
   // Parolning AES-256-GCM shifrlangan nusxasi — faqat ADMIN/REGISTRAR
-  // "parolni ko'rsatish" funksiyasi uchun (scrypt hash ochilmaydi).
+  // foydalanuvchi yaratish/parol o'rnatishda bir marta ko'rsatish uchun
+  // (scrypt hash hech qachon ochilmaydi).
   passwordEnc     String?  @map("password_enc")
-  role            String   @default("STUDENT") // STUDENT | TEACHER | ADMIN
+  role            String   @default("STUDENT") // STUDENT | TEACHER | ADMIN | BOOK_MANAGER | REGISTRAR | STAFF
+  // ── Xodim lavozimi (Direktor, Administrator, Kutubxonachi, Menejer, Boshqa xodim) ──
+  staffPosition   String?  @map("staff_position")
+  // ── O'qituvchi uchun fan/yo'nalish ──
+  teacherSubject  String?  @map("teacher_subject") // Masalan: Matematika, Fizika, O'zbek tili, Ingliz tili
+  // ── IDENTIFIKATSIYA ID raqamlari ──
+  studentId       String?  @map("student_id") // O'quvchi ID (maktab tizimidagi)
+  staffId         String?  @map("staff_id")   // Xodim ID (maktab tizimidagi)
+  birthDate       DateTime? @map("birth_date") // Tug'ilgan sana (yosh bilan birga saqlanishi mumkin)
+  lastLoginAt     DateTime? @map("last_login_at") // Oxirgi tizimga kirish vaqti
   avatar          String?
   externalUserId  String?  @map("external_user_id") // future MBSI SSO link
   telegramId      String?  @unique @map("telegram_id") // Telegram bot link
-  // ── O'quvchi profili (Admin panel "O'quvchi qo'shish" seksiyasi) ──
-  email           String?
-  phone           String?
+  // ── Faqat o'quvchi uchun ──
   group           String?  // Guruh/sinf, masalan "7-A"
   age             Int?
   gender          String?  // MALE | FEMALE
   address         String?
   parentContact   String?  @map("parent_contact") // Ota-ona kontakti
-  healthNote      String?  @map("health_note") // Salomatlik holati haqida qisqacha
   about           String?  // Qo'shimcha ma'lumot
+  email           String?
+  phone           String?
   coins           Int      @default(0)
   balls           Float    @default(0) // Ball system (0-12)
   isActive        Boolean  @default(true) @map("is_active")
@@ -431,4 +440,16 @@ model SearchLog {
   @@index([resultCount])
   @@index([query])
   @@map("search_logs")
+}
+
+// Key-value tizim sozlamalari (Battle qoidalari, faollik hisoblash qoidalari...).
+// Frontend'ga yuborilmaydigan qiymatlar (masalan, secret'lar) bu yerda emas.
+model SystemSetting {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     Json?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("system_settings")
 }
