@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { api } from "@/lib/api-client";
@@ -23,13 +23,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Eye, EyeOff, KeyRound, BadgeCheck, ArrowRight, UserRound, Upload } from "lucide-react";
+import { Eye, EyeOff, KeyRound, BadgeCheck, ArrowRight } from "lucide-react";
 import type { UserTypeChoice } from "@/types";
 
 const INPUT = "h-10";
 
 const USER_TYPES: { value: UserTypeChoice; label: string; desc: string }[] = [
-  { value: "STUDENT", label: "O'quvchi", desc: "Maktab o'quvchisi — kitob o'qiydi va ball to'playdi" },
   { value: "TEACHER", label: "O'qituvchi", desc: "Fan o'qituvchisi — kitob o'qiydi va ball to'playdi" },
   { value: "DIRECTOR", label: "Direktor", desc: "Maktab direktori — kitob o'qiydi va ball to'playdi" },
   { value: "ADMIN", label: "Administrator", desc: "Tizim administratori" },
@@ -58,7 +57,6 @@ type FormState = {
   address: string;
   parentContact: string;
   about: string;
-  avatar: string;
 };
 
 const EMPTY: FormState = {
@@ -81,16 +79,26 @@ const EMPTY: FormState = {
   address: "",
   parentContact: "",
   about: "",
-  avatar: "",
 };
 
-export function UserCreateForm() {
+export function UserCreateForm({
+  createUrl = "/api/admin/users",
+  onlyType,
+  profileUrl = (id: string) => `/admin/users/${id}`,
+  submitLabel = "Foydalanuvchi yaratish",
+}: {
+  /** So'rov yuboriladigan endpoint (admin yoki registrar). */
+  createUrl?: string;
+  /** Faqat shu turdagi foydalanuvchi yaratiladi (registrar uchun: STUDENT). */
+  onlyType?: UserTypeChoice | null;
+  /** Yaratilgandan keyin "Profilga o'tish" havolasi — null bo'lsa ko'rinmaydi. */
+  profileUrl?: ((id: string) => string) | null;
+  submitLabel?: string;
+}) {
   const router = useRouter();
-  const [form, setForm] = useState<FormState>(EMPTY);
+  const [form, setForm] = useState<FormState>({ ...EMPTY, userType: onlyType ?? null });
   const [showPassword, setShowPassword] = useState(false);
   const [busy, setBusy] = useState(false);
-  const [uploading, setUploading] = useState(false);
-  const fileRef = useRef<HTMLInputElement>(null);
   const [created, setCreated] = useState<{ id: string; name: string; username: string; role: string } | null>(null);
   const [plainPassword, setPlainPassword] = useState("");
 
@@ -114,24 +122,6 @@ export function UserCreateForm() {
     setShowPassword(true);
   }
 
-  async function uploadAvatar(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    e.target.value = "";
-    if (!file) return;
-    setUploading(true);
-    try {
-      const fd = new FormData();
-      fd.append("file", file);
-      const res = await api.post<{ url: string }>("/api/upload/image", fd);
-      set("avatar", res.url);
-      toast.success("Profil rasmi yuklandi");
-    } catch (err: any) {
-      toast.error(err.message ?? "Rasm yuklanmadi");
-    } finally {
-      setUploading(false);
-    }
-  }
-
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setBusy(true);
@@ -140,7 +130,7 @@ export function UserCreateForm() {
       const res = await api.post<{
         user: { id: string; name: string; username: string; role: string };
         plainPassword: string;
-      }>("/api/admin/users", {
+      }>(createUrl, {
         userType: form.userType,
         name,
         username: form.username,
@@ -152,7 +142,6 @@ export function UserCreateForm() {
         address: form.address || undefined,
         parentContact: form.parentContact || undefined,
         about: form.about || undefined,
-        avatar: form.avatar || undefined,
         studentId: form.studentId || undefined,
         teacherSubject:
           form.userType === "TEACHER" ? form.teacherSubject || undefined : undefined,
@@ -185,26 +174,28 @@ export function UserCreateForm() {
       <form onSubmit={submit} className="space-y-4">
         <div className="rounded-2xl border border-border bg-card p-5">
           <div className="grid gap-4 md:grid-cols-2">
-            <div className="space-y-1.5 md:col-span-2">
-              <Label>Foydalanuvchi turi *</Label>
-              <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-                {USER_TYPES.map((t) => (
-                  <button
-                    key={t.value}
-                    type="button"
-                    onClick={() => set("userType", t.value)}
-                    className={`rounded-xl border p-3 text-left transition-colors ${
-                      form.userType === t.value
-                        ? "border-primary bg-primary/10 ring-2 ring-primary/20"
-                        : "border-border bg-background hover:border-primary/40"
-                    }`}
-                  >
-                    <p className="text-sm font-semibold">{t.label}</p>
-                    <p className="mt-0.5 text-[11px] text-muted-foreground">{t.desc}</p>
-                  </button>
-                ))}
+            {!onlyType && (
+              <div className="space-y-1.5 md:col-span-2">
+                <Label>Foydalanuvchi turi *</Label>
+                <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                  {USER_TYPES.map((t) => (
+                    <button
+                      key={t.value}
+                      type="button"
+                      onClick={() => set("userType", t.value)}
+                      className={`rounded-xl border p-3 text-left transition-colors ${
+                        form.userType === t.value
+                          ? "border-primary bg-primary/10 ring-2 ring-primary/20"
+                          : "border-border bg-background hover:border-primary/40"
+                      }`}
+                    >
+                      <p className="text-sm font-semibold">{t.label}</p>
+                      <p className="mt-0.5 text-[11px] text-muted-foreground">{t.desc}</p>
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
 
             {form.userType === "STUDENT" && (
               <div className="space-y-1.5">
@@ -213,18 +204,18 @@ export function UserCreateForm() {
                   className={INPUT}
                   value={form.studentId}
                   onChange={(e) => set("studentId", e.target.value)}
-                  placeholder="Masalan: 2026-001"
+                  placeholder="avtomatik beriladi"
                 />
               </div>
             )}
-            {(form.userType === "STAFF" || form.userType === "TEACHER") && (
+            {(form.userType === "STAFF" || form.userType === "TEACHER" || form.userType === "DIRECTOR" || form.userType === "ADMIN") && (
               <div className="space-y-1.5">
                 <Label>Xodim ID</Label>
                 <Input
                   className={INPUT}
                   value={form.staffId}
                   onChange={(e) => set("staffId", e.target.value)}
-                  placeholder="Masalan: ST-004"
+                  placeholder="avtomatik beriladi"
                 />
               </div>
             )}
@@ -247,49 +238,6 @@ export function UserCreateForm() {
                 placeholder="Masalan: Valiyev"
                 required
               />
-            </div>
-            <div className="space-y-1.5 sm:col-span-2">
-              <Label>Profil rasmi</Label>
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-full border border-border bg-muted text-muted-foreground">
-                  {form.avatar ? (
-                    <img src={form.avatar} alt="Profil rasmi" className="h-full w-full object-cover" />
-                  ) : (
-                    <UserRound size={24} />
-                  )}
-                </div>
-                <div className="flex flex-1 flex-col gap-1.5">
-                  <div className="flex gap-2">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => fileRef.current?.click()}
-                      disabled={uploading}
-                    >
-                      <Upload size={14} /> {uploading ? "Yuklanmoqda..." : "Rasm yuklash"}
-                    </Button>
-                    {form.avatar && (
-                      <Button type="button" variant="ghost" size="sm" onClick={() => set("avatar", "")}>
-                        O&apos;chirish
-                      </Button>
-                    )}
-                  </div>
-                  <Input
-                    className="h-8 text-xs"
-                    value={form.avatar}
-                    onChange={(e) => set("avatar", e.target.value)}
-                    placeholder="yoki rasm havolasini kiriting"
-                  />
-                </div>
-                <input
-                  ref={fileRef}
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={uploadAvatar}
-                />
-              </div>
             </div>
           </div>
         </div>
@@ -505,8 +453,8 @@ export function UserCreateForm() {
           <Button type="button" variant="outline" onClick={() => router.back()}>
             Bekor qilish
           </Button>
-          <Button type="submit" disabled={busy || form.userType === null}>
-            {busy ? "Saqlanmoqda..." : "Foydalanuvchi yaratish"}
+          <Button type="submit" disabled={busy}>
+            {busy ? "Saqlanmoqda..." : submitLabel}
           </Button>
         </div>
       </form>
@@ -530,9 +478,11 @@ export function UserCreateForm() {
             <Button variant="outline" onClick={reset}>
               Yangi yaratish
             </Button>
-            <Button onClick={() => created && router.push(`/admin/users/${created.id}`)}>
-              Profilga o&apos;tish <ArrowRight size={15} />
-            </Button>
+            {profileUrl && created && (
+              <Button onClick={() => router.push(profileUrl(created.id))}>
+                Profilga o&apos;tish <ArrowRight size={15} />
+              </Button>
+            )}
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -542,7 +492,7 @@ export function UserCreateForm() {
   function reset() {
     setCreated(null);
     setPlainPassword("");
-    setForm(EMPTY);
+    setForm({ ...EMPTY, userType: onlyType ?? null });
   }
 }
 

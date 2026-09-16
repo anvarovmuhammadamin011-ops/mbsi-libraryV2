@@ -117,15 +117,21 @@ export async function getDashboard(filter: DateFilter) {
 }
 
 async function fillStreaks(entries: RankingEntry[]) {
-  await Promise.all(
-    entries.map(async (e) => {
-      const dates = await prisma.readingSession.findMany({
-        where: { userId: e.userId },
-        select: { startedAt: true },
-      });
-      e.streak = computeStreak(dates.map((d) => d.startedAt));
-    })
-  );
+  if (entries.length === 0) return;
+  // Batched: barcha foydalanuvchilarning sessiyalarini bitta query'da olamiz — N+1 yo'q
+  const sessions = await prisma.readingSession.findMany({
+    where: { userId: { in: entries.map((e) => e.userId) } },
+    select: { userId: true, startedAt: true },
+  });
+  const byUser = new Map<string, Date[]>();
+  for (const s of sessions) {
+    const list = byUser.get(s.userId) ?? [];
+    list.push(s.startedAt);
+    byUser.set(s.userId, list);
+  }
+  for (const e of entries) {
+    e.streak = computeStreak((byUser.get(e.userId) ?? []).map((d) => new Date(d)));
+  }
 }
 
 async function getPopularBooks(from: Date | null, limit: number) {

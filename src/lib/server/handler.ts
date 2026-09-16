@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { handleError } from "./errors";
+import { logRequest } from "./log";
 
 type Handler = (
   req: NextRequest,
@@ -8,10 +9,29 @@ type Handler = (
 
 export function route(handler: Handler): Handler {
   return async (req, ctx) => {
+    const started = performance.now();
+    const pathname = req.nextUrl?.pathname ?? "";
     try {
-      return await handler(req, ctx);
+      const res = await handler(req, ctx);
+      logRequest(
+        "http.request",
+        req.method,
+        pathname,
+        res.status,
+        Math.round(performance.now() - started)
+      );
+      return res;
     } catch (e) {
-      return handleError(e);
+      const res = handleError(e);
+      logRequest(
+        "http.request",
+        req.method,
+        pathname,
+        res.status,
+        Math.round(performance.now() - started),
+        { error: true }
+      );
+      return res;
     }
   };
 }

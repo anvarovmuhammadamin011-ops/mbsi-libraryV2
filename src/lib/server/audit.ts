@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db";
 import type { Prisma } from "@prisma/client";
+import { logger } from "./log";
 
 // Fire-and-forget audit logging. Failures are logged but never
 // break the requesting operation.
@@ -9,6 +10,7 @@ export async function logAudit(params: {
   entity: string;
   entityId: string;
   metadata?: Record<string, unknown>;
+  ip?: string;
 }): Promise<void> {
   try {
     await prisma.auditLog.create({
@@ -17,10 +19,16 @@ export async function logAudit(params: {
         action: params.action,
         entity: params.entity,
         entityId: params.entityId,
-        metadata: (params.metadata ?? null) as Prisma.InputJsonValue,
+        metadata: {
+          ...(params.metadata ?? {}),
+          ...(params.ip ? { ip: params.ip } : {}),
+        } as Prisma.InputJsonValue,
       },
     });
   } catch (e) {
-    console.error("[AUDIT_LOG_FAILED]", e);
+    logger.error("audit.failed", "Failed to persist audit log", {
+      error: e instanceof Error ? e.message : String(e),
+      action: params.action,
+    });
   }
 }

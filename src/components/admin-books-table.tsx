@@ -35,7 +35,6 @@ import {
   Pencil,
   Loader2,
   Sparkles,
-  Coins,
   BarChart3,
   Star,
   EyeOff,
@@ -50,14 +49,12 @@ interface BookRow {
   description: string;
   language: string;
   totalPages: number;
-  coinReward: number;
   isPublished: boolean;
   readerCount: number;
   ratingCount: number;
   averageRating: number | null;
   createdAt: string;
   coverUrl: string;
-  contentText?: string;
 }
 
 interface Props {
@@ -71,9 +68,7 @@ interface BookForm {
   categoryId: string;
   language: string;
   totalPages: string;
-  coinReward: string;
   description: string;
-  contentText: string;
   isPublished: boolean;
   file: File | null;
   cover: File | null;
@@ -85,9 +80,7 @@ const EMPTY_FORM: BookForm = {
   categoryId: "",
   language: "UZ",
   totalPages: "",
-  coinReward: "10",
   description: "",
-  contentText: "",
   isPublished: true,
   file: null,
   cover: null,
@@ -104,6 +97,9 @@ export function AdminBooksTable({ books, categories }: Props) {
   const [addOpen, setAddOpen] = useState(false);
   const [form, setForm] = useState<BookForm>(EMPTY_FORM);
   const [saving, setSaving] = useState(false);
+  const [newCategory, setNewCategory] = useState("");
+  const [showNewCategory, setShowNewCategory] = useState(false);
+  const [aiLoading, setAiLoading] = useState(false);
   const [editing, setEditing] = useState<BookRow | null>(null);
   const [editSaving, setEditSaving] = useState(false);
   const [page, setPage] = useState(1);
@@ -168,8 +164,8 @@ export function AdminBooksTable({ books, categories }: Props) {
       toast.error("Sarlavha, muallif va PDF fayl to'ldirilishi shart");
       return;
     }
-    if (!form.categoryId) {
-      toast.error("Kategoriya tanlang");
+    if (!form.categoryId && !showNewCategory) {
+      toast.error("Kategoriya tanlang yoki yangi nom yozing");
       return;
     }
     setSaving(true);
@@ -180,10 +176,12 @@ export function AdminBooksTable({ books, categories }: Props) {
       fd.append("description", form.description.trim());
       fd.append("language", form.language);
       fd.append("totalPages", form.totalPages || "1");
-      fd.append("coinReward", form.coinReward || "10");
       fd.append("isPublished", String(form.isPublished));
-      fd.append("categoryId", form.categoryId);
-      fd.append("contentText", form.contentText);
+      if (showNewCategory && newCategory.trim()) {
+        fd.append("newCategory", newCategory.trim());
+      } else {
+        fd.append("categoryId", form.categoryId);
+      }
       fd.append("file", form.file);
       if (form.cover && form.cover.size > 0) fd.append("cover", form.cover);
 
@@ -204,12 +202,44 @@ export function AdminBooksTable({ books, categories }: Props) {
       }
       toast.success("Kitob qo'shildi");
       setForm(EMPTY_FORM);
+      setNewCategory("");
+      setShowNewCategory(false);
       setAddOpen(false);
       router.refresh();
     } catch (e: any) {
       toast.error(e.message || "Yuklashda xatolik");
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function suggestCategory() {
+    if (!form.title.trim()) {
+      toast.error("Avval kitob sarlavhasini kiriting");
+      return;
+    }
+    setAiLoading(true);
+    try {
+      const res = await api.post<{
+        isExisting: boolean;
+        categoryId?: string;
+        name: string;
+      }>("/api/admin/books/suggest-category", { title: form.title, author: form.author });
+      if (res.isExisting && res.categoryId) {
+        setForm({ ...form, categoryId: res.categoryId });
+        setNewCategory("");
+        setShowNewCategory(false);
+        toast.success(`Kategoriya: ${res.name}`);
+      } else {
+        setNewCategory(res.name);
+        setShowNewCategory(true);
+        setForm({ ...form, categoryId: "" });
+        toast.success(`Yangi kategoriya taklifi: ${res.name} (yuklashda yaratiladi)`);
+      }
+    } catch (e: any) {
+      toast.error(e.message ?? "Kategoriya topilmadi — qo'lda tanlang");
+    } finally {
+      setAiLoading(false);
     }
   }
 
@@ -227,8 +257,6 @@ export function AdminBooksTable({ books, categories }: Props) {
       fd.append("description", editing.description ?? "");
       fd.append("language", editing.language);
       fd.append("totalPages", String(editing.totalPages));
-      fd.append("coinReward", String(editing.coinReward ?? 10));
-      fd.append("contentText", editing.contentText ?? "");
       await api.patch(`/api/admin/books/${editing.id}`, fd);
       toast.success("Yangilandi");
       setEditing(null);
@@ -278,12 +306,12 @@ export function AdminBooksTable({ books, categories }: Props) {
           <DialogTrigger render={<Button className="gap-2" />}>
             <Plus size={16} /> Kitob qo&apos;shish
           </DialogTrigger>
-          <DialogContent className="max-h-[90vh] overflow-y-auto max-w-lg">
+          <DialogContent className="max-h-[90vh] overflow-y-auto max-w-3xl">
             <DialogHeader>
               <DialogTitle>Yangi kitob qo&apos;shish</DialogTitle>
             </DialogHeader>
-            <form onSubmit={submitAdd} className="grid gap-3">
-              <div className="space-y-1.5">
+            <form onSubmit={submitAdd} className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-1.5 sm:col-span-2">
                 <Label>Sarlavha *</Label>
                 <Input
                   value={form.title}
@@ -291,7 +319,7 @@ export function AdminBooksTable({ books, categories }: Props) {
                   placeholder="Kitob nomi"
                 />
               </div>
-              <div className="space-y-1.5">
+              <div className="space-y-1.5 sm:col-span-2">
                 <Label>Muallif *</Label>
                 <Input
                   value={form.author}
@@ -299,57 +327,92 @@ export function AdminBooksTable({ books, categories }: Props) {
                   placeholder="Muallif ismi (yangi bo'lsa yaratiladi)"
                 />
               </div>
-              <div className="space-y-1.5">
+              <div className="space-y-1.5 sm:col-span-2">
                 <Label>Kategoriya *</Label>
-                <Select
-                  value={form.categoryId || undefined}
-                  onValueChange={(v) => setForm({ ...form, categoryId: v ?? "" })}
-                >
-                  <SelectTrigger className="w-full h-9"><SelectValue placeholder="Tanlang" /></SelectTrigger>
-                  <SelectContent>
-                    {categories.map((c) => (
-                      <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1.5">
-                  <Label>Til</Label>
-                  <select
-                    value={form.language}
-                    onChange={(e) => setForm({ ...form, language: e.target.value })}
-                    className="h-9 w-full rounded-md border border-input bg-transparent px-2 text-sm"
-                  >
-                    <option value="UZ">O&apos;zbek</option>
-                    <option value="RU">Rus</option>
-                    <option value="EN">Ingliz</option>
-                  </select>
-                </div>
-                <div className="space-y-1.5">
-                  <Label>Sahifalar soni</Label>
-                  <Input
-                    type="number"
-                    min={1}
-                    value={form.totalPages}
-                    onChange={(e) => setForm({ ...form, totalPages: e.target.value })}
-                    placeholder="avtomatik aniqlanadi"
-                  />
-                </div>
+                {!showNewCategory ? (
+                  <div className="flex gap-2">
+                    <Select
+                      value={form.categoryId || undefined}
+                      onValueChange={(v) => setForm({ ...form, categoryId: v ?? "" })}
+                    >
+                      <SelectTrigger className="w-full h-10"><SelectValue placeholder="Tanlang" /></SelectTrigger>
+                      <SelectContent>
+                        {categories.map((c) => (
+                          <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      className="h-10 w-10 shrink-0"
+                      onClick={suggestCategory}
+                      disabled={aiLoading}
+                      title="AI orqali kategoriyani topish"
+                    >
+                      {aiLoading ? (
+                        <Loader2 className="size-4 animate-spin" />
+                      ) : (
+                        <Sparkles className="size-4 text-primary" />
+                      )}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="h-10 shrink-0"
+                      onClick={() => setShowNewCategory(true)}
+                    >
+                      Yangi
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="flex gap-2">
+                    <Input
+                      value={newCategory}
+                      onChange={(e) => setNewCategory(e.target.value)}
+                      placeholder="Yangi kategoriya nomi"
+                      className="flex-1"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setShowNewCategory(false);
+                        setNewCategory("");
+                      }}
+                      className="shrink-0"
+                    >
+                      Bekor
+                    </Button>
+                  </div>
+                )}
               </div>
               <div className="space-y-1.5">
-                <Label>Coin mukofoti *</Label>
+                <Label>Til</Label>
+                <select
+                  value={form.language}
+                  onChange={(e) => setForm({ ...form, language: e.target.value })}
+                  className="h-10 w-full rounded-md border border-input bg-transparent px-2 text-sm"
+                >
+                  <option value="UZ">O&apos;zbek</option>
+                  <option value="RU">Rus</option>
+                  <option value="EN">Ingliz</option>
+                </select>
+              </div>
+              <div className="space-y-1.5">
+                <Label>Sahifalar soni</Label>
                 <Input
                   type="number"
-                  min={0}
-                  max={1000}
-                  value={form.coinReward}
-                  onChange={(e) => setForm({ ...form, coinReward: e.target.value })}
-                  placeholder="masalan: 20"
+                  min={1}
+                  value={form.totalPages}
+                  onChange={(e) => setForm({ ...form, totalPages: e.target.value })}
+                  placeholder="avtomatik aniqlanadi"
                 />
-                <p className="text-xs text-muted-foreground">Kitob tugatganda beriladigan coin miqdori</p>
               </div>
-              <div className="space-y-1.5">
+              <div className="space-y-1.5 sm:col-span-2">
                 <Label>Tavsif</Label>
                 <Textarea
                   rows={3}
@@ -357,17 +420,6 @@ export function AdminBooksTable({ books, categories }: Props) {
                   onChange={(e) => setForm({ ...form, description: e.target.value })}
                   placeholder="Kitob haqida qisqacha..."
                 />
-              </div>
-              <div className="space-y-1.5">
-                <Label>Kitob matni (ixtiyoriy)</Label>
-                <Textarea
-                  rows={6}
-                  value={form.contentText}
-                  onChange={(e) => setForm({ ...form, contentText: e.target.value })}
-                  placeholder="Kitob matnini shu yerga joylashtiring. O'quvchilar onlayn o'qish uchun ishlatiladi..."
-                  className="font-mono text-xs"
-                />
-                <p className="text-[11px] text-muted-foreground">Kitob to'liq matnini kiriting yoki keyinro qo'shing</p>
               </div>
               <div className="space-y-1.5">
                 <Label>PDF fayl *</Label>
@@ -386,7 +438,7 @@ export function AdminBooksTable({ books, categories }: Props) {
                   onChange={(e) => setForm({ ...form, cover: e.target.files?.[0] ?? null })}
                 />
               </div>
-              <label className="flex items-center gap-2 text-sm text-muted-foreground cursor-pointer">
+              <label className="flex items-center gap-2 text-sm text-muted-foreground cursor-pointer sm:col-span-2">
                 <input
                   type="checkbox"
                   checked={form.isPublished}
@@ -396,7 +448,7 @@ export function AdminBooksTable({ books, categories }: Props) {
                 Darhol nashr etish
               </label>
               {uploadProgress !== null && (
-                <div className="space-y-1">
+                <div className="space-y-1 sm:col-span-2">
                   <div className="flex justify-between text-xs text-muted-foreground">
                     <span>Yuklanmoqda...</span>
                     <span>{uploadProgress}%</span>
@@ -409,7 +461,11 @@ export function AdminBooksTable({ books, categories }: Props) {
                   </div>
                 </div>
               )}
-              <Button type="submit" disabled={saving} className="gap-2">
+              <Button
+                type="submit"
+                disabled={saving}
+                className="gap-2 sm:col-span-2"
+              >
                 {saving ? <Loader2 className="size-4 animate-spin" /> : <Upload className="size-4" />}
                 Yuklash
               </Button>
@@ -485,9 +541,6 @@ export function AdminBooksTable({ books, categories }: Props) {
                   <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground hidden md:table-cell">Kategoriya</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground hidden lg:table-cell">Til</th>
                   <th className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground">Sahifalar</th>
-                  <th className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground">
-                    <Coins size={14} className="inline text-yellow-600" aria-label="Coin" />
-                  </th>
                   <th className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground hidden sm:table-cell">O&apos;quvchilar</th>
                   <th className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground hidden md:table-cell">Reyting</th>
                   <th className="px-4 py-3 text-center text-xs font-semibold text-muted-foreground">Holat</th>
@@ -521,7 +574,6 @@ export function AdminBooksTable({ books, categories }: Props) {
                       <Badge variant="secondary" className="text-[10px]">{b.language}</Badge>
                     </td>
                     <td className="px-4 py-3 text-right text-xs text-muted-foreground">{b.totalPages}</td>
-                    <td className="px-4 py-3 text-right text-xs font-medium text-yellow-600">{b.coinReward}</td>
                     <td className="px-4 py-3 text-right text-xs text-muted-foreground hidden sm:table-cell">{b.readerCount}</td>
                     <td className="px-4 py-3 text-right text-xs text-muted-foreground hidden md:table-cell">
                       {b.averageRating ? b.averageRating.toFixed(1) : "—"}
@@ -671,27 +723,27 @@ export function AdminBooksTable({ books, categories }: Props) {
 
       {/* Edit dialog */}
       <Dialog open={editing !== null} onOpenChange={(open) => !open && setEditing(null)}>
-        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Kitobni tahrirlash</DialogTitle>
           </DialogHeader>
           {editing && (
-            <div className="grid gap-3">
-              <div className="space-y-1.5">
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="space-y-1.5 sm:col-span-2">
                 <Label>Sarlavha</Label>
                 <Input
                   value={editing.title}
                   onChange={(e) => setEditing({ ...editing, title: e.target.value })}
                 />
               </div>
-              <div className="space-y-1.5">
+              <div className="space-y-1.5 sm:col-span-2">
                 <Label>Muallif</Label>
                 <Input
                   value={editing.authorName}
                   onChange={(e) => setEditing({ ...editing, authorName: e.target.value })}
                 />
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-3 sm:col-span-2">
                 <div className="space-y-1.5">
                   <Label>Til</Label>
                   <select
@@ -714,17 +766,7 @@ export function AdminBooksTable({ books, categories }: Props) {
                   />
                 </div>
               </div>
-              <div className="space-y-1.5">
-                <Label>Coin mukofoti</Label>
-                <Input
-                  type="number"
-                  min={0}
-                  max={1000}
-                  value={editing.coinReward ?? 10}
-                  onChange={(e) => setEditing({ ...editing, coinReward: Number(e.target.value) })}
-                />
-              </div>
-              <div className="space-y-1.5">
+              <div className="space-y-1.5 sm:col-span-2">
                 <Label>Tavsif</Label>
                 <Textarea
                   rows={3}
@@ -732,18 +774,7 @@ export function AdminBooksTable({ books, categories }: Props) {
                   onChange={(e) => setEditing({ ...editing, description: e.target.value })}
                 />
               </div>
-              <div className="space-y-1.5">
-                <Label>Kitob matni</Label>
-                <Textarea
-                  rows={5}
-                  value={editing.contentText ?? ""}
-                  onChange={(e) => setEditing({ ...editing, contentText: e.target.value })}
-                  placeholder="Kitob matnini shu yerga joylashtiring..."
-                  className="font-mono text-xs"
-                />
-                <p className="text-[11px] text-muted-foreground">O'quvchilar onlayn o'qish uchun ishlatiladi</p>
-              </div>
-              <Button onClick={saveEdit} disabled={editSaving} className="gap-2">
+              <Button onClick={saveEdit} disabled={editSaving} className="gap-2 sm:col-span-2">
                 {editSaving ? <Loader2 className="size-4 animate-spin" /> : null}
                 Saqlash
               </Button>

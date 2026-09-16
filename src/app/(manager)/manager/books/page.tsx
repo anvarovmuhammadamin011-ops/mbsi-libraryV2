@@ -10,10 +10,9 @@ export default async function ManagerBooksPage() {
       include: {
         category: { select: { name: true } },
         author: { select: { name: true } },
-        content: { select: { extractedText: true } },
         _count: { select: { ratings: true, progress: true } },
       },
-      take: 200,
+      take: 100,
     }),
     prisma.category.findMany({
       orderBy: { name: "asc" },
@@ -37,14 +36,12 @@ export default async function ManagerBooksPage() {
     description: b.description ?? "",
     language: b.language,
     totalPages: b.totalPages,
-    coinReward: (b as any).coinReward ?? 10,
     isPublished: b.isPublished,
     readerCount: b._count.progress,
     ratingCount: b._count.ratings,
     averageRating: ratingMap.get(b.id) ?? null,
     createdAt: b.createdAt.toISOString(),
     coverUrl: b.coverUrl ?? "",
-    contentText: b.content?.extractedText ?? "",
   }));
 
   return (

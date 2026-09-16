@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { logger } from "./log";
 
 // ─── Consistent API error/response format ──────────────────
 // All API routes return:
@@ -73,6 +74,9 @@ export function handleError(err: unknown) {
     }
   }
   console.error("[API_ERROR]", err);
+  logger.error("api.error", err instanceof Error ? err.message : "Unknown error", {
+    error: err instanceof Error ? { name: err.name, stack: err.stack?.split("\n").slice(0, 5) } : err,
+  });
   return fail(
     ERROR_CODES.INTERNAL,
     "Kutilmagan xatolik yuz berdi",

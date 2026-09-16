@@ -11,6 +11,8 @@ import {
   Flame,
   Snowflake,
   Languages,
+  Clock,
+  Users,
 } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -18,6 +20,7 @@ export const dynamic = "force-dynamic";
 export default async function ManagerDashboard() {
   const now = new Date();
   const weekAgo = new Date(now.getTime() - 7 * 86400000);
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
 
   const [
     totalBooks,
@@ -30,6 +33,10 @@ export default async function ManagerDashboard() {
     bottomAgg,
     langAgg,
     sessionsAgg,
+    weekSessions,
+    monthSessions,
+    totalSessions,
+    topStudentsAgg,
   ] = await Promise.all([
     prisma.book.count(),
     prisma.book.count({ where: { status: "ACTIVE", isPublished: true } }),
@@ -62,6 +69,16 @@ export default async function ManagerDashboard() {
     prisma.book.groupBy({ by: ["language"], _count: { _all: true } }),
     // O'rtacha sessiya davomiyligi
     prisma.readingSession.aggregate({ _avg: { duration: true, pagesRead: true } }),
+    prisma.readingSession.count({ where: { startedAt: { gte: weekAgo } } }),
+    prisma.readingSession.count({ where: { startedAt: { gte: monthStart } } }),
+    prisma.readingSession.count(),
+    // Eng faol o'quvchilar (o'qigan betlar bo'yicha)
+    prisma.readingSession.groupBy({
+      by: ["userId"],
+      _sum: { pagesRead: true },
+      orderBy: { _sum: { pagesRead: "desc" } },
+      take: 5,
+    }),
   ]);
 
   const topBookIds = topAgg.map((r) => r.bookId);
@@ -76,6 +93,15 @@ export default async function ManagerDashboard() {
       })
     : [];
   const bookMap = new Map(topBooks.map((b) => [b.id, b]));
+
+  // Eng faol o'quvchilar ro'yxati
+  const topUsers = topStudentsAgg.length
+    ? await prisma.user.findMany({
+        where: { id: { in: topStudentsAgg.map((r) => r.userId) } },
+        select: { id: true, name: true, group: true },
+      })
+    : [];
+  const userMap = new Map(topUsers.map((u) => [u.id, u]));
 
   // Eng mashhur kategoriyalar (top 5)
   const topCategories = await prisma.category.findMany({
@@ -125,6 +151,27 @@ export default async function ManagerDashboard() {
       value: newThisWeek,
       sub: "shu hafta qo'shildi",
       icon: BookPlus,
+      color: "text-blue-600",
+    },
+    {
+      label: "O'qish sessiyalari",
+      value: totalSessions,
+      sub: "jami",
+      icon: TrendingUp,
+      color: "text-purple-600",
+    },
+    {
+      label: "Shu hafta",
+      value: weekSessions,
+      sub: "sessiya",
+      icon: Flame,
+      color: "text-green-600",
+    },
+    {
+      label: "Shu oy",
+      value: monthSessions,
+      sub: "sessiya",
+      icon: Clock,
       color: "text-blue-600",
     },
   ];
@@ -181,12 +228,6 @@ export default async function ManagerDashboard() {
               <Flame size={16} className="text-orange-500" />
               Eng ko&apos;p o&apos;qilgan kitoblar
             </h2>
-            <Link
-              href="/manager/analytics"
-              className="text-xs font-medium text-primary hover:underline"
-            >
-              Batafsil
-            </Link>
           </div>
           {topAgg.length === 0 ? (
             <p className="py-6 text-center text-sm text-muted-foreground">
@@ -349,6 +390,38 @@ export default async function ManagerDashboard() {
                 </span>
               </div>
             </div>
+          </div>
+
+          <div className="rounded-2xl border border-border bg-card p-5">
+            <h2 className="mb-4 flex items-center gap-2 text-base font-semibold">
+              <Users size={16} className="text-primary" />
+              Eng faol o&apos;quvchilar
+            </h2>
+            {topStudentsAgg.length === 0 ? (
+              <p className="py-4 text-center text-sm text-muted-foreground">
+                Hali faollik statistikasi yo&apos;q
+              </p>
+            ) : (
+              <ol className="space-y-2.5">
+                {topStudentsAgg.map((r, i) => {
+                  const u = userMap.get(r.userId);
+                  return (
+                    <li key={r.userId} className="flex items-center gap-3">
+                      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">
+                        {i + 1}
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-medium">{u?.name ?? "—"}</p>
+                        <p className="truncate text-xs text-muted-foreground">{u?.group ?? "—"}</p>
+                      </div>
+                      <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-xs font-semibold tabular-nums">
+                        {(r._sum.pagesRead ?? 0).toLocaleString()} bet
+                      </span>
+                    </li>
+                  );
+                })}
+              </ol>
+            )}
           </div>
         </div>
       </div>

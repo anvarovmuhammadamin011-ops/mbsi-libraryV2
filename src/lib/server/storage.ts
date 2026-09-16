@@ -3,16 +3,13 @@ import path from "node:path";
 import crypto from "node:crypto";
 import { prisma } from "@/lib/db";
 import { env } from "@/lib/env";
+import { logger } from "./log";
 
 // ──── Storage abstraction ────
-// Runtime uploads are stored IN THE DATABASE (StoredFile table) so
-// they work on read-only serverless hosts like Vercel. Files that
-// ship with the repo (seeded PDFs under storage/private) are still
-// read straight from disk, with a DB fallback.
-
-const ROOT = process.cwd();
-const PUBLIC_UPLOADS = path.join(ROOT, "public", "uploads");
-const PRIVATE_ROOT = path.join(ROOT, "storage", "private");
+// Driver tanlash: STORAGE_DRIVER="s3" (yoki "auto": S3 sozlangan bo'lsa) →
+// fayllar S3/R2/MinIO bucket-iga yoziladi. Aks holda DB (StoredFile) ichida
+// saqlanadi (serverless uchun ishonchli).
+// "auto" — S3 konfiguratsiyasi to'liq bo'lsa S3, aks holda DB.
 
 export type SavedFile = {
   // Public URL ("/api/files/<key>") or a private key ("pdfs/x.pdf").
@@ -20,6 +17,81 @@ export type SavedFile = {
   isPublic: boolean;
   size: number;
 };
+
+const ROOT = process.cwd();
+const PRIVATE_ROOT = path.join(ROOT, "storage", "private");
+
+export function usesS3(): boolean {
+  if (env.storageDriver === "db" || env.storageDriver === "local") return false;
+  if (env.storageDriver === "s3") return isS3Configured();
+  // auto — S3 to'liq sozlangan bo'lsa
+  return isS3Configured();
+}
+
+function isS3Configured(): boolean {
+  return Boolean(
+    env.s3.bucket &&
+      env.s3.accessKeyId &&
+      env.s3.secretAccessKey &&
+      (env.s3.endpoint || env.s3.region)
+  );
+}
+
+let s3Client: import("@aws-sdk/client-s3").S3Client | null = null;
+
+async function getS3() {
+  if (!isS3Configured()) throw new Error("S3_NOT_CONFIGURED");
+  if (s3Client) return s3Client;
+  const { S3Client } = await import("@aws-sdk/client-s3");
+  s3Client = new S3Client({
+    region: env.s3.region || "auto",
+    endpoint: env.s3.endpoint || undefined,
+    forcePathStyle: true,
+    credentials: {
+      accessKeyId: env.s3.accessKeyId,
+      secretAccessKey: env.s3.secretAccessKey,
+    },
+  });
+  return s3Client;
+}
+
+async function s3Put(key: string, mime: string, buf: Buffer) {
+  const { PutObjectCommand } = await import("@aws-sdk/client-s3");
+  const client = await getS3();
+  await client.send(
+    new PutObjectCommand({
+      Bucket: env.s3.bucket,
+      Key: key,
+      Body: buf,
+      ContentType: mime,
+    })
+  );
+}
+
+async function s3Get(key: string): Promise<Buffer | null> {
+  const { GetObjectCommand } = await import("@aws-sdk/client-s3");
+  const client = await getS3();
+  try {
+    const res = await client.send(
+      new GetObjectCommand({ Bucket: env.s3.bucket, Key: key })
+    );
+    if (!res.Body) return null;
+    const bytes = await res.Body.transformToByteArray();
+    return Buffer.from(bytes);
+  } catch (e) {
+    const code = (e as { name?: string })?.name;
+    if (code === "NoSuchKey" || code === "NotFound") return null;
+    throw e;
+  }
+}
+
+async function s3Delete(key: string): Promise<void> {
+  const { DeleteObjectCommand } = await import("@aws-sdk/client-s3");
+  const client = await getS3();
+  await client.send(
+    new DeleteObjectCommand({ Bucket: env.s3.bucket, Key: key })
+  );
+}
 
 async function ensureDir(dir: string) {
   await fs.mkdir(dir, { recursive: true });
@@ -32,6 +104,14 @@ async function putDbFile(
   buf: Buffer
 ): Promise<string> {
   const key = `${prefix}/${crypto.randomBytes(12).toString("hex")}.${ext}`;
+  if (usesS3()) {
+    await s3Put(key, mime, buf);
+    logger.info("storage.s3.upload", "Uploaded object to S3", {
+      key,
+      size: buf.length,
+    });
+    return key;
+  }
   await prisma.storedFile.create({
     data: { key, mime, size: buf.length, data: new Uint8Array(buf) },
   });
@@ -70,28 +150,46 @@ export async function savePdf(file: File): Promise<SavedFile> {
   return { urlOrKey: key, isPublic: false, size: buf.length };
 }
 
+export function sanitizeKey(key: string): string {
+  return key.replace(/\\/g, "/").replace(/\.\.+/g, "");
+}
+
+/** O'qilgan Buffer. Manbalar tartibi: disk → S3 → DB → Error */
 export async function readPrivate(key: string): Promise<Buffer> {
   if (key.startsWith("http://") || key.startsWith("https://")) {
-    const res = await fetch(key, { headers: { "User-Agent": "MBSI-Library/1.0", Referer: "https://www.ziyouz.com/" } });
+    const res = await fetch(key, {
+      headers: {
+        "User-Agent": "MBSI-Library/1.0",
+        Referer: "https://www.ziyouz.com/",
+      },
+    });
     if (!res.ok) throw new Error("FETCH_FAILED");
     return Buffer.from(await res.arrayBuffer());
   }
-  const safe = key.replace(/\\/g, "/").replace(/\.\.+/g, "");
+  const safe = sanitizeKey(key);
   const full = path.join(PRIVATE_ROOT, safe);
   try {
     return await fs.readFile(full);
   } catch {
-    // Fall back to the database (runtime uploads).
-    const row = await prisma.storedFile.findUnique({ where: { key: safe } });
-    if (!row) throw new Error("FILE_NOT_FOUND");
-    return Buffer.from(row.data);
+    /* continue */
   }
+  if (usesS3()) {
+    const obj = await s3Get(safe);
+    if (obj) return obj;
+  }
+  const row = await prisma.storedFile.findUnique({ where: { key: safe } });
+  if (!row) throw new Error("FILE_NOT_FOUND");
+  return Buffer.from(row.data);
 }
 
 export async function deleteCover(publicPath: string): Promise<void> {
   try {
     if (publicPath.startsWith("/api/files/")) {
       const key = publicPath.replace("/api/files/", "");
+      if (usesS3()) {
+        await s3Delete(key).catch(() => {});
+        return;
+      }
       await prisma.storedFile.delete({ where: { key } }).catch(() => {});
       return;
     }
@@ -103,8 +201,16 @@ export async function deleteCover(publicPath: string): Promise<void> {
 }
 
 export async function deletePrivate(key: string): Promise<void> {
-  const safe = key.replace(/\\/g, "/").replace(/\.\.+/g, "");
-  await prisma.storedFile.deleteMany({ where: { key: safe } }).catch(() => {});
+  const safe = sanitizeKey(key);
+  try {
+    if (usesS3()) {
+      await s3Delete(safe).catch(() => {});
+    } else {
+      await prisma.storedFile.deleteMany({ where: { key: safe } }).catch(() => {});
+    }
+  } catch {
+    /* ignore */
+  }
   try {
     await fs.unlink(path.join(PRIVATE_ROOT, safe));
   } catch {

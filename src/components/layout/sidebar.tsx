@@ -59,13 +59,13 @@ export function StudentSidebar() {
 
   return (
     <>
-      {/* ═══ TABLET SIDEBAR (md to lg) — icon only ═══ */}
+      {/* â•â•â• TABLET SIDEBAR (md to lg) â€” icon only â•â•â• */}
       <aside className="hidden md:flex lg:hidden flex-col border-r border-border bg-card w-[72px]">
         {/* Logo */}
         <div className="flex h-16 items-center justify-center border-b border-border">
           <Link href="/home" className="flex items-center justify-center">
             <Image
-              src="/logo/school-logo.svg"
+              src="/logo/school-logoV2.svg"
               alt="MBSI Logo"
               width={36}
               height={36}
@@ -76,7 +76,7 @@ export function StudentSidebar() {
           </Link>
         </div>
 
-        {/* Navigation — icon only, larger touch targets */}
+        {/* Navigation â€” icon only, larger touch targets */}
         <nav className="flex-1 flex flex-col items-center gap-1 py-4 px-1.5">
           {NAV_ITEMS.map((item) => {
             const isActive =
@@ -137,7 +137,7 @@ export function StudentSidebar() {
         </div>
       </aside>
 
-      {/* ═══ DESKTOP SIDEBAR (lg+) — full labels ═══ */}
+      {/* â•â•â• DESKTOP SIDEBAR (lg+) â€” full labels â•â•â• */}
       <aside
         className={cn(
           "hidden lg:flex flex-col border-r border-border bg-card transition-all duration-200",
@@ -149,7 +149,7 @@ export function StudentSidebar() {
           {!collapsed && (
             <Link href="/home" className="flex items-center gap-2.5">
               <Image
-                src="/logo/school-logo.svg"
+                src="/logo/school-logoV2.svg"
                 alt="MBSI Logo"
                 width={32}
                 height={32}

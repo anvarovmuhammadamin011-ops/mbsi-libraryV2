@@ -7,7 +7,6 @@ import {
   LayoutDashboard,
   BookMarked,
   Tags,
-  BarChart3,
   ChevronLeft,
   ChevronRight,
   LogOut,
@@ -26,12 +25,11 @@ interface NavItem {
 }
 
 // Kitob menejeri navigatsiyasi:
-// Dashboard, Kitoblar, Kategoriyalar, Analitika
+// Dashboard, Kitoblar, Kategoriyalar
 const NAV_ITEMS: NavItem[] = [
   { label: "Boshqaruv paneli", href: "/manager", icon: LayoutDashboard },
   { label: "Kitoblar", href: "/manager/books", icon: BookMarked },
   { label: "Kategoriyalar", href: "/manager/categories", icon: Tags },
-  { label: "Analitika", href: "/manager/analytics", icon: BarChart3 },
 ];
 
 function isNavActive(pathname: string, item: NavItem): boolean {
@@ -51,12 +49,12 @@ export function ManagerSidebar() {
 
   return (
     <>
-      {/* ─── Mobile top navigation (lg:hidden) ─── */}
+      {/* â”€â”€â”€ Mobile top navigation (lg:hidden) â”€â”€â”€ */}
       <div className="lg:hidden fixed top-0 left-0 right-0 z-40 border-b border-border bg-card/95 backdrop-blur-xl">
         <div className="flex items-center justify-between px-4 h-14">
           <Link href="/manager" className="flex items-center gap-2">
             <Image
-              src="/logo/school-logo.svg"
+              src="/logo/school-logoV2.svg"
               alt="MBSI Logo"
               width={28}
               height={28}
@@ -108,7 +106,7 @@ export function ManagerSidebar() {
           {!collapsed && (
             <Link href="/manager" className="flex items-center gap-2.5">
               <Image
-                src="/logo/school-logo.svg"
+                src="/logo/school-logoV2.svg"
                 alt="MBSI Logo"
                 width={32}
                 height={32}

@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useTheme } from "next-themes";
 import { useAuthStore } from "@/lib/auth-store";
 import { useLanguage } from "@/lib/i18n/language-provider";
 import { LANGS, type Lang } from "@/lib/i18n/dictionaries";
@@ -11,14 +10,10 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { toast } from "sonner";
 import {
   Globe,
-  Bell,
-  BookOpen,
-  Moon,
-  Sun,
   LogOut,
   Settings,
   Check,
@@ -28,15 +23,8 @@ export default function SettingsPage() {
   const router = useRouter();
   const { user, setUser, logout } = useAuthStore();
   const { lang, setLang, t } = useLanguage();
-  const { theme, setTheme } = useTheme();
   const [name, setName] = useState("");
   const [saving, setSaving] = useState(false);
-  const [mounted, setMounted] = useState(false);
-
-  const [notifications, setNotifications] = useState(true);
-  const [fontSize, setFontSize] = useState(16);
-
-  useEffect(() => setMounted(true), []);
 
   useEffect(() => {
     if (user) {
@@ -76,8 +64,6 @@ export default function SettingsPage() {
     router.refresh();
   }
 
-  const isDark = mounted && theme === "dark";
-
   return (
     <div className="max-w-2xl md:max-w-4xl lg:max-w-5xl mx-auto space-y-8 animate-fade-in pb-28 md:pb-0">
       <div>
@@ -95,9 +81,6 @@ export default function SettingsPage() {
         <CardContent className="p-6 space-y-5">
           <div className="flex items-center gap-5">
             <Avatar className="h-16 w-16 border border-border">
-              {user?.avatar ? (
-                <AvatarImage src={user.avatar} alt={name} />
-              ) : null}
               <AvatarFallback className="bg-primary/10 text-xl font-semibold text-primary">
                 {name?.charAt(0)?.toUpperCase() || "?"}
               </AvatarFallback>
@@ -162,108 +145,6 @@ export default function SettingsPage() {
                 </button>
               );
             })}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Appearance — dark mode toggle */}
-      <Card>
-        <CardContent className="p-6 space-y-4">
-          <div className="flex items-center gap-2">
-            <span className="text-primary">
-              {isDark ? <Moon size={16} /> : <Sun size={16} />}
-            </span>
-            <h2 className="text-sm font-semibold text-foreground">{t.settings.appearance}</h2>
-          </div>
-
-          <div className="flex items-center justify-between gap-4">
-            <div className="min-w-0">
-              <p className="text-sm font-medium text-foreground">{t.settings.darkMode}</p>
-              <p className="text-xs text-muted-foreground mt-0.5">{t.settings.darkModeSub}</p>
-            </div>
-            <button
-              type="button"
-              role="switch"
-              aria-checked={isDark}
-              onClick={() => setTheme(isDark ? "light" : "dark")}
-              className={`relative h-7 w-12 shrink-0 rounded-full transition-colors ${
-                isDark ? "bg-primary" : "bg-muted-foreground/30"
-              }`}
-            >
-              <span
-                className={`absolute top-1 h-5 w-5 rounded-full bg-white shadow-sm transition-transform ${
-                  isDark ? "translate-x-6" : "translate-x-1"
-                }`}
-              />
-            </button>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Notifications */}
-      <Card>
-        <CardContent className="p-6 space-y-4">
-          <div className="flex items-center gap-2">
-            <Bell size={16} className="text-primary" />
-            <h2 className="text-sm font-semibold text-foreground">{t.settings.notifications}</h2>
-          </div>
-
-          <div className="flex items-center justify-between gap-4">
-            <div className="min-w-0">
-              <p className="text-sm font-medium text-foreground">{t.settings.notifTitle}</p>
-              <p className="text-xs text-muted-foreground mt-0.5">{t.settings.notifSub}</p>
-            </div>
-            <button
-              type="button"
-              role="switch"
-              aria-checked={notifications}
-              onClick={() => setNotifications(!notifications)}
-              className={`relative h-7 w-12 shrink-0 rounded-full transition-colors ${
-                notifications ? "bg-primary" : "bg-muted-foreground/30"
-              }`}
-            >
-              <span
-                className={`absolute top-1 h-5 w-5 rounded-full bg-white shadow-sm transition-transform ${
-                  notifications ? "translate-x-6" : "translate-x-1"
-                }`}
-              />
-            </button>
-          </div>
-      </CardContent>
-      </Card>
-
-      {/* Reading */}
-      <Card>
-        <CardContent className="p-6 space-y-4">
-          <div className="flex items-center gap-2">
-            <BookOpen size={16} className="text-primary" />
-            <h2 className="text-sm font-semibold text-foreground">{t.settings.reading}</h2>
-          </div>
-
-          <div className="flex items-center justify-between gap-4">
-            <div className="min-w-0">
-              <p className="text-sm font-medium text-foreground">{t.settings.fontSize}</p>
-              <p className="text-xs text-muted-foreground mt-0.5">{fontSize}px</p>
-            </div>
-            <div className="flex items-center gap-2 shrink-0">
-              <button
-                type="button"
-                onClick={() => setFontSize(Math.max(12, fontSize - 2))}
-                className="h-9 w-9 rounded-lg bg-muted text-sm font-bold hover:bg-muted/80 transition-colors"
-                aria-label="-"
-              >
-                A−
-              </button>
-              <span className="w-10 text-center text-sm font-medium">{fontSize}</span>
-              <button
-                type="button"
-                onClick={() => setFontSize(Math.min(24, fontSize + 2))}
-                className="h-9 w-9 rounded-lg bg-muted text-sm font-bold hover:bg-muted/80 transition-colors"
-                aria-label="+"
-              >
-                A+
-              </button>
-            </div>
           </div>
         </CardContent>
       </Card>

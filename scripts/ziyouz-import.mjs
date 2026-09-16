@@ -187,7 +187,7 @@ async function downloadRealPdf(downloadSlug, destPath) {
         }
       }
       // Sometimes ziyouz returns HTML with meta refresh or requires session; treat as fail
-    } catch (e) {
+    } catch {
       // continue
     }
   }

@@ -104,15 +104,7 @@ export default async function ProfilePage() {
       <div className="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
         <div className="flex flex-col items-center px-6 py-8 text-center">
           <div className="flex h-20 w-20 items-center justify-center rounded-full bg-muted text-muted-foreground">
-            {user.avatar ? (
-              <img
-                src={user.avatar}
-                alt={user.name}
-                className="h-20 w-20 rounded-full object-cover"
-              />
-            ) : (
-              <User size={32} />
-            )}
+            <User size={32} />
           </div>
           <h1 className="mt-4 text-lg font-bold text-foreground">{user.name}</h1>
           <p className="mt-1 text-sm text-muted-foreground">{roleLabel(t, user.role)}</p>

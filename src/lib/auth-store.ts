@@ -2,7 +2,13 @@
 
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import type { User, UserRole } from "@/types";
+import type { User } from "@/types";
+
+function getCsrfCookie(): string {
+  if (typeof document === "undefined") return "";
+  const m = document.cookie.match(/(?:^|;\s*)mbsi_csrf=([^;]*)/);
+  return m ? decodeURIComponent(m[1]) : "";
+}
 
 interface AuthState {
   user: User | null;
@@ -12,15 +18,11 @@ interface AuthState {
   logout: () => Promise<void>;
   loadUser: () => Promise<void>;
   setUser: (user: User | null) => void;
-  hasRole: (role: UserRole) => boolean;
-  isAdmin: () => boolean;
-  isTeacher: () => boolean;
-  isStudent: () => boolean;
 }
 
 export const useAuthStore = create<AuthState>()(
   persist(
-    (set, get) => ({
+    (set) => ({
       user: null,
       isAuthenticated: false,
       isLoading: true,
@@ -44,7 +46,10 @@ export const useAuthStore = create<AuthState>()(
       },
 
       logout: async () => {
-        await fetch("/api/auth/logout", { method: "POST" }).catch(() => {});
+        const csrf = getCsrfCookie();
+        const headers: Record<string, string> = {};
+        if (csrf) headers["x-csrf-token"] = csrf;
+        await fetch("/api/auth/logout", { method: "POST", headers }).catch(() => {});
         set({ user: null, isAuthenticated: false, isLoading: false });
       },
 
@@ -68,11 +73,6 @@ export const useAuthStore = create<AuthState>()(
           isAuthenticated: Boolean(user),
           isLoading: false,
         }),
-
-      hasRole: (role) => get().user?.role === role,
-      isAdmin: () => get().user?.role === "ADMIN",
-      isTeacher: () => get().user?.role === "TEACHER",
-      isStudent: () => get().user?.role === "STUDENT",
     }),
     {
       name: "mbsi-auth",

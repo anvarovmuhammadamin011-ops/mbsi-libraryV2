@@ -3,6 +3,7 @@ import { requireAnyRole } from "@/lib/server/auth";
 import { prisma } from "@/lib/db";
 import { ApiError, ERROR_CODES } from "@/lib/server/errors";
 import { decryptPassword } from "@/lib/server/password-crypto";
+import { logAudit } from "@/lib/server/audit";
 import type { UserRole } from "@/types";
 
 /**
@@ -47,6 +48,15 @@ export const GET = route(async (req) => {
     username: u.username,
     password: decryptPassword(u.passwordEnc),
   }));
+
+  // Audit: parol o'qish — yuqori xavflilik darajasi
+  logAudit({
+    userId: viewer.id,
+    action: "credentials.read",
+    entity: "student",
+    entityId: ids.join(","),
+    metadata: { count: ids.length, viewerRole: viewer.role },
+  });
 
   return json({ success: true, data: items });
 });

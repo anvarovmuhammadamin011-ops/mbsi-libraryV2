@@ -30,7 +30,6 @@ export const PATCH = route(async (req, ctx) => {
     "name",
     "email",
     "phone",
-    "avatar",
     "group",
     "gender",
     "address",
@@ -55,7 +54,6 @@ export const PATCH = route(async (req, ctx) => {
     name: u.name,
     role: u.role,
     isActive: u.isActive,
-    avatar: u.avatar ?? undefined,
     updatedAt: u.updatedAt.toISOString(),
   });
 });

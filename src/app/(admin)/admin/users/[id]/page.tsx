@@ -112,11 +112,7 @@ export default async function AdminUserDetailPage({
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="flex items-center gap-4">
             <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-primary/10 text-2xl font-bold text-primary">
-              {u.avatar ? (
-                <img src={u.avatar} alt={u.name} className="h-full w-full object-cover" />
-              ) : (
-                u.name.charAt(0).toUpperCase()
-              )}
+              {u.name.charAt(0).toUpperCase()}
             </div>
             <div>
               <div className="flex items-center gap-2">

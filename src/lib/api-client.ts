@@ -11,15 +11,30 @@ export class ApiClientError extends Error {
 
 type ApiResult<T> = { success: boolean; data: T; error?: { code: string; message: string } };
 
+// CSRF double-submit: cookie o'qilib, mutation so'rovlariga header qo'shiladi.
+function getCsrfToken(): string {
+  if (typeof document === "undefined") return "";
+  const m = document.cookie.match(/(?:^|;\s*)mbsi_csrf=([^;]*)/);
+  return m ? decodeURIComponent(m[1]) : "";
+}
+
 async function request<T>(
   url: string,
   method: string,
   body?: unknown
 ): Promise<T> {
   const isForm = typeof FormData !== "undefined" && body instanceof FormData;
+  const isMutation = !["GET", "HEAD", "OPTIONS"].includes(
+    method.toUpperCase()
+  );
+  const csrf = isMutation ? getCsrfToken() : "";
+  const headers: Record<string, string> = isForm
+    ? {}
+    : { "Content-Type": "application/json" };
+  if (isMutation && csrf) headers["x-csrf-token"] = csrf;
   const res = await fetch(url, {
     method,
-    headers: isForm ? undefined : { "Content-Type": "application/json" },
+    headers,
     body: isForm ? (body as FormData) : body ? JSON.stringify(body) : undefined,
   });
   let json: ApiResult<T> | null = null;

@@ -40,13 +40,13 @@ export async function addBalls(
   const user = await prisma.user.findUnique({ where: { id: userId } });
   if (!user) throw new Error("Foydalanuvchi topilmadi");
 
-  const currentBalls = (user as any).balls ?? 0;
+  const currentBalls = user.balls ?? 0;
   const newBalance = clampBalls(currentBalls + amount);
 
   const [updatedUser, transaction] = await prisma.$transaction([
     prisma.user.update({
       where: { id: userId },
-      data: { balls: newBalance } as any,
+      data: { balls: newBalance },
     }),
     prisma.ballTransaction.create({
       data: {
@@ -82,7 +82,7 @@ export async function setBalls(
   const user = await prisma.user.findUnique({ where: { id: userId } });
   if (!user) throw new Error("Foydalanuvchi topilmadi");
 
-  const currentBalls = (user as any).balls ?? 0;
+  const currentBalls = user.balls ?? 0;
   const amount = clampBalls(newBalls) - currentBalls;
 
   if (Math.abs(amount) < 0.01) {
@@ -152,7 +152,7 @@ export async function getBallHistory(userId: string, limit = 50) {
 export async function getUserBalls(userId: string): Promise<number> {
   const user = await prisma.user.findUnique({ where: { id: userId } });
   if (!user) return 0;
-  return (user as any).balls ?? 0;
+  return user.balls ?? 0;
 }
 
 export async function checkAndPenalizeExpiredMissions(): Promise<number> {
@@ -167,26 +167,32 @@ export async function checkAndPenalizeExpiredMissions(): Promise<number> {
   let penalizedCount = 0;
 
   for (const mission of expiredMissions) {
-    const incompleteUsers = await prisma.user.findMany({
-      where: {
-        isActive: true,
-        role: { in: ["STUDENT", "TEACHER"] },
-        userMissions: {
-          none: { missionId: mission.id },
-        },
-      },
-    });
-
-    for (const user of incompleteUsers) {
-      const alreadyPenalized = await prisma.ballTransaction.findFirst({
+    // Batched: barcha nomzod foydalanuvchi id'lari va allaqachon jazolanganni
+    // bir martalik so'rovda yig'amiz — N+1 ni oldini oladi.
+    const [incomplete, penalizedRows] = await Promise.all([
+      prisma.user.findMany({
         where: {
-          userId: user.id,
+          isActive: true,
+          role: { in: ["STUDENT", "TEACHER"] },
+          userMissions: {
+            none: { missionId: mission.id },
+          },
+        },
+        select: { id: true },
+      }),
+      prisma.ballTransaction.findMany({
+        where: {
           type: "MISSION_PENALTY",
           referenceId: mission.id,
         },
-      });
+        select: { userId: true },
+      }),
+    ]);
 
-      if (!alreadyPenalized) {
+    const alreadyPenalized = new Set(penalizedRows.map((r) => r.userId));
+
+    for (const user of incomplete) {
+      if (!alreadyPenalized.has(user.id)) {
         await penalizeMissionIncomplete(user.id, mission.id, mission.title);
         penalizedCount++;
       }
@@ -202,44 +208,50 @@ export const INACTIVITY_PENALTY = -0.1;
 
 export async function penalizeInactiveUsers(): Promise<number> {
   const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+  const todayStart = new Date();
+  todayStart.setHours(0, 0, 0, 0);
 
-  // Find active students/teachers
+  // Find active students/teachers having any ball to lose
   const activeUsers = await prisma.user.findMany({
-    where: { isActive: true, role: { in: ["STUDENT", "TEACHER"] } },
-    select: { id: true, balls: true },
+    where: { isActive: true, role: { in: ["STUDENT", "TEACHER"] }, balls: { gt: 0 } },
+    select: { id: true },
   });
+  if (activeUsers.length === 0) return 0;
+
+  const userIds = activeUsers.map((u) => u.id);
+
+  // Batched: recent sessions and today's penalties in ONE query each — N+1 ni oldini oladi
+  const [recentUsers, penalizedToday] = await Promise.all([
+    prisma.readingSession.findMany({
+      where: { userId: { in: userIds }, startedAt: { gte: oneDayAgo } },
+      select: { userId: true },
+      distinct: ["userId"],
+    }),
+    prisma.ballTransaction.findMany({
+      where: {
+        userId: { in: userIds },
+        type: "INACTIVITY_PENALTY",
+        createdAt: { gte: todayStart },
+      },
+      select: { userId: true },
+      distinct: ["userId"],
+    }),
+  ]);
+
+  const activeSet = new Set(recentUsers.map((r) => r.userId));
+  const penalizedSet = new Set(penalizedToday.map((r) => r.userId));
 
   let penalizedCount = 0;
 
   for (const user of activeUsers) {
-    // Check if user had any reading session in last 24 hours
-    const recentSession = await prisma.readingSession.findFirst({
-      where: { userId: user.id, startedAt: { gte: oneDayAgo } },
-    });
-
-    if (!recentSession) {
-      // Check if already penalized today
-      const todayStart = new Date();
-      todayStart.setHours(0, 0, 0, 0);
-
-      const alreadyPenalizedToday = await prisma.ballTransaction.findFirst({
-        where: {
-          userId: user.id,
-          type: "INACTIVITY_PENALTY",
-          createdAt: { gte: todayStart },
-        },
-      });
-
-      if (!alreadyPenalizedToday && (user.balls ?? 0) > 0) {
-        await takeBalls(
-          user.id,
-          Math.abs(INACTIVITY_PENALTY),
-          "INACTIVITY_PENALTY",
-          `O'qimaganlik uchun jazo (${INACTIVITY_PENALTY} ball)`
-        );
-        penalizedCount++;
-      }
-    }
+    if (activeSet.has(user.id) || penalizedSet.has(user.id)) continue;
+    await takeBalls(
+      user.id,
+      Math.abs(INACTIVITY_PENALTY),
+      "INACTIVITY_PENALTY",
+      `O'qimaganlik uchun jazo (${INACTIVITY_PENALTY} ball)`
+    );
+    penalizedCount++;
   }
 
   return penalizedCount;

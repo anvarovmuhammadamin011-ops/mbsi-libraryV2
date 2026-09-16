@@ -18,6 +18,8 @@ import {
   Briefcase,
   Award,
   Swords,
+  Crown,
+  TrendingDown,
 } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -26,43 +28,72 @@ export default async function AdminDashboard() {
   const admin = await requireRole("ADMIN");
   if (!admin) return null;
 
-  const [stats, topBookAgg, topStudentAgg, pendingCount] = await Promise.all([
-    getAdminStats(),
-    prisma.readingSession.groupBy({
-      by: ["bookId"],
-      _count: { bookId: true },
-      orderBy: { _count: { bookId: "desc" } },
-      take: 5,
-    }),
-    prisma.readingSession.groupBy({
-      by: ["userId"],
-      _sum: { pagesRead: true },
-      where: { user: { role: "STUDENT" } },
-      orderBy: { _sum: { pagesRead: "desc" } },
-      take: 5,
-    }),
-    prisma.pendingStudent.count({ where: { status: "PENDING" } }),
-  ]);
+  const [stats, topBookAgg, topStudentAgg, topTeacherAgg, bottomStudentAgg, bottomTeacherAgg, pendingCount] =
+    await Promise.all([
+      getAdminStats(),
+      prisma.readingSession.groupBy({
+        by: ["bookId"],
+        _count: { bookId: true },
+        orderBy: { _count: { bookId: "desc" } },
+        take: 5,
+      }),
+      prisma.readingSession.groupBy({
+        by: ["userId"],
+        _sum: { pagesRead: true },
+        where: { user: { role: "STUDENT" } },
+        orderBy: { _sum: { pagesRead: "desc" } },
+        take: 5,
+      }),
+      prisma.readingSession.groupBy({
+        by: ["userId"],
+        _sum: { pagesRead: true },
+        where: { user: { role: "TEACHER" } },
+        orderBy: { _sum: { pagesRead: "desc" } },
+        take: 5,
+      }),
+      prisma.readingSession.groupBy({
+        by: ["userId"],
+        _sum: { pagesRead: true },
+        where: { user: { role: "STUDENT" } },
+        orderBy: { _sum: { pagesRead: "asc" } },
+        take: 5,
+      }),
+      prisma.readingSession.groupBy({
+        by: ["userId"],
+        _sum: { pagesRead: true },
+        where: { user: { role: "TEACHER" } },
+        orderBy: { _sum: { pagesRead: "asc" } },
+        take: 5,
+      }),
+      prisma.pendingStudent.count({ where: { status: "PENDING" } }),
+    ]);
 
   const bookIds = topBookAgg.map((r) => r.bookId);
-  const studentIds = topStudentAgg.map((r) => r.userId);
-  const [topBooks, topStudents] = await Promise.all([
+  const leaderIds = Array.from(
+    new Set([
+      ...topStudentAgg.map((r) => r.userId),
+      ...topTeacherAgg.map((r) => r.userId),
+      ...bottomStudentAgg.map((r) => r.userId),
+      ...bottomTeacherAgg.map((r) => r.userId),
+    ])
+  );
+  const [topBooks, leaderUsers] = await Promise.all([
     bookIds.length > 0
       ? prisma.book.findMany({
           where: { id: { in: bookIds } },
           select: { id: true, title: true, author: { select: { name: true } } },
         })
       : Promise.resolve([] as { id: string; title: string; author: { name: string } | null }[]),
-    studentIds.length > 0
+    leaderIds.length > 0
       ? prisma.user.findMany({
-          where: { id: { in: studentIds } },
-          select: { id: true, name: true, group: true },
+          where: { id: { in: leaderIds } },
+          select: { id: true, name: true, role: true, group: true, staffPosition: true },
         })
-      : Promise.resolve([] as { id: string; name: string; group: string | null }[]),
+      : Promise.resolve([] as { id: string; name: string; role: string; group: string | null; staffPosition: string | null }[]),
   ]);
 
   const bookMap = new Map(topBooks.map((b) => [b.id, b]));
-  const userMap = new Map(topStudents.map((u) => [u.id, u]));
+  const userMap = new Map(leaderUsers.map((u) => [u.id, u]));
 
   const fmt = (s: number) => {
     const h = Math.floor(s / 3600);
@@ -337,7 +368,91 @@ export default async function AdminDashboard() {
           )}
         </div>
       </div>
+
+      {/* ─── Eng kuchlilar va zaiflar ─── */}
+      <div className="grid gap-6 lg:grid-cols-2">
+        <div className="rounded-2xl border border-border bg-card p-5">
+          <div className="mb-3 flex items-center gap-2">
+            <Crown size={16} className="text-amber-500" />
+            <h2 className="text-sm font-semibold">Eng kuchli o&apos;quvchilar</h2>
+          </div>
+          <LeaderList items={topStudentAgg} userMap={userMap} />
+        </div>
+        <div className="rounded-2xl border border-border bg-card p-5">
+          <div className="mb-3 flex items-center gap-2">
+            <Crown size={16} className="text-violet-500" />
+            <h2 className="text-sm font-semibold">Eng kuchli o&apos;qituvchilar</h2>
+          </div>
+          <LeaderList items={topTeacherAgg} userMap={userMap} position />
+        </div>
+        <div className="rounded-2xl border border-border bg-card p-5">
+          <div className="mb-3 flex items-center gap-2">
+            <TrendingDown size={16} className="text-red-500" />
+            <h2 className="text-sm font-semibold">Eng zaif o&apos;quvchilar</h2>
+          </div>
+          <LeaderList items={bottomStudentAgg} userMap={userMap} weak />
+        </div>
+        <div className="rounded-2xl border border-border bg-card p-5">
+          <div className="mb-3 flex items-center gap-2">
+            <TrendingDown size={16} className="text-red-500" />
+            <h2 className="text-sm font-semibold">Eng zaif o&apos;qituvchilar</h2>
+          </div>
+          <LeaderList items={bottomTeacherAgg} userMap={userMap} weak position />
+        </div>
+      </div>
     </div>
+  );
+}
+
+function LeaderList({
+  items,
+  userMap,
+  weak,
+  position,
+}: {
+  items: { userId: string; _sum: { pagesRead: number | null } }[];
+  userMap: Map<string, { name: string; group: string | null; staffPosition: string | null }>;
+  weak?: boolean;
+  position?: boolean;
+}) {
+  if (items.length === 0) {
+    return (
+      <p className="py-6 text-center text-sm text-muted-foreground">
+        Hali faollik statistikasi yo&apos;q
+      </p>
+    );
+  }
+  return (
+    <ol className="space-y-2.5">
+      {items.map((r, i) => {
+        const u = userMap.get(r.userId);
+        const pages = r._sum.pagesRead ?? 0;
+        return (
+          <li key={r.userId} className="flex items-center gap-3">
+            <span
+              className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
+                weak
+                  ? "bg-red-500/10 text-red-600"
+                  : i === 0
+                    ? "bg-amber-500/15 text-amber-600"
+                    : "bg-primary/10 text-primary"
+              }`}
+            >
+              {i + 1}
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-medium">{u?.name ?? "—"}</p>
+              <p className="truncate text-xs text-muted-foreground">
+                {position ? (u?.staffPosition ?? u?.group ?? "") : (u?.group ?? "")}
+              </p>
+            </div>
+            <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-xs font-semibold tabular-nums">
+              {pages.toLocaleString()} bet
+            </span>
+          </li>
+        );
+      })}
+    </ol>
   );
 }
 

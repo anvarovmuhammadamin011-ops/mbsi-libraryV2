@@ -1,11 +1,12 @@
 import { route, json, readJson } from "@/lib/server/handler";
-import { requireAdmin } from "@/lib/server/auth";
+import { requireAdmin, requireAnyRole } from "@/lib/server/auth";
 import { listUsers, updateUser } from "@/lib/server/catalog";
 import { createManagedUser, VALID_USER_TYPES } from "@/lib/server/users";
 import { ApiError, ERROR_CODES } from "@/lib/server/errors";
 
 export const GET = route(async (req) => {
-  await requireAdmin();
+  const actor = await requireAnyRole(["ADMIN", "REGISTRAR"]);
+  if (!actor) throw new ApiError(ERROR_CODES.FORBIDDEN, "Ruxsat yo'q", 403);
   const q = req.nextUrl.searchParams.get("q") ?? undefined;
   const role = req.nextUrl.searchParams.get("role") ?? undefined;
   const items = await listUsers({ q, role: role ?? undefined });
@@ -36,7 +37,6 @@ export const POST = route(async (req) => {
       password: typeof body.password === "string" ? body.password : undefined,
       email: str(body.email),
       phone: str(body.phone),
-      avatar: str(body.avatar),
       group: str(body.group),
       age: numOrNull(body.age),
       birthDate: str(body.birthDate) || null,

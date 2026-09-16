@@ -46,7 +46,6 @@ export type ManagedUser = {
   id: string;
   name: string;
   role: UserRole;
-  avatar?: string;
   username?: string;
   email?: string;
   phone?: string;
@@ -291,12 +290,8 @@ export function AdminUsersView() {
               className="rounded-2xl border border-border bg-card p-4 transition-colors hover:border-primary/30"
             >
               <div className="flex items-start gap-3">
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary/10 text-base font-bold text-primary">
-                  {u.avatar ? (
-                    <img src={u.avatar} alt={u.name} className="h-full w-full object-cover" />
-                  ) : (
-                    u.name.charAt(0).toUpperCase()
-                  )}
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary/10 text-base font-bold text-primary">
+                  {u.name.charAt(0).toUpperCase()}
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-1.5">
@@ -306,10 +301,10 @@ export function AdminUsersView() {
                   </div>
                   <p className="mt-0.5 flex items-center gap-1 truncate text-xs text-muted-foreground">
                     {roleIcon(u)}
-                    <span>
-                      {roleLabel(u)}
-                      {u.username ? ` · @${u.username}` : ""}
-                    </span>
+                    <span>{roleLabel(u)}</span>
+                  </p>
+                  <p className="mt-0.5 truncate text-xs font-medium text-foreground/80">
+                    Login: <span className="text-muted-foreground">@{u.username ?? "—"}</span>
                   </p>
                   <p className="mt-0.5 truncate text-xs text-muted-foreground">
                     {u.studentId || u.staffId

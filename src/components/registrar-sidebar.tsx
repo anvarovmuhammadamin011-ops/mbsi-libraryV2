@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   UserPlus,
-  FileText,
+  Users,
   ChevronLeft,
   ChevronRight,
   LogOut,
@@ -23,10 +23,10 @@ interface NavItem {
 }
 
 // O'quvchi qo'shuvchi (Registrar) navigatsiyasi:
-// Yangi o'quvchi, Mening arizalarim
+// Yangi o'quvchi, Barcha foydalanuvchilar
 const NAV_ITEMS: NavItem[] = [
   { label: "Yangi o'quvchi", href: "/registrar", icon: UserPlus, exact: true },
-  { label: "Mening arizalarim", href: "/registrar/requests", icon: FileText },
+  { label: "Barcha foydalanuvchilar", href: "/registrar/users", icon: Users },
 ];
 
 function isNavActive(pathname: string, item: NavItem): boolean {

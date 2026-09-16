@@ -1,17 +1,22 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { FixedWindowLimiter } from "./lib/server/rate-limit";
+import {
+  SESSION_COOKIE,
+  CSRF_COOKIE,
+  CSRF_HEADER,
+  isMutationMethod,
+} from "./lib/server/security";
 
 // ============================================================
-// MBSI Library — Auth Middleware
+// MBSI Library — Auth + Security Proxy
 // ============================================================
-// Lightweight cookie-presence check. Does NOT verify the session
-// signature (that happens server-side in the layout/API routes).
-// This just ensures unauthenticated users get redirected to login
-// before any server components render.
+// 1. Page routes: lightweight session-presence check (real
+//    signature verification happens server-side in layouts).
+// 2. /api routes: centralized rate limiting (per IP+path) and
+//    CSRF double-submit enforcement for every mutation endpoint,
+//    regardless of whether the handler uses `route()`.
 
-const SESSION_COOKIE = "mbsi_session";
-
-// Protected paths (inside (app)/(admin)/(manager)/(registrar) groups)
 const protectedPaths = [
   "/home",
   "/books",
@@ -26,28 +31,128 @@ const protectedPaths = [
   "/registrar",
 ];
 
+// ── Rate limiting config (Edge-safe, read from process.env) ──
+const RL_ENABLED = (process.env.RATE_LIMIT_ENABLED ?? "true") !== "false";
+const RL_READ_MAX = Number(process.env.RATE_LIMIT_READ_MAX || 600);
+const RL_READ_WINDOW = Number(process.env.RATE_LIMIT_READ_WINDOW_MS || 60000);
+const RL_MUT_MAX = Number(process.env.RATE_LIMIT_MUTATION_MAX || 120);
+const RL_MUT_WINDOW = Number(process.env.RATE_LIMIT_MUTATION_WINDOW_MS || 60000);
+
+const readLimiter = new FixedWindowLimiter({
+  max: RL_READ_MAX,
+  windowMs: RL_READ_WINDOW,
+});
+const mutationLimiter = new FixedWindowLimiter({
+  max: RL_MUT_MAX,
+  windowMs: RL_MUT_WINDOW,
+});
+
+// Webhook/POST-bepul endpointlar (server-to-server, CSRF tekshirilmaydi)
+const CSRF_EXEMPT_PREFIXES = ["/api/auth/login", "/api/telegram"];
+
+// Past trafik GET endpointlar — rate-limitdan istisno
+const RATE_EXEMPT_PREFIXES = ["/api/pdf", "/api/files"];
+
+function clientIp(req: NextRequest): string {
+  const fwd = req.headers.get("x-forwarded-for");
+  return fwd?.split(",")[0]?.trim() || "unknown";
+}
+
 function needsAuth(pathname: string): boolean {
   return protectedPaths.some(
     (p) => pathname === p || pathname.startsWith(p + "/")
   );
 }
 
+function rateLimited(
+  req: NextRequest,
+  method: string,
+  pathname: string
+): { limited: boolean; retryAfterSec: number } {
+  const ip = clientIp(req);
+  const isMutation = isMutationMethod(method);
+  const limiter = isMutation ? mutationLimiter : readLimiter;
+  const key = `${method}:${ip}:${pathname}`;
+  const res = limiter.check(key);
+  return { limited: !res.allowed, retryAfterSec: res.retryAfterSec };
+}
+
+function csrfBlocked(req: NextRequest, pathname: string, method: string): boolean {
+  if (!isMutationMethod(method)) return false;
+  if (CSRF_EXEMPT_PREFIXES.some((p) => pathname.startsWith(p))) return false;
+
+  const session = req.cookies.get(SESSION_COOKIE)?.value;
+  const csrfCookie = req.cookies.get(CSRF_COOKIE)?.value;
+
+  // Sessiya bo'lmasa — public mutation (login/telegramdan tashqari hech kim
+  // ruxsat olmaydi, server xatoga beradi). CSRF kerak emas.
+  if (!session) return false;
+
+  // Sessiya bor, lekin CSRF cookie yo'q → eski sessiya, qayta kirish kerak.
+  if (!csrfCookie) return true;
+
+  // Double-submit: header cookie bilan mos bo'lishi shart.
+  const header = req.headers.get(CSRF_HEADER);
+  return !header || header !== csrfCookie;
+}
+
+function jsonError(status: number, code: string, message: string): NextResponse {
+  return NextResponse.json(
+    { success: false, error: { code, message } },
+    { status }
+  );
+}
+
+function getClientIpForLog(req: NextRequest): string {
+  return clientIp(req);
+}
+
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  const method = request.method.toUpperCase();
 
+  // ── API security (rate limit + CSRF) ──────────────────────
+  if (pathname.startsWith("/api/")) {
+    try {
+      if (
+        RL_ENABLED &&
+        !RATE_EXEMPT_PREFIXES.some((p) => pathname.startsWith(p))
+      ) {
+        const { limited, retryAfterSec } = rateLimited(request, method, pathname);
+        if (limited) {
+          console.warn(
+            `[RATE_LIMIT] ${getClientIpForLog(request)} ${method} ${pathname}`
+          );
+          return jsonError(
+            429,
+            "RATE_LIMITED",
+            `Juda ko'p so'rov. ${retryAfterSec} soniyadan keyin qayta urinib ko'ring.`
+          );
+        }
+      }
+      if (csrfBlocked(request, pathname, method)) {
+        console.warn(
+          `[CSRF_BLOCK] ${getClientIpForLog(request)} ${method} ${pathname}`
+        );
+        return jsonError(403, "FORBIDDEN", "Ruxsat yo'q (CSRF)");
+      }
+    } catch (e) {
+      // Proxi xatosi hech qachon frontendni buzmasligi kerak.
+      console.error("[SECURITY_PROXY_ERROR]", e);
+      return NextResponse.next();
+    }
+    return NextResponse.next();
+  }
+
+  // ── Page auth redirect ────────────────────────────────────
   if (!needsAuth(pathname)) {
     return NextResponse.next();
   }
 
   const token = request.cookies.get(SESSION_COOKIE)?.value;
-
   if (!token || !token.includes(".")) {
-    // No session or malformed token → redirect to login
     return NextResponse.redirect(new URL("/login", request.url), 307);
   }
-
-  // Session cookie exists — pass through to server component for
-  // full verification (HMAC signature, DB lookup, role check).
   return NextResponse.next();
 }
 
@@ -64,5 +169,6 @@ export const config = {
     "/admin/:path*",
     "/manager/:path*",
     "/registrar/:path*",
+    "/api/:path*",
   ],
 };

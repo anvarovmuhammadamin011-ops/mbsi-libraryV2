@@ -3,6 +3,7 @@ import { requireRegistrar } from "@/lib/server/auth";
 import { prisma } from "@/lib/db";
 import { ApiError, ERROR_CODES } from "@/lib/server/errors";
 import { decryptPassword } from "@/lib/server/password-crypto";
+import { logAudit } from "@/lib/server/audit";
 
 /**
  * GET /api/registrar/requests/[id]/credentials
@@ -52,6 +53,15 @@ export const GET = route(async (req, ctx) => {
   if (!student) {
     throw new ApiError(ERROR_CODES.NOT_FOUND, "O'quvchi topilmadi", 404);
   }
+
+  // Audit: parol o'qish
+  logAudit({
+    userId: viewer.id,
+    action: "credentials.read",
+    entity: "pending_student",
+    entityId: id,
+    metadata: { pendingId: id, viewerRole: viewer.role },
+  });
 
   return json({
     success: true,

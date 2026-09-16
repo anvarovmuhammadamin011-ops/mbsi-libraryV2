@@ -2,6 +2,7 @@ import { prisma } from "@/lib/db";
 import { hashPassword, generatePassword } from "./password";
 import { encryptPassword } from "./password-crypto";
 import { logAudit } from "./audit";
+import { invalidateUserSessions } from "./auth";
 import { ApiError, ERROR_CODES } from "./errors";
 import { USER_TYPE_OPTIONS } from "@/types";
 import type { UserTypeChoice } from "@/types";
@@ -37,7 +38,6 @@ export type ManagedUserInput = {
   password?: string;
   email?: string;
   phone?: string;
-  avatar?: string;
   // O'quvchi
   group?: string;
   age?: number | null;
@@ -99,11 +99,23 @@ export async function createManagedUser(
   }
 
   const birthDate = cleanDate(input.birthDate);
+
+  // Avtomatik noyob ID — agar kiritilmagan bo'lsa generatsiya qilinadi va
+  // hech qachon takrorlanmaydi (bazadan tekshirib olinadi).
+  const studentId =
+    (input.studentId?.trim() || null) ??
+    (input.userType === "STUDENT" ? await uniqueUserCode("student") : null);
+  const staffId =
+    (input.staffId?.trim() || null) ??
+    (input.userType !== "STUDENT" ? await uniqueUserCode("staff") : null);
+
   const data = mappedRoleData(mapped.role, staffPosition, input, {
     username,
     name,
     plainPassword,
     birthDate,
+    studentId,
+    staffId,
   });
 
   const user = await prisma.user.create({ data }).catch((e: unknown) => {
@@ -134,6 +146,8 @@ function mappedRoleData(
     name: string;
     plainPassword: string;
     birthDate: Date | undefined;
+    studentId: string | null;
+    staffId: string | null;
   }
 ): Prisma.UserCreateInput {
   return {
@@ -144,12 +158,11 @@ function mappedRoleData(
     role,
     staffPosition: (staffPosition ?? input.staffPosition?.trim()) || null,
     teacherSubject: input.teacherSubject?.trim() || null,
-    studentId: input.studentId?.trim() || null,
-    staffId: input.staffId?.trim() || null,
+    studentId: ctx.studentId,
+    staffId: ctx.staffId,
     birthDate: ctx.birthDate ?? null,
     email: input.email?.trim() || null,
     phone: input.phone?.trim() || null,
-    avatar: input.avatar?.trim() || null,
     group: input.group?.trim() || null,
     age: input.age ?? null,
     gender: input.gender ?? null,
@@ -239,7 +252,6 @@ export async function getManagedUserDetail(id: string) {
       staffId: user.staffId,
       birthDate: user.birthDate?.toISOString() ?? null,
       lastLoginAt: user.lastLoginAt?.toISOString() ?? null,
-      avatar: user.avatar,
       email: user.email,
       phone: user.phone,
       group: user.group,
@@ -314,7 +326,6 @@ export type ManagedUserPatch = {
   name?: string;
   email?: string;
   phone?: string;
-  avatar?: string;
   group?: string;
   age?: number | null;
   birthDate?: string | null;
@@ -339,7 +350,6 @@ export async function updateManagedUser(id: string, patch: ManagedUserPatch, act
   if (patch.name !== undefined) data.name = patch.name.trim();
   if (patch.email !== undefined) data.email = emptyToNull(patch.email);
   if (patch.phone !== undefined) data.phone = emptyToNull(patch.phone);
-  if (patch.avatar !== undefined) data.avatar = emptyToNull(patch.avatar);
   if (patch.group !== undefined) data.group = emptyToNull(patch.group);
   if (patch.age !== undefined) data.age = patch.age;
   if (birthDate !== undefined) data.birthDate = birthDate;
@@ -398,6 +408,8 @@ export async function resetUserPassword(id: string, actorId: string): Promise<st
     where: { id },
     data: { passwordHash: hashPassword(plain), passwordEnc: encryptPassword(plain) },
   });
+  // Eski barcha sessiyalarni bekor qilish — eski parollar bilan "eski" token ishlamaydi
+  await invalidateUserSessions(id);
   await logAudit({
     userId: actorId,
     action: "RESET_PASSWORD",
@@ -409,6 +421,21 @@ export async function resetUserPassword(id: string, actorId: string): Promise<st
 }
 
 // ─── Helpers ────────────────────────────────────────────────
+async function uniqueUserCode(kind: "student" | "staff"): Promise<string> {
+  const year = new Date().getFullYear();
+  const prefix = kind === "student" ? `${year}` : "ST";
+  for (let i = 0; i < 10; i++) {
+    const code = `${prefix}-${String(Math.floor(100 + Math.random() * 900))}`;
+    const taken = await prisma.user.findFirst({
+      where: kind === "student" ? { studentId: code } : { staffId: code },
+      select: { id: true },
+    });
+    if (!taken) return code;
+  }
+  // Kamdan-kam holda barchasi band bo'lsa — unikal vaqtga asoslangan kod.
+  return `${prefix}-${String(Date.now()).slice(-6)}`;
+}
+
 function emptyToNull(v: string | null | undefined): string | null {
   if (v === undefined) return undefined as unknown as string | null;
   const t = (v ?? "").trim();

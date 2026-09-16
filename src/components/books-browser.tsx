@@ -39,6 +39,12 @@ import { useAuthStore } from "@/lib/auth-store";
 import { toast } from "sonner";
 import type { Book } from "@/types";
 
+function getCsrfCookie(): string {
+  if (typeof document === "undefined") return "";
+  const m = document.cookie.match(/(?:^|;\s*)mbsi_csrf=([^;]*)/);
+  return m ? decodeURIComponent(m[1]) : "";
+}
+
 interface Category {
   id: string;
   name: string;
@@ -59,7 +65,6 @@ interface BookForm {
   categoryId: string;
   language: string;
   totalPages: string;
-  coinReward: string;
   description: string;
   isPublished: boolean;
   file: File | null;
@@ -72,7 +77,6 @@ const EMPTY_FORM: BookForm = {
   categoryId: "",
   language: "UZ",
   totalPages: "",
-  coinReward: "10",
   description: "",
   isPublished: true,
   file: null,
@@ -176,7 +180,6 @@ export function BooksBrowser({ categories, authors, initial }: Props) {
       fd.append("description", form.description.trim());
       fd.append("language", form.language);
       fd.append("totalPages", form.totalPages || "1");
-      fd.append("coinReward", form.coinReward || "10");
       fd.append("isPublished", String(form.isPublished));
       fd.append("file", form.file);
       if (showNewCategory && newCategory.trim()) {
@@ -186,7 +189,11 @@ export function BooksBrowser({ categories, authors, initial }: Props) {
       }
       if (form.cover && form.cover.size > 0) fd.append("cover", form.cover);
 
-      const r = await fetch("/api/admin/upload", { method: "POST", body: fd });
+      const r = await fetch("/api/admin/upload", {
+        method: "POST",
+        body: fd,
+        headers: { "x-csrf-token": getCsrfCookie() },
+      });
       if (!r.ok) {
         const err = await r.json().catch(() => ({}));
         throw new Error(err?.error?.message || "Yuklashda xatolik");
@@ -359,24 +366,6 @@ export function BooksBrowser({ categories, authors, initial }: Props) {
                       placeholder="avtomatik"
                     />
                   </div>
-                </div>
-
-                {/* Coin reward */}
-                <div className="space-y-1.5">
-                  <Label>Coin mukofoti</Label>
-                  <Input
-                    type="number"
-                    min={0}
-                    max={1000}
-                    value={form.coinReward}
-                    onChange={(e) =>
-                      setForm({ ...form, coinReward: e.target.value })
-                    }
-                    placeholder="masalan: 10"
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Kitob tugatganda beriladigan coin miqdori
-                  </p>
                 </div>
 
                 {/* Description */}

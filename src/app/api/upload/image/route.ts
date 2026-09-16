@@ -1,12 +1,12 @@
 import { route, json } from "@/lib/server/handler";
-import { requireAdmin } from "@/lib/server/auth";
+import { requireRegistrar } from "@/lib/server/auth";
 import { saveCover } from "@/lib/server/storage";
 import { validateCover } from "@/lib/server/pdf";
 import { ApiError, ERROR_CODES } from "@/lib/server/errors";
 
 // Generic image upload (banners / avatars). Returns a public URL.
 export const POST = route(async (req) => {
-  await requireAdmin();
+  await requireRegistrar();
   const form = await req.formData();
   const file = form.get("file");
   if (!(file instanceof File)) {

@@ -11,6 +11,23 @@ export function hashPassword(password: string): string {
 }
 
 /**
+ * Parolni tekshiramiz (timing-safe). Format: `salt:hash` (scrypt, 64 bayt).
+ */
+export function verifyPassword(password: string, stored: string | null): boolean {
+  if (!stored) return false;
+  const [salt, hash] = stored.split(":");
+  if (!salt || !hash) return false;
+  try {
+    const candidate = crypto.scryptSync(password, salt, 64);
+    const expected = Buffer.from(hash, "hex");
+    if (candidate.length !== expected.length) return false;
+    return crypto.timingSafeEqual(candidate, expected);
+  } catch {
+    return false;
+  }
+}
+
+/**
  * Tasodifiy o'qishga qulay parol yaratamiz (masalan: "Kf3m-P9xq").
  * chalkash harflar (0/O, 1/l/I) ishlatilmaydi.
  */

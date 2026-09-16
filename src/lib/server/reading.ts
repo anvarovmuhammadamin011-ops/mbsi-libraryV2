@@ -9,6 +9,7 @@ import type {
   RankingEntry,
   UserStatistics,
   PlatformStatistics,
+  UserRole,
 } from "@/types";
 import { MAX_ACTIVE_BOOKS } from "@/lib/validation";
 import { getBookStats, toApiBook, bookInclude, type BookStat } from "./books";
@@ -134,10 +135,6 @@ export async function upsertProgress(
       },
     });
     if (shouldAward) {
-      await prisma.user.update({
-        where: { id: userId },
-        data: { coins: { increment: (book as any).coinReward ?? 10 } },
-      });
       // Ball reward for book completion
       const { awardBookRead } = await import("./balls");
       await awardBookRead(userId, bookId);
@@ -163,10 +160,6 @@ export async function upsertProgress(
     },
   });
   if (completed) {
-    await prisma.user.update({
-      where: { id: userId },
-      data: { coins: { increment: (book as any).coinReward ?? 10 } },
-    });
     // Ball reward for book completion
     const { awardBookRead } = await import("./balls");
     await awardBookRead(userId, bookId);
@@ -471,9 +464,9 @@ export async function getRanking(role: "STUDENT" | "TEACHER") {
       user: {
         id: u.id,
         name: u.name,
-        role: u.role as any,
+        role: u.role as UserRole,
         avatar: u.avatar ?? undefined,
-        coins: (u as any).coins ?? 0,
+        coins: u.coins ?? 0,
         isActive: u.isActive,
         createdAt: u.createdAt.toISOString(),
         updatedAt: u.updatedAt.toISOString(),
@@ -482,7 +475,7 @@ export async function getRanking(role: "STUDENT" | "TEACHER") {
       totalBooks: 0,
       readingTime: 0,
       streak: 0,
-      balls: (u as any).balls ?? 0,
+      balls: u.balls ?? 0,
     };
   });
   return entries;

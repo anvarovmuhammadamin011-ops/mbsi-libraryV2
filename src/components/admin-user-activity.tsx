@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import { api } from "@/lib/api-client";
 import { Label } from "@/components/ui/label";
@@ -46,15 +46,16 @@ function fmt(d: Date) {
 
 export function AdminUserActivity({ userId }: { userId: string }) {
   const [period, setPeriod] = useState("30d");
-  const [customFrom, setCustomFrom] = useState(fmt(new Date(Date.now() - 29 * 86400000)));
-  const [customTo, setCustomTo] = useState(fmt(new Date()));
+  const now = useMemo(() => Date.now(), []);
+  const [customFrom, setCustomFrom] = useState(fmt(new Date(now - 29 * 86400000)));
+  const [customTo, setCustomTo] = useState(fmt(new Date(now)));
   const [result, setResult] = useState<Result | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const today = fmt(new Date());
-  const yesterday = fmt(new Date(Date.now() - 86400000));
-  const weekAgo = fmt(new Date(Date.now() - 6 * 86400000));
-  const monthAgo = fmt(new Date(Date.now() - 29 * 86400000));
+  const today = fmt(new Date(now));
+  const yesterday = fmt(new Date(now - 86400000));
+  const weekAgo = fmt(new Date(now - 6 * 86400000));
+  const monthAgo = fmt(new Date(now - 29 * 86400000));
 
   const from =
     period === "today"

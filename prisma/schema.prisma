@@ -53,6 +53,9 @@ model User {
   phone           String?
   coins           Int      @default(0)
   balls           Float    @default(0) // Ball system (0-12)
+  // Sessiya versiyasi — parol o'zgargan/qayta tiklanganida oshiriladi, eski
+  // sessiya tokenlari yaroqsiz bo'ladi (session invalidation).
+  sessionVersion  Int      @default(0) @map("session_version")
   isActive        Boolean  @default(true) @map("is_active")
   createdAt       DateTime @default(now()) @map("created_at")
   updatedAt       DateTime @updatedAt @map("updated_at")

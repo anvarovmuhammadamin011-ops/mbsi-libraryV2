@@ -9,6 +9,7 @@ import { Bot, InlineKeyboard } from "grammy";
 import { prisma } from "../lib/db";
 import { decidePendingStudent, requestSummary } from "../lib/server/pending-students";
 import { notifyRequestDecided } from "../lib/server/notify";
+import { verifyPassword } from "../lib/server/password";
 
 const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || "";
 const MINI_APP_URL = process.env.MINI_APP_URL || "http://localhost:3000";
@@ -89,17 +90,16 @@ bot.command("start", async (ctx) => {
       }
     );
   } else {
-    // Not logged in — show login options
+    // Not logged in — require credentials before linking Telegram
     await ctx.reply(
       `📚 <b>MBSI Library</b>\n\n` +
-        `O'quvchi kutubxonasi platformasiga xush kelibsiz!\n\n` +
-        `Telegram hisobingiz orqali kirish uchun role tanlang:`,
+        `Telegram hisobingizni kutubxona profilingizga ulash uchun\n` +
+        `<b>username</b> va <b>parol</b>ingizni kiritishingiz kerak.`,
       {
         parse_mode: "HTML",
         reply_markup: {
           inline_keyboard: [
-            [{ text: "👨‍🎓 O'quvchi sifatida kirish", callback_data: "login_STUDENT" }],
-            [{ text: "👨‍🏫 O'qituvchi sifatida kirish", callback_data: "login_TEACHER" }],
+            [{ text: "🔐 Telegram hisobini ulash", callback_data: "login_start" }],
             [{ text: "🌐 Web'dan kirish", web_app: { url: MINI_APP_URL } }],
           ],
         },
@@ -108,51 +108,63 @@ bot.command("start", async (ctx) => {
   }
 });
 
-// ─── Login callbacks ────────────────────────────────────────
+// ─── Secure Telegram linking (username + password) ───────────
+// Eski "rol tanlash → birinchi topilgan hisobga ulash" usuli xavfli
+// edi: boshqa birov bitta tugma bosib boshqa foydalanuvchi hisobiga
+// kira olardi. Endi foydalanuvchi o'z username/parolini tasdiqlashi shart.
 
-bot.callbackQuery(/^login_(.+)$/, async (ctx) => {
-  const role = ctx.match[1];
-  const telegramId = ctx.from.id;
+type PendingLogin = { username?: string; expiresAt: number };
+const pendingLogins = new Map<number, PendingLogin>();
+const LOGIN_TTL_MS = 5 * 60 * 1000; // 5 daqiqa
 
-  // Check if user exists with this role
-  const user = await prisma.user.findFirst({
-    where: { role: role as any, isActive: true },
-    orderBy: { createdAt: "asc" },
+async function linkByCredentials(
+  telegramId: number,
+  username: string,
+  password: string
+): Promise<{ ok: boolean; message: string }> {
+  const user = await prisma.user.findUnique({
+    where: { username: username.trim().toLowerCase() },
   });
-
-  if (!user) {
-    await ctx.answerCallbackQuery({ text: "Foydalanuvchi topilmadi", show_alert: true });
-    return;
+  if (!user || !user.isActive || !verifyPassword(password, user.passwordHash)) {
+    return { ok: false, message: `❌ Username yoki parol noto'g'ri. /start orqali qayta urinib ko'ring.` };
   }
 
-  // Link telegram ID to user
-  await prisma.user.update({
-    where: { id: user.id },
-    data: { telegramId: String(telegramId) },
-  });
+  // Agar bu hisob boshqa Telegram akkauntga ulangan bo'lsa — eski bog'lanishni olib tashlaymiz
+  if (user.telegramId) {
+    await prisma.user
+      .update({ where: { id: user.id }, data: { telegramId: null } })
+      .catch(() => {});
+  }
 
-  await ctx.answerCallbackQuery({ text: "✅ muvaffaqiyatli kirildi!" });
+  try {
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { telegramId: String(telegramId) },
+    });
+  } catch {
+    // telegramId unique — boshqa hisobda ishlatilgan bo'lsa, avval uni bo'shatamiz
+    await prisma.user
+      .updateMany({
+        where: { telegramId: String(telegramId) },
+        data: { telegramId: null },
+      })
+      .catch(() => {});
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { telegramId: String(telegramId) },
+    });
+  }
 
-  // Show main menu
-  const roleLabel = role === "TEACHER" ? "O'qituvchi" : "O'quvchi";
+  return { ok: true, message: `✅ <b>${escapeHtml(user.name)}</b> hisobingizga muvaffaqiyatli ulandisiz!` };
+}
 
+bot.callbackQuery("login_start", async (ctx) => {
+  await ctx.answerCallbackQuery();
+  pendingLogins.set(ctx.from.id, { expiresAt: Date.now() + LOGIN_TTL_MS });
   await ctx.editMessageText(
-    `✅ <b>Tizimga muvaffaqiyatli kirildi!</b>\n\n` +
-      `👤 ${escapeHtml(user.name)}\n` +
-      `🔰 ${roleLabel}\n\n` +
-      `Quyidagi amallardan birini tanlang:`,
-    {
-      parse_mode: "HTML",
-      reply_markup: {
-        inline_keyboard: [
-          [{ text: "📚 Kutubxona", callback_data: "menu_books" }, { text: "🔍 Qidirish", callback_data: "menu_search" }],
-          [{ text: "📖 Davom ettirish", callback_data: "menu_continue" }, { text: "🎯 Missiyalar", callback_data: "menu_missions" }],
-          [{ text: "🏆 Reyting", callback_data: "menu_ranking" }, { text: "🪙 Coinlarim", callback_data: "menu_coins" }],
-          [{ text: "📊 Statistikam", callback_data: "menu_stats" }, { text: "👤 Profil", callback_data: "menu_profile" }],
-          [{ text: "🌐 Kutubxonani ochish", web_app: { url: MINI_APP_URL } }],
-        ],
-      },
-    }
+    `🔐 <b>Telegram hisobini ulash</b>\n\n` +
+      `Kutubxonadagi <b>username</b>ingizni yozing:`,
+    { parse_mode: "HTML" }
   );
 });
 
@@ -242,10 +254,36 @@ bot.callbackQuery("menu_search", async (ctx) => {
 // Listen for text messages for search
 bot.on("message:text", async (ctx) => {
   const telegramId = ctx.from.id;
+  const query = ctx.message.text.trim();
+
+  // ── Davom etayotgan login dialogi (username → parol) ──
+  const pending = pendingLogins.get(telegramId);
+  if (pending) {
+    if (Date.now() > pending.expiresAt) {
+      pendingLogins.delete(telegramId);
+      await ctx.reply("⏳ Vaqt tugadi. /start orqali qaytadan urinib ko'ring.");
+      return;
+    }
+    if (!pending.username) {
+      pending.username = query;
+      await ctx.reply("🔑 Endi <b>parol</b>ingizni yozing:", { parse_mode: "HTML" });
+      return;
+    }
+    pendingLogins.delete(telegramId);
+    const result = await linkByCredentials(telegramId, pending.username, query);
+    await ctx.reply(result.message, { parse_mode: "HTML" });
+    if (result.ok) {
+      await ctx.reply(
+        `📚 <b>Assalomu alaykum!</b>\n\nMBSI Library dan foydalanish mumkin.`,
+        { parse_mode: "HTML" }
+      );
+    }
+    return;
+  }
+
   const user = await getUserByTelegramId(telegramId);
   if (!user) return;
 
-  const query = ctx.message.text.trim();
   if (query.startsWith("/") || query.length < 2) return;
 
   const books = await prisma.book.findMany({

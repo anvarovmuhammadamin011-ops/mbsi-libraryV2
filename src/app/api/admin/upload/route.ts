@@ -47,9 +47,7 @@ export async function POST(req: NextRequest) {
   const categoryIdInput = String(form.get("categoryId") || "").trim();
   const newCategoryName = String(form.get("newCategory") || "").trim();
   const totalPages = Math.max(1, Number(form.get("totalPages")) || 1);
-  const coinReward = Math.max(0, Math.min(1000, Number(form.get("coinReward")) || 10));
   const isPublished = String(form.get("isPublished") || "true") !== "false";
-  const contentText = String(form.get("contentText") || "").trim();
 
   if (!file || !title) {
     throw new ApiError(ERROR_CODES.VALIDATION, "Sarlavha va PDF fayl kerak", 400);
@@ -133,30 +131,9 @@ export async function POST(req: NextRequest) {
     coverUrl,
     pdfUrl: saved.urlOrKey,
     totalPages: detectedPages,
-    coinReward,
     fileSize: saved.size,
     userId: user.id,
   });
-
-  // Save manually provided text content, or auto-extract from PDF
-  if (contentText) {    await prisma.bookContent.upsert({
-      where: { bookId: book.id },
-      create: {
-        bookId: book.id,
-        extractedText: contentText,
-        status: "completed",
-      },
-      update: {
-        extractedText: contentText,
-        status: "completed",
-      },
-    });
-  } else {
-    // Auto-extract text from PDF in background
-    runExtractionBackground(book.id, saved.urlOrKey).catch((err) =>
-      console.error("Background extraction failed:", err)
-    );
-  }
 
   // Admin Telegram xabarnomasi (env sozlanmagan bo'lsa jim turadi)
   try {
@@ -172,9 +149,4 @@ export async function POST(req: NextRequest) {
   }
 
   return success(book, 201);
-}
-
-async function runExtractionBackground(bookId: string, pdfKey: string) {
-  const { processBookExtraction } = await import("@/lib/server/book-processor");
-  await processBookExtraction(bookId, pdfKey);
 }
