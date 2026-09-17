@@ -48,7 +48,7 @@ const mutationLimiter = new FixedWindowLimiter({
 });
 
 // Webhook/POST-bepul endpointlar (server-to-server, CSRF tekshirilmaydi)
-const CSRF_EXEMPT_PREFIXES = ["/api/auth/login", "/api/telegram"];
+const CSRF_EXEMPT_PREFIXES = ["/api/auth/login"];
 
 // Past trafik GET endpointlar — rate-limitdan istisno
 const RATE_EXEMPT_PREFIXES = ["/api/pdf", "/api/files"];
@@ -84,7 +84,7 @@ function csrfBlocked(req: NextRequest, pathname: string, method: string): boolea
   const session = req.cookies.get(SESSION_COOKIE)?.value;
   const csrfCookie = req.cookies.get(CSRF_COOKIE)?.value;
 
-  // Sessiya bo'lmasa — public mutation (login/telegramdan tashqari hech kim
+  // Sessiya bo'lmasa — public mutation (logindan tashqari hech kim
   // ruxsat olmaydi, server xatoga beradi). CSRF kerak emas.
   if (!session) return false;
 

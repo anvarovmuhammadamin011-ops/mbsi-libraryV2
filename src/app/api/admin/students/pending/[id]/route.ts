@@ -16,6 +16,6 @@ export const PATCH = route(async (req, ctx) => {
     throw new ApiError(ERROR_CODES.VALIDATION, "Noto'g'ri amal", 400);
   }
 
-  const result = await decidePendingStudent(id, action, admin.id, "panel");
+  const result = await decidePendingStudent(id, action, admin.id);
   return success(result);
 });

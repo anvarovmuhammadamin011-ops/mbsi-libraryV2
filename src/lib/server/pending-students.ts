@@ -1,13 +1,12 @@
 import { prisma } from "@/lib/db";
 import { pendingStudentSchema } from "@/lib/validation";
 import { ApiError, ERROR_CODES } from "./errors";
-import { notifyNewStudentRequest } from "./notify";
 import { hashPassword } from "./password";
 import { encryptPassword } from "./password-crypto";
 
 export type PendingInput = ReturnType<typeof pendingStudentSchema.parse>;
 
-// ─── Ariza yaratish (Admin/REGISTRAR) + Telegram bildirishnoma ───
+// ─── Ariza yaratish (Admin/REGISTRAR) ───
 export async function createPendingStudent(
   input: PendingInput,
   submittedById: string | null
@@ -48,34 +47,14 @@ export async function createPendingStudent(
     },
   });
 
-  // Admin Telegram orqali xabardor qilinadi (env sozlanmagan bo'lsa jim)
-  let submittedByName: string | null = null;
-  if (submittedById) {
-    const u = await prisma.user.findUnique({
-      where: { id: submittedById },
-      select: { name: true },
-    });
-    submittedByName = u?.name ?? null;
-  }
-  await notifyNewStudentRequest({
-    id: item.id,
-    firstName: item.firstName,
-    lastName: item.lastName,
-    group: item.group,
-    age: item.age,
-    phone: item.phone,
-    submittedByName,
-  });
-
   return item;
 }
 
-// ─── Qaror: tasdiqlash / rad etish (Admin, panel yoki Telegram) ───
+// ─── Qaror: tasdiqlash / rad etish (Admin, panel) ───
 export async function decidePendingStudent(
   id: string,
   action: "approve" | "reject",
-  decidedById: string | null,
-  source: "panel" | "telegram" = "panel"
+  decidedById: string | null
 ) {
   const pending = await prisma.pendingStudent.findUnique({ where: { id } });
   if (!pending || pending.status !== "PENDING") {
@@ -115,16 +94,4 @@ export async function decidePendingStudent(
     data: { status: "APPROVED", decidedById, studentId: user.id },
   });
   return { action, approved: true, userId: user.id };
-}
-
-// ─── Umumiy xulosa matni (Telegram xabarni yangilash uchun) ───
-export function requestSummary(p: {
-  firstName: string;
-  lastName: string;
-  group?: string | null;
-  age?: number | null;
-}): string {
-  return `👤 ${p.firstName} ${p.lastName}\n🎓 Guruh: ${p.group || "—"}${
-    p.age ? `\n🎂 Yosh: ${p.age}` : ""
-  }`;
 }

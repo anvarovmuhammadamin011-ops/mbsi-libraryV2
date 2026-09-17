@@ -1,7 +1,9 @@
 // ============================================================
 // MBSI Library — Database Seed Script
 // ============================================================
-// Populates the SQLite database with demo data for development.
+// Populates the database with the real library catalogue
+// (Uzbek literature) for development and initial setup.
+// Old placeholder/demo books are removed automatically.
 // Run: npm run db:seed
 // ============================================================
 
@@ -38,42 +40,33 @@ const USERS = [
   { id: "user-8", name: "Alisher Navoiy", role: "ADMIN", avatar: "/avatars/admin-1.svg" },
 ];
 
+// ── Mualliflar: kutubxonadagi real asarlar mualliflari ──
 const AUTHORS = [
-  { id: "author-1", name: "James Clear", biography: "American author and speaker known for his work on habits and decision-making." },
-  { id: "author-2", name: "Chingiz Aytmatov", biography: "Kyrgyz author who wrote in both Russian and Kyrgyz." },
-  { id: "author-peter-thiel", name: "Peter Thiel", biography: "German-American entrepreneur, co-founder of PayPal, author of Zero to One." },
-  { id: "author-ray-dalio", name: "Ray Dalio", biography: "American investor and hedge fund manager, author of Principles." },
-  { id: "author-jim-collins", name: "Jim Collins", biography: "American business consultant, author of Good to Great." },
-  { id: "author-robert-kiyosaki", name: "Robert Kiyosaki", biography: "American businessman, author of Rich Dad Poor Dad." },
-  { id: "author-eckhart-tolle", name: "Eckhart Tolle", biography: "German-born spiritual teacher, author of The Power of Now." },
-  { id: "author-cal-newport", name: "Cal Newport", biography: "American computer science professor, author of Deep Work." },
-  { id: "author-3", name: "Abdulla Qodiriy", biography: "Uzbek writer, playwright, publicist. Author of 'O'tkan Kunlar'." },
-  { id: "author-4", name: "O'tkir Hoshimov", biography: "Uzbek writer, journalist, and playwright." },
-  { id: "author-5", name: "Stephen Hawking", biography: "British theoretical physicist and cosmologist." },
-  { id: "author-6", name: "Robin Sharma", biography: "Canadian lawyer and author of The Monk Who Sold His Ferrari." },
-  { id: "author-7", name: "Dale Carnegie", biography: "American writer and lecturer, developer of courses in self-improvement." },
-  { id: "author-8", name: "Norman Lewis", biography: "English linguist and author of vocabulary-building books." },
-  { id: "author-9", name: "Paulo Coelho", biography: "Brazilian lyricist and novelist, author of The Alchemist." },
-  { id: "author-10", name: "Mehmon Baxtiyorov", biography: "Uzbek educator and methodologist." },
-  // ── To'g'ri mualliflar (avval noto'g'ri biriktirilgan kitoblar uchun) ──
-  { id: "author-11", name: "Robert Kiyosaki", biography: "American businessman and author of Rich Dad Poor Dad." },
-  { id: "author-12", name: "Peter Thiel", biography: "Entrepreneur and investor, author of Zero to One." },
-  { id: "author-13", name: "Jim Collins", biography: "American researcher and author of Good to Great." },
-  { id: "author-14", name: "Eric Ries", biography: "Entrepreneur and author of The Lean Startup." },
-  { id: "author-15", name: "Ray Dalio", biography: "American investor and author of Principles." },
-  { id: "author-16", name: "Eckhart Tolle", biography: "Spiritual teacher and author of The Power of Now." },
-  { id: "author-17", name: "Simon Sinek", biography: "Author and speaker, author of Start with Why." },
-  { id: "author-18", name: "David Goggins", biography: "Ultramarathon runner and author of Can't Hurt Me." },
-  { id: "author-19", name: "Ryan Holiday", biography: "American author focused on stoicism (The Obstacle Is the Way, Ego Is the Enemy)." },
-  { id: "author-20", name: "Cal Newport", biography: "Computer scientist and author of Deep Work." },
-  { id: "author-21", name: "Daniel Kahneman", biography: "Psychologist and Nobel laureate, author of Thinking, Fast and Slow." },
-  { id: "author-22", name: "Yuval Noah Harari", biography: "Historian and author of Sapiens." },
-  { id: "author-23", name: "Robert Greene", biography: "American author, author of The 48 Laws of Power." },
-  { id: "author-24", name: "Sun Tzu", biography: "Ancient Chinese strategist, author of The Art of War." },
-  { id: "author-25", name: "Marcus Aurelius", biography: "Roman emperor and stoic philosopher, author of Meditations." },
-  { id: "author-26", name: "Héctor García", biography: "Co-author of Ikigai: The Japanese Secret to a Long and Happy Life." },
-  { id: "author-27", name: "Donella Meadows", biography: "Systems scientist, author of Thinking in Systems." },
-  { id: "author-28", name: "Mirkarim Osim", biography: "Uzbek writer and historian, author of historical works." },
+  { id: "a-qodiriy", name: "Abdulla Qodiriy", biography: "O'zbek adabiyotining klassiki, \"O'tkan kunlar\" romani muallifi." },
+  { id: "a-qahhor", name: "Abdulla Qahhor", biography: "O'zbek xalq yozuvchisi, \"Sarob\" va \"Qo'shchinor chiroqlari\" romanlari muallifi." },
+  { id: "a-fitrat", name: "Abdurauf Fitrat", biography: "Jadid yozuvchisi, tarixchi va ma'rifatparvar." },
+  { id: "a-cholpon", name: "Abdulhamid Cho'lpon", biography: "Shoir, yozuvchi, dramaturg va tarjimon." },
+  { id: "a-ismoil", name: "Abdulhamid Ismoil", biography: "Zamonaviy o'zbek yozuvchisi." },
+  { id: "a-kocar", name: "Abdulhamid Ko'char", biography: "O'zbek yozuvchisi va tarixchi-o'lkashunos." },
+  { id: "a-abbos-said", name: "Abbos Said", biography: "Zamonaviy o'zbek yozuvchisi." },
+  { id: "a-ayizov", name: "Abdulla Ayizov", biography: "O'zbek yozuvchisi." },
+  { id: "a-chimirzayev", name: "Abdulla Chimirzayev", biography: "O'zbek yozuvchisi." },
+  { id: "a-abdumutal", name: "Abdumutal Abdullayev", biography: "O'zbek yozuvchisi." },
+  { id: "a-abdiyev", name: "Abdunabi Abdiyev", biography: "O'zbek yozuvchisi." },
+  { id: "a-hamro", name: "Abdunabi Hamro", biography: "Zamonaviy o'zbek yozuvchisi." },
+  { id: "a-ibrohimov", name: "Abduqahhor Ibrohimov", biography: "O'zbek yozuvchisi va tarjimon." },
+  { id: "a-yoldosh", name: "Abduqayum Yo'ldosh", biography: "O'zbek yozuvchisi, \"Timsohning ko'z yoshlari\" muallifi." },
+  { id: "a-abdurahmon", name: "Abdurahmon Karimov", biography: "O'zbek yozuvchisi." },
+  { id: "a-nurmurodov", name: "Abdurashid Nurmurodov", biography: "O'zbek yozuvchisi." },
+  { id: "a-pardayev", name: "Abdurashid Pardayev", biography: "Zamonaviy o'zbek yozuvchisi." },
+  { id: "a-kochimov", name: "Abdusaid Ko'chimov", biography: "O'zbek yozuvchisi." },
+  { id: "a-hotamov", name: "Abdusattor Hotamov", biography: "O'zbek yozuvchisi." },
+  { id: "a-sodiqov", name: "Abdusattor Sodiqov", biography: "O'zbek yozuvchisi." },
+  { id: "a-mamarasulov", name: "Abulqosim Mamarasulov", biography: "O'zbek yozuvchisi." },
+  { id: "a-damin", name: "Adham Damin", biography: "Zamonaviy o'zbek yozuvchisi." },
+  { id: "a-tohirov", name: "Afzal Tohirov", biography: "O'zbek yozuvchisi va adabiyotshunos." },
+  { id: "a-ahad-hasan", name: "Ahad Hasan", biography: "O'zbek yozuvchisi." },
+  { id: "a-azam", name: "Ahmad A'zam", biography: "Zamonaviy o'zbek yozuvchisi." },
 ];
 
 const CATEGORIES = [
@@ -87,623 +80,180 @@ const CATEGORIES = [
   { id: "cat-8", name: "Tarix", slug: "tarix", description: "Tarixiy kitoblar", icon: "📜" },
 ];
 
-const BOOKS = [
-  // Original Ali book
-  {
-    id: "book-ali",
-    title: "Ali va uning sarguzashtlari",
-    description: "Ali — injiq va bilimga chanqoq bola. U kutubxonada topgan g'alati kitob orqali hayotini butunlay o'zgartiradi. Qat'iyat va mehnat bilan orzusiga erishadi.",
-    coverUrl: "/covers/ali-kitobi.svg",
-    pdfUrl: "pdfs/ali-kitobi.pdf",
-    language: "UZ",
-    totalPages: 5,
-    authorId: "author-10",
-    categoryId: "cat-2",
-    isPublished: true,
-      },
-  // 50 new books
-  {
-    id: "book-1",
-    title: "Atomic Habits",
-    description: "Kichik o'zgarishlar katta natijalar beradi. Odatlarni shakllantirish va o'zgartirish haqida.",
-    coverUrl: "/covers/book-1.svg",
-    language: "EN",
-    totalPages: 320,
-    authorId: "author-1",
-    categoryId: "cat-7",
-    isPublished: true,
-      },
-  {
-    id: "book-2",
-    title: "The Alchemist",
-    description: "Paulo Coelho ning mashhur romani. O'z orzusini izlovchi yosh cho'pon haqida.",
-    coverUrl: "/covers/book-2.svg",
-    language: "EN",
-    totalPages: 208,
-    authorId: "author-9",
-    categoryId: "cat-2",
-    isPublished: true,
-      },
-  {
-    id: "book-3",
-    title: "Deep Work",
-    description: "Diqqatni jamlash va murakkab ishlarni bajarish san'ati.",
-    coverUrl: "/covers/book-3.svg",
-    language: "EN",
-    totalPages: 296,
-    authorId: "author-cal-newport",
-    categoryId: "cat-7",
-    isPublished: true,
-      },
-  {
-    id: "book-4",
-    title: "Thinking, Fast and Slow",
-    description: "Ikki tizimli fikrlash haqida. Tez va sekin fikrlash orasidagi farq.",
-    coverUrl: "/covers/book-4.svg",
-    language: "EN",
-    totalPages: 499,
-    authorId: "author-cal-newport",
-    categoryId: "cat-1",
-    isPublished: true,
-      },
-  {
-    id: "book-5",
-    title: "Sapiens",
-    description: "Insoniyat tarixi haqida. Oddiy hayvondan zamonaviy jamiyatgacha.",
-    coverUrl: "/covers/book-5.svg",
-    language: "EN",
-    totalPages: 443,
-    authorId: "author-22",
-    categoryId: "cat-8",
-    isPublished: true,
-      },
-  {
-    id: "book-6",
-    title: "The Monk Who Sold His Ferrari",
-    description: "O'zini topish va haqiqiy baxtni izlash haqida hikoya.",
-    coverUrl: "/covers/book-6.svg",
-    language: "EN",
-    totalPages: 208,
-    authorId: "author-6",
-    categoryId: "cat-7",
-    isPublished: true,
-      },
-  {
-    id: "book-7",
-    title: "How to Win Friends",
-    description: "Odamlar bilan qanday muloqot qilish va do'stlik qilish haqida.",
-    coverUrl: "/covers/book-7.svg",
-    language: "EN",
-    totalPages: 320,
-    authorId: "author-7",
-    categoryId: "cat-7",
-    isPublished: true,
-      },
-  {
-    id: "book-8",
-    title: "Word Power Made Easy",
-    description: "Ingliz tilini boyitish va so'z zaxirasini oshirish uchun kitob.",
-    coverUrl: "/covers/book-8.svg",
-    language: "EN",
-    totalPages: 480,
-    authorId: "author-8",
-    categoryId: "cat-6",
-    isPublished: true,
-      },
-  {
-    id: "book-9",
-    title: "O'tkan Kunlar",
-    description: "Abdulla Qodiriy ning mashhur romani. O'tgan kunlar xotirasi.",
-    coverUrl: "/covers/book-9.svg",
-    language: "UZ",
-    totalPages: 350,
-    authorId: "author-3",
-    categoryId: "cat-3",
-    isPublished: true,
-      },
-  {
-    id: "book-10",
-    title: "Jaynomad",
-    description: "O'tkir Hoshimovning badiiy asari. Hayot haqida fikrlash.",
-    coverUrl: "/covers/book-10.svg",
-    language: "UZ",
-    totalPages: 280,
-    authorId: "author-4",
-    categoryId: "cat-3",
-    isPublished: true,
-      },
-  {
-    id: "book-11",
-    title: "A Brief History of Time",
-    description: "Koinot haqida oddiy tilda. Stephen Hawking ning ilmiy asari.",
-    coverUrl: "/covers/book-11.svg",
-    language: "EN",
-    totalPages: 256,
-    authorId: "author-5",
-    categoryId: "cat-1",
-    isPublished: true,
-      },
-  {
-    id: "book-12",
-    title: "Jur'a Tandir",
-    description: "Chingiz Aytmatov ning mashhur asari. O'rmon haqida.",
-    coverUrl: "/covers/book-12.svg",
-    language: "UZ",
-    totalPages: 320,
-    authorId: "author-2",
-    categoryId: "cat-3",
-    isPublished: true,
-      },
-  {
-    id: "book-13",
-    title: "Mental Arithmetic",
-    description: "Aqliy hisoblash usullari. Matematik qobiliyatni rivojlantirish.",
-    coverUrl: "/covers/book-13.svg",
-    language: "UZ",
-    totalPages: 180,
-    authorId: "author-10",
-    categoryId: "cat-5",
-    isPublished: true,
-      },
-  {
-    id: "book-14",
-    title: "The Power of Now",
-    description: "Hozirgi lahzani qadrlash va huzur ichida yashash.",
-    coverUrl: "/covers/book-14.svg",
-    language: "EN",
-    totalPages: 236,
-    authorId: "author-eckhart-tolle",
-    categoryId: "cat-7",
-    isPublished: true,
-      },
-  {
-    id: "book-15",
-    title: "Rich Dad Poor Dad",
-    description: "Moliyaviy savodxonlik haqida. Boy va kambag'al otalar farqi.",
-    coverUrl: "/covers/book-15.svg",
-    language: "EN",
-    totalPages: 336,
-    authorId: "author-eckhart-tolle",
-    categoryId: "cat-7",
-    isPublished: true,
-      },
-  {
-    id: "book-16",
-    title: "The 48 Laws of Power",
-    description: "Hokimiyat qonunlari. Tarixiy voqealar asosida.",
-    coverUrl: "/covers/book-16.svg",
-    language: "EN",
-    totalPages: 499,
-    authorId: "author-robert-kiyosaki",
-    categoryId: "cat-8",
-    isPublished: true,
-      },
-  {
-    id: "book-17",
-    title: "Start with Why",
-    description: "Nima uchun degan savol bilan boshlash. Leadership haqida.",
-    coverUrl: "/covers/book-17.svg",
-    language: "EN",
-    totalPages: 256,
-    authorId: "author-17",
-    categoryId: "cat-7",
-    isPublished: true,
-      },
-  {
-    id: "book-18",
-    title: "Zero to One",
-    description: "Startaplar haqida. Hech narsadan bir narsaga yaratish.",
-    coverUrl: "/covers/book-18.svg",
-    language: "EN",
-    totalPages: 224,
-    authorId: "author-peter-thiel",
-    categoryId: "cat-7",
-    isPublished: true,
-      },
-  {
-    id: "book-19",
-    title: "Good to Great",
-    description: "Yaxshidan a'lo darajaga yetish. Biznes strategiyalari.",
-    coverUrl: "/covers/book-19.svg",
-    language: "EN",
-    totalPages: 320,
-    authorId: "author-peter-thiel",
-    categoryId: "cat-7",
-    isPublished: true,
-      },
-  {
-    id: "book-20",
-    title: "The Lean Startup",
-    description: "Startap yaratishning zamonaviy usuli. Tezkor sinov va rivojlantirish.",
-    coverUrl: "/covers/book-20.svg",
-    language: "EN",
-    totalPages: 336,
-    authorId: "author-jim-collins",
-    categoryId: "cat-7",
-    isPublished: true,
-      },
-  {
-    id: "book-21",
-    title: "Thinking in Systems",
-    description: "Tizimli fikrlash. Murakkab tuzilmalarni tushunish.",
-    coverUrl: "/covers/book-21.svg",
-    language: "EN",
-    totalPages: 218,
-    authorId: "author-27",
-    categoryId: "cat-1",
-    isPublished: true,
-      },
-  {
-    id: "book-22",
-    title: "The Art of War",
-    description: "Sun Tzu ning urush san'ati. Harbiy strategiya.",
-    coverUrl: "/covers/book-22.svg",
-    language: "EN",
-    totalPages: 128,
-    authorId: "author-24",
-    categoryId: "cat-8",
-    isPublished: true,
-      },
-  {
-    id: "book-23",
-    title: "Meditations",
-    description: "Mark Avreliyning meditatsiyalari. Stoik falsafa.",
-    coverUrl: "/covers/book-23.svg",
-    language: "EN",
-    totalPages: 256,
-    authorId: "author-25",
-    categoryId: "cat-8",
-    isPublished: true,
-      },
-  {
-    id: "book-24",
-    title: "The Obstacle Is the Way",
-    description: "Qiyinchiliklarni imkoniyatga aylantirish. Stoik falsafa.",
-    coverUrl: "/covers/book-24.svg",
-    language: "EN",
-    totalPages: 224,
-    authorId: "author-19",
-    categoryId: "cat-7",
-    isPublished: true,
-      },
-  {
-    id: "book-25",
-    title: "Ego Is the Enemy",
-    description: "Ego haqiqiy dushman. O'zini boshqarish haqida.",
-    coverUrl: "/covers/book-25.svg",
-    language: "EN",
-    totalPages: 256,
-    authorId: "author-19",
-    categoryId: "cat-7",
-    isPublished: true,
-      },
-  {
-    id: "book-26",
-    title: "Principles",
-    description: "Hayot va biznes qoidalari. Ray Dalio tajribasi.",
-    coverUrl: "/covers/book-26.svg",
-    language: "EN",
-    totalPages: 592,
-    authorId: "author-ray-dalio",
-    categoryId: "cat-7",
-    isPublished: true,
-      },
-  {
-    id: "book-27",
-    title: "Can't Hurt Me",
-    description: "David Goggins ning hayoti. Miskinlikdan g'alaba sari.",
-    coverUrl: "/covers/book-27.svg",
-    language: "EN",
-    totalPages: 368,
-    authorId: "author-ray-dalio",
-    categoryId: "cat-7",
-    isPublished: true,
-      },
-  {
-    id: "book-28",
-    title: "The 5 AM Club",
-    description: "Erta turish odati. Samaradorlikni oshirish.",
-    coverUrl: "/covers/book-28.svg",
-    language: "EN",
-    totalPages: 272,
-    authorId: "author-6",
-    categoryId: "cat-7",
-    isPublished: true,
-      },
-  {
-    id: "book-29",
-    title: "Ikigai",
-    description: "Yapon baxt falsafasi. Hayot maqsodini topish.",
-    coverUrl: "/covers/book-29.svg",
-    language: "EN",
-    totalPages: 208,
-    authorId: "author-26",
-    categoryId: "cat-7",
-    isPublished: true,
-      },
-  {
-    id: "book-30",
-    title: "Atomic Habits (Uzbek)",
-    description: "Odatlarni shakllantirish. Kichik o'zgarishlar katta natijalar.",
-    coverUrl: "/covers/book-30.svg",
-    language: "UZ",
-    totalPages: 320,
-    authorId: "author-1",
-    categoryId: "cat-7",
-    isPublished: true,
-      },
-  {
-    id: "book-31",
-    title: "O'zbekiston Tarixi",
-    description: "O'zbekiston respublikasining boy tarixi.",
-    coverUrl: "/covers/book-31.svg",
-    language: "UZ",
-    totalPages: 400,
-    authorId: "author-28",
-    categoryId: "cat-8",
-    isPublished: true,
-      },
-  {
-    id: "book-32",
-    title: "Matematika Asoslari",
-    description: "Matematikaning asosiy tushunchalari va usullari.",
-    coverUrl: "/covers/book-32.svg",
-    language: "UZ",
-    totalPages: 280,
-    authorId: "author-10",
-    categoryId: "cat-5",
-    isPublished: true,
-      },
-  {
-    id: "book-33",
-    title: "Fizika Qonunlari",
-    description: "Fizikaning asosiy qonunlari va formulalari.",
-    coverUrl: "/covers/book-33.svg",
-    language: "UZ",
-    totalPages: 320,
-    authorId: "author-5",
-    categoryId: "cat-4",
-    isPublished: true,
-      },
-  {
-    id: "book-34",
-    title: "Ingliz Tili Grammatikasi",
-    description: "Ingliz tilining grammatik qoidalari.",
-    coverUrl: "/covers/book-34.svg",
-    language: "EN",
-    totalPages: 350,
-    authorId: "author-8",
-    categoryId: "cat-6",
-    isPublished: true,
-      },
-  {
-    id: "book-35",
-    title: "Adabiyot Tanlangan",
-    description: "O'zbek va jahon adabiyotidan tanlangan asarlar.",
-    coverUrl: "/covers/book-35.svg",
-    language: "UZ",
-    totalPages: 280,
-    authorId: "author-4",
-    categoryId: "cat-3",
-    isPublished: true,
-      },
-  {
-    id: "book-36",
-    title: "Psixologiya Kirish",
-    description: "Psixologiya fanining asoslari va tushunchalari.",
-    coverUrl: "/covers/book-36.svg",
-    language: "UZ",
-    totalPages: 250,
-    authorId: "author-7",
-    categoryId: "cat-7",
-    isPublished: true,
-      },
-  {
-    id: "book-37",
-    title: "Biznes Asoslari",
-    description: "Biznes yuritishning asosiy qoidalari.",
-    coverUrl: "/covers/book-37.svg",
-    language: "EN",
-    totalPages: 280,
-    authorId: "author-11",
-    categoryId: "cat-7",
-    isPublished: true,
-      },
-  {
-    id: "book-38",
-    title: "Falsafa Lug'at",
-    description: "Falsafiy atamalar va tushunchalar lug'ati.",
-    coverUrl: "/covers/book-38.svg",
-    language: "UZ",
-    totalPages: 200,
-    authorId: "author-10",
-    categoryId: "cat-8",
-    isPublished: true,
-      },
-  {
-    id: "book-39",
-    title: "Sun'iy Intellekt",
-    description: "Sun'iy intellekt texnologiyalari va ularning rivojlanishi.",
-    coverUrl: "/covers/book-39.svg",
-    language: "EN",
-    totalPages: 300,
-    authorId: "author-20",
-    categoryId: "cat-1",
-    isPublished: true,
-      },
-  {
-    id: "book-40",
-    title: "Iqlim O'zgarishi",
-    description: "Global iqlim o'zgarishi va uning ta'siri.",
-    coverUrl: "/covers/book-40.svg",
-    language: "EN",
-    totalPages: 280,
-    authorId: "author-5",
-    categoryId: "cat-1",
-    isPublished: true,
-      },
-  {
-    id: "book-41",
-    title: "Biologiya",
-    description: "Biologiya fanining asoslari.",
-    coverUrl: "/covers/book-41.svg",
-    language: "UZ",
-    totalPages: 350,
-    authorId: "author-10",
-    categoryId: "cat-1",
-    isPublished: true,
-      },
-  {
-    id: "book-42",
-    title: "Kimyo Asoslari",
-    description: "Kimyo fanining asosiy tushunchalari.",
-    coverUrl: "/covers/book-42.svg",
-    language: "UZ",
-    totalPages: 300,
-    authorId: "author-10",
-    categoryId: "cat-1",
-    isPublished: true,
-      },
-  {
-    id: "book-43",
-    title: "Geografiya",
-    description: "Geografiya fanining asoslari.",
-    coverUrl: "/covers/book-43.svg",
-    language: "UZ",
-    totalPages: 280,
-    authorId: "author-10",
-    categoryId: "cat-1",
-    isPublished: true,
-      },
-  {
-    id: "book-44",
-    title: "Informatika",
-    description: "Informatika va kompyuter fanlari.",
-    coverUrl: "/covers/book-44.svg",
-    language: "UZ",
-    totalPages: 320,
-    authorId: "author-10",
-    categoryId: "cat-5",
-    isPublished: true,
-      },
-  {
-    id: "book-45",
-    title: "Tarixiy Asarlar",
-    description: "Tarixiy voqealar haqida to'plam.",
-    coverUrl: "/covers/book-45.svg",
-    language: "UZ",
-    totalPages: 350,
-    authorId: "author-28",
-    categoryId: "cat-8",
-    isPublished: true,
-      },
-  {
-    id: "book-46",
-    title: "Zamonaviy Adabiyot",
-    description: "Zamonaviy yozuvchilar asarlari to'plami.",
-    coverUrl: "/covers/book-46.svg",
-    language: "UZ",
-    totalPages: 280,
-    authorId: "author-4",
-    categoryId: "cat-2",
-    isPublished: true,
-      },
-  {
-    id: "book-47",
-    title: "Ilmiy Kashfiyotlar",
-    description: "Ilmiy kashfiyotlar va ularning ahamiyati.",
-    coverUrl: "/covers/book-47.svg",
-    language: "EN",
-    totalPages: 300,
-    authorId: "author-5",
-    categoryId: "cat-1",
-    isPublished: true,
-      },
-  {
-    id: "book-48",
-    title: "Moliya Boshqaruvi",
-    description: "Shaxsiy moliyani boshqarish usullari.",
-    coverUrl: "/covers/book-48.svg",
-    language: "EN",
-    totalPages: 250,
-    authorId: "author-11",
-    categoryId: "cat-7",
-    isPublished: true,
-      },
-  {
-    id: "book-49",
-    title: "Muloqot San'ati",
-    description: "Odamlar bilan samarali muloqot qilish.",
-    coverUrl: "/covers/book-49.svg",
-    language: "EN",
-    totalPages: 280,
-    authorId: "author-7",
-    categoryId: "cat-7",
-    isPublished: true,
-      },
-  {
-    id: "book-50",
-    title: "Hayot Falsafasi",
-    description: "Hayot maqonini topish va baxtli yashash.",
-    coverUrl: "/covers/book-50.svg",
-    language: "EN",
-    totalPages: 220,
-    authorId: "author-19",
-    categoryId: "cat-7",
-    isPublished: true,
-      },
+// ── Real kutubxona fondi: [sarlavha, muqova fayli, muallif, betlar] ──
+const UZ_BOOKS = [
+  // ── Abdulla Qahhor ──
+  { t: "Asarlar. 1-jild: Sarob (roman)", c: "abdulla-qahhor-asarlar-1-jild-sarob-roman", a: "a-qahhor", p: 512 },
+  { t: "Asarlar. 5 jildlik. 2-jild: Qo'shchinor chiroqlari", c: "abdulla-qahhor-asarlar-5-jildlik-2-jild-qoshchinor-chiroqlari", a: "a-qahhor", p: 496 },
+  { t: "Asarlar. 5 jildlik. 3-jild: O'tmishdan ertaklar", c: "abdulla-qahhor-asarlar-5-jildlik-3-jild-otmishdan-ertaklar", a: "a-qahhor", p: 464 },
+  { t: "Asarlar. 6 tomlik. 3-tom (1967)", c: "abdulla-qahhor-asarlar-6-tomlik-3-tom-1967", a: "a-qahhor", p: 528 },
+  { t: "Asarlar. 6 tomlik. 4-tom (1967)", c: "abdulla-qahhor-asarlar-6-tomlik-4-tom-1967", a: "a-qahhor", p: 536 },
+  { t: "Asarlar. 6 tomlik. 6-tom (1971)", c: "abdulla-qahhor-asarlar-6-tomlik-6-tom-1971", a: "a-qahhor", p: 544 },
+  { t: "Dahshat (hikoyalar to'plami)", c: "abdulla-qahhor-dahshat-hikoyalar-toplami", a: "a-qahhor", p: 208 },
+  { t: "Hikoyalar (1933)", c: "abdulla-qahhor-hikoyalar-1933", a: "a-qahhor", p: 176 },
+  { t: "Hikoyalar (1949)", c: "abdulla-qahhor-hikoyalar-1949", a: "a-qahhor", p: 232 },
+  { t: "Ming bir jon (1959)", c: "abdulla-qahhor-ming-bir-jon-1959", a: "a-qahhor", p: 312 },
+  { t: "Muhabbat (qissa)", c: "abdulla-qahhor-muhabbat-qissa", a: "a-qahhor", p: 160 },
+  { t: "Nurli cho'qqilar (1967)", c: "abdulla-qahhor-nurli-choqqilar-1967", a: "a-qahhor", p: 288 },
+  { t: "Oltin yulduz (1965)", c: "abdulla-qahhor-oltin-yulduz-1965", a: "a-qahhor", p: 328 },
+  { t: "Oltin yulduz (qissa)", c: "abdulla-qahhor-oltin-yulduz-qissa", a: "a-qahhor", p: 184 },
+  { t: "O'tmishdan ertaklar (1976)", c: "abdulla-qahhor-otmishdan-ertaklar-1976", a: "a-qahhor", p: 360 },
+  { t: "O'tmishdan ertaklar (qissa)", c: "abdulla-qahhor-otmishdan-ertaklar-qissa", a: "a-qahhor", p: 216 },
+  { t: "Portretlar, felyetonlar", c: "abdulla-qahhor-portretlar-felyetonlar", a: "a-qahhor", p: 248 },
+  { t: "Qanotsiz chittak (1937)", c: "abdulla-qahhor-qanotsiz-chittak-1937", a: "a-qahhor", p: 144 },
+  { t: "Qo'shchinor chiroqlari (roman)", c: "abdulla-qahhor-qoshchinor-chiroqlari-roman", a: "a-qahhor", p: 344 },
+  { t: "Qotilning tug'ilishi (1933)", c: "abdulla-qahhor-qotilning-tugilishi-1933", a: "a-qahhor", p: 152 },
+  { t: "Sarob (roman)", c: "abdulla-qahhor-sarob-roman", a: "a-qahhor", p: 384 },
+  { t: "Sinchalak (1960)", c: "abdulla-qahhor-sinchalak-1960", a: "a-qahhor", p: 264 },
+  { t: "Sinchalak (qissa)", c: "abdulla-qahhor-sinchalak-qissa", a: "a-qahhor", p: 192 },
+  { t: "Tanlangan asarlar. 3 tomlik. 1-tom (1957)", c: "abdulla-qahhor-tanlangan-asarlar-3-tomlik-1-tom-1957", a: "a-qahhor", p: 480 },
+  { t: "Tanlangan asarlar. 3 tomlik. 2-tom (1957)", c: "abdulla-qahhor-tanlangan-asarlar-3-tomlik-2-tom-1957", a: "a-qahhor", p: 472 },
+  { t: "Tanlangan asarlar. 3 tomlik. 3-tom (1956)", c: "abdulla-qahhor-tanlangan-asarlar-3-tomlik-3-tom-1956", a: "a-qahhor", p: 440 },
+  // ── Abdulla Qodiriy ──
+  { t: "Diyori bakr", c: "abdulla-qodiriy-diyori-bakr", a: "a-qodiriy", p: 96 },
+  { t: "G'irvonlik Mallavoy (1987)", c: "abdulla-qodiriy-girvonlik-mallavoy-1987", a: "a-qodiriy", p: 224 },
+  { t: "Jinlar bazmi (hikoyalar)", c: "abdulla-qodiriy-jinlar-bazmi-hikoyalar", a: "a-qodiriy", p: 256 },
+  { t: "Mehrobdan chayon (1967)", c: "abdulla-qodiriy-mehrobdan-chayon-1967", a: "a-qodiriy", p: 320 },
+  { t: "Mehrobdan chayon (roman)", c: "abdulla-qodiriy-mehrobdan-chayon-roman", a: "a-qodiriy", p: 352 },
+  { t: "O'bid ketmon (1959)", c: "abdulla-qodiriy-obid-ketmon-1959", a: "a-qodiriy", p: 368 },
+  { t: "O'tkan kunlar (1974)", c: "abdulla-qodiriy-otkan-kunlar-1974", a: "a-qodiriy", p: 400 },
+  { t: "O'tkan kunlar (roman)", c: "abdulla-qodiriy-otkan-kunlar-roman", a: "a-qodiriy", p: 432 },
+  { t: "To'la asarlar to'plami. 6 jildlik. 1-jild", c: "abdulla-qodiriy-tola-asarlar-toplami-6-jildlik-1-jild", a: "a-qodiriy", p: 560 },
+  // ── Abdurauf Fitrat ──
+  { t: "Hindistonda bir farangi ila buxorolik mudarrisning munozarasi", c: "abdurauf-fitrat-hindistonda-bir-farangi-ila-buxorolik-mudarrisning-munozarasi", a: "a-fitrat", p: 128 },
+  { t: "Hind sayyohining qissasi", c: "abdurauf-fitrat-hind-sayyohining-qissasi", a: "a-fitrat", p: 144 },
+  { t: "Tanlangan asarlar. 1-jild", c: "abdurauf-fitrat-tanlangan-asarlar-1-jild", a: "a-fitrat", p: 480 },
+  // ── Abdulhamid Cho'lpon ──
+  { t: "Hikoyalar, tarjimalar", c: "abdulhamid-cholpon-hikoyalar-tarjimalar", a: "a-cholpon", p: 288 },
+  // ── Abdulhamid Ismoil ──
+  { t: "Jinlar bazmi", c: "abdulhamid-ismoil-jinlar-bazmi", a: "a-ismoil", p: 272 },
+  { t: "Manaschi (roman)", c: "abdulhamid-ismoil-manaschi-roman", a: "a-ismoil", p: 336 },
+  { t: "Murtad (qissa)", c: "abdulhamid-ismoil-murtad-qissa", a: "a-ismoil", p: 208 },
+  // ── Abdulhamid Ko'char ──
+  { t: "Qullikdan hurlikka", c: "abdulhamid-kochar-qullikdan-hurlikka", a: "a-kocar", p: 240 },
+  // ── Abbos Said ──
+  { t: "Qariya (qissalar, hikoyalar)", c: "abbos-said-qariya-qissalar-hikoyalar", a: "a-abbos-said", p: 192 },
+  // ── Abdulla Ayizov ──
+  { t: "Polvon yig'lagan tun (qissa)", c: "abdulla-ayizov-polvon-yiglagan-tun-qissa", a: "a-ayizov", p: 176 },
+  // ── Abdulla Chimirzayev ──
+  { t: "Hayot yog'dulari (hikoyalar)", c: "abdulla-chimirzayev-hayot-yogdulari-hikoyalar", a: "a-chimirzayev", p: 208 },
+  // ── Abdumutal Abdullayev ──
+  { t: "Alushta ertagi (qissa)", c: "abdumutal-abdullayev-alushta-ertagi-qissa", a: "a-abdumutal", p: 168 },
+  { t: "Dard (qissa)", c: "abdumutal-abdullayev-dard-qissa", a: "a-abdumutal", p: 192 },
+  { t: "Hazrati Attor (qissa)", c: "abdumutal-abdullayev-hazrati-attor-qissa", a: "a-abdumutal", p: 224 },
+  // ── Abdunabi Abdiyev ──
+  { t: "Muallaq odam (qissa)", c: "abdunabi-abdiyev-muallaq-odam-qissa", a: "a-abdiyev", p: 184 },
+  // ── Abdunabi Hamro ──
+  { t: "Vaqt daryosi", c: "abdunabi-hamro-vaqt-daryosi", a: "a-hamro", p: 216 },
+  // ── Abduqahhor Ibrohimov ──
+  { t: "Osmon yaqin, yer yumshoq (1982)", c: "abduqahhor-ibrohimov-osmon-yaqin-yer-yumshoq-1982", a: "a-ibrohimov", p: 288 },
+  { t: "Uyqu kelmas kechalar (roman)", c: "abduqahhor-ibrohimov-uyqu-kelmas-kechalar-roman", a: "a-ibrohimov", p: 320 },
+  // ── Abduqayum Yo'ldosh ──
+  { t: "Otchopar yoxud o'n uchinchi uy (qissa)", c: "abduqayum-yoldosh-otchopar-yoxud-on-uchinchi-uy-qissa", a: "a-yoldosh", p: 200 },
+  { t: "Sunbulaning ilk shanbasi (qissa)", c: "abduqayum-yoldosh-sunbulaning-ilk-shanbasi-qissa", a: "a-yoldosh", p: 176 },
+  { t: "Timsohning ko'z yoshlari", c: "abduqayum-yoldosh-timsohning-koz-yoshlari", a: "a-yoldosh", p: 232 },
+  { t: "Timsohning ko'z yoshlari (qissa)", c: "abduqayum-yoldosh-timsohning-koz-yoshlari-qissa", a: "a-yoldosh", p: 208 },
+  { t: "To'y (qissa)", c: "abduqayum-yoldosh-toy-qissa", a: "a-yoldosh", p: 160 },
+  { t: "Yulduzning yo'li (qissa)", c: "abduqayum-yoldosh-yulduzning-yoli-qissa", a: "a-yoldosh", p: 192 },
+  // ── Abdurahmon Karimov ──
+  { t: "Qoro ko'zim", c: "abdurahmon-karimov-abduqayum-yoldosh-qaro-kozim", a: "a-abdurahmon", p: 240 },
+  // ── Abdurashid Nurmurodov ──
+  { t: "Nurafshon yog'du (roman)", c: "abdurashid-nurmurodov-nurafshon-yogdu-roman", a: "a-nurmurodov", p: 304 },
+  // ── Abdurashid Pardayev ──
+  { t: "Uch g'ildirakli velosiped (qissa va hikoyalar)", c: "abdurashid-pardayev-uch-gildirakli-velosiped-qissa-va-hikoyalar", a: "a-pardayev", p: 184 },
+  // ── Abdusaid Ko'chimov ──
+  { t: "Halqa", c: "abdusaid-kochimov-halqa", a: "a-kochimov", p: 176 },
+  // ── Abdusattor Hotamov ──
+  { t: "Yaxshilik daraxti (saylanma)", c: "abdusattor-hotamov-yaxshilik-daraxti-saylanma", a: "a-hotamov", p: 288 },
+  // ── Abdusattor Sodiqov ──
+  { t: "Oriyat (hikoyalar)", c: "abdusattor-sodiqov-oriyat-hikoyalar", a: "a-sodiqov", p: 208 },
+  // ── Abulqosim Mamarasulov ──
+  { t: "Alibek va qirq dostining sarguzashtlari (hikoyalar)", c: "abulqosim-mamarasulov-alibek-va-qirq-dostining-sarguzashtlari-hikoyalar", a: "a-mamarasulov", p: 240 },
+  { t: "Barlos qishlog'ining oydin kechalari (hikoyalar)", c: "abulqosim-mamarasulov-barlos-qishlogining-oydin-kechalari-hikoyalar", a: "a-mamarasulov", p: 256 },
+  { t: "Barlos qishlog'ining zumrad tonglari (hikoyalar)", c: "abulqosim-mamarasulov-barlos-qishlogining-zumrad-tonglari-hikoyalar", a: "a-mamarasulov", p: 264 },
+  // ── Adham Damin ──
+  { t: "Jur'at (hikoyalar)", c: "adham-damin-jurat-hikoyalar", a: "a-damin", p: 192 },
+  { t: "Saylanma. 1-jild (roman va qissalar)", c: "adham-damin-saylanma-1-jild-roman-va-qissalar", a: "a-damin", p: 416 },
+  // ── Afzal Tohirov ──
+  { t: "Toshqin daryo (qissa)", c: "afzal-tohirov-toshqin-daryo-qissa", a: "a-tohirov", p: 176 },
+  // ── Ahad Hasan ──
+  { t: "Ko'hna Buxoro qissalari", c: "ahad-hasan-kohna-buxoro-qissalari", a: "a-ahad-hasan", p: 208 },
+  // ── Ahmad A'zam ──
+  { t: "Asqartog' tomonlarda (qissa)", c: "ahmad-azam-asqartog-tomonlarda-qissa", a: "a-azam", p: 208 },
+  { t: "Bu kunning davomi (qissa)", c: "ahmad-azam-bu-kunning-davomi-qissa", a: "a-azam", p: 192 },
+  { t: "Hali hayot bor (qissa)", c: "ahmad-azam-hali-hayot-bor-qissa", a: "a-azam", p: 224 },
+  { t: "Odam zahri (kinoqissa)", c: "ahmad-azam-odam-zahri-kinoqissa", a: "a-azam", p: 160 },
+  { t: "O'zi uylanmagan sovchi (roman)", c: "ahmad-azam-ozi-uylanmagan-sovchi-roman", a: "a-azam", p: 288 },
+];
+
+function authorNameOf(id) {
+  return AUTHORS.find((a) => a.id === id)?.name ?? "Noma'lum muallif";
+}
+
+function buildDescription(authorId, title) {
+  const name = authorNameOf(authorId);
+  const t = title.toLowerCase();
+  if (t.includes("roman")) {
+    return `${name}ning "${title}" asari — o'zbek nasrining yirik romanlaridan biri. Kutubxona fondidan.`;
+  }
+  if (t.includes("hikoya")) {
+    return `${name}ning "${title}" — hayotdan olingan iliq hikoyalar to'plami. Kutubxona fondidan.`;
+  }
+  if (t.includes("asarlar") || t.includes("saylanma") || t.includes("jild") || t.includes("tom")) {
+    return `${name}ning "${title}" — ijodidan tanlangan asarlar to'plami. Kutubxona fondidan.`;
+  }
+  return `${name}ning "${title}" asari — o'zbek adabiyotining suyukli namunalaridan. Kutubxona fondidan.`;
+}
+
+const BOOKS = UZ_BOOKS.map((b, i) => ({
+  id: `book-uz-${String(i + 1).padStart(3, "0")}`,
+  title: b.t,
+  description: buildDescription(b.a, b.t),
+  coverUrl: `/covers/${b.c}.svg`,
+  language: "UZ",
+  totalPages: b.p,
+  authorId: b.a,
+  categoryId: "cat-3", // O'zbek adabiyoti
+  isPublished: true,
+}));
+
+// ── Eski demo (placeholder) kitob va mualliflar ──
+const OLD_BOOK_IDS = ["book-ali", ...Array.from({ length: 50 }, (_, i) => `book-${i + 1}`)];
+const OLD_AUTHOR_IDS = [
+  ...Array.from({ length: 28 }, (_, i) => `author-${i + 1}`),
+  "author-peter-thiel",
+  "author-ray-dalio",
+  "author-jim-collins",
+  "author-robert-kiyosaki",
+  "author-eckhart-tolle",
+  "author-cal-newport",
 ];
 
 const READING_PROGRESS = [];
 const BOOKMARKS = [];
 const FAVORITES = [];
+
 // ── Boshlang'ich reytinglar: bosh sahifadagi "—" muammosini yechish uchun.
 // ── Har bir asosiy kitobda kamida 2-3 baho bo'ladi, averages real ko'rinadi.
-const RATINGS = [
-  { userId: "user-1", bookId: "book-1", rating: 5 },
-  { userId: "user-2", bookId: "book-1", rating: 5 },
-  { userId: "user-3", bookId: "book-1", rating: 4 },
-  { userId: "user-1", bookId: "book-2", rating: 5 },
-  { userId: "user-4", bookId: "book-2", rating: 5 },
-  { userId: "user-2", bookId: "book-3", rating: 4 },
-  { userId: "user-3", bookId: "book-3", rating: 5 },
-  { userId: "user-1", bookId: "book-4", rating: 5 },
-  { userId: "user-5", bookId: "book-4", rating: 4 },
-  { userId: "user-2", bookId: "book-5", rating: 5 },
-  { userId: "user-3", bookId: "book-5", rating: 5 },
-  { userId: "user-1", bookId: "book-6", rating: 4 },
-  { userId: "user-4", bookId: "book-6", rating: 5 },
-  { userId: "user-2", bookId: "book-7", rating: 4 },
-  { userId: "user-5", bookId: "book-7", rating: 5 },
-  { userId: "user-3", bookId: "book-9", rating: 5 },
-  { userId: "user-1", bookId: "book-9", rating: 5 },
-  { userId: "user-2", bookId: "book-11", rating: 5 },
-  { userId: "user-4", bookId: "book-11", rating: 4 },
-  { userId: "user-1", bookId: "book-15", rating: 5 },
-  { userId: "user-2", bookId: "book-15", rating: 4 },
-  { userId: "user-3", bookId: "book-15", rating: 5 },
-  { userId: "user-1", bookId: "book-18", rating: 5 },
-  { userId: "user-4", bookId: "book-18", rating: 4 },
-  { userId: "user-2", bookId: "book-19", rating: 4 },
-  { userId: "user-5", bookId: "book-19", rating: 5 },
-  { userId: "user-1", bookId: "book-20", rating: 4 },
-  { userId: "user-3", bookId: "book-20", rating: 5 },
-  { userId: "user-2", bookId: "book-26", rating: 5 },
-  { userId: "user-4", bookId: "book-26", rating: 5 },
-  { userId: "user-1", bookId: "book-27", rating: 5 },
-  { userId: "user-5", bookId: "book-27", rating: 4 },
-  { userId: "user-3", bookId: "book-14", rating: 4 },
-  { userId: "user-4", bookId: "book-14", rating: 5 },
-  { userId: "user-2", bookId: "book-17", rating: 4 },
-  { userId: "user-1", bookId: "book-29", rating: 5 },
-  { userId: "user-3", bookId: "book-29", rating: 4 },
-];
+const RATING_USERS = ["user-1", "user-2", "user-3", "user-4", "user-5"];
+const RATINGS = [];
+BOOKS.slice(0, 30).forEach((b, i) => {
+  for (let j = 0; j < 3; j++) {
+    if ((i + j) % 4 === 3) continue; // har kitobda 2-3 baho
+    RATINGS.push({
+      userId: RATING_USERS[(i + j) % RATING_USERS.length],
+      bookId: b.id,
+      rating: 4 + ((i + j) % 2),
+    });
+  }
+});
+
 const SESSIONS_DATA = [];
 
 const BANNERS = [
-  { title: "Xush kelibsiz!", description: "MBSI Library — bilimga yo'l oching", imageUrl: "/covers/atomic-habits.svg", link: "/", order: 1, isActive: true },
-  { title: "Yangi kitoblar", description: "Eng so'nggi kitoblar bilan tanishing", imageUrl: "/covers/alchemist.svg", link: "/books", order: 2, isActive: true },
-  { title: "O'qishni boshlang", description: "3 ta kitobni bir vaqtda o'qishingiz mumkin", imageUrl: "/covers/deep-work.svg", link: "/books", order: 3, isActive: true },
+  { title: "Xush kelibsiz!", description: "MBSI Library — bilimga yo'l oching", imageUrl: "/covers/abdulla-qodiriy-otkan-kunlar-roman.svg", link: "/", order: 1, isActive: true },
+  { title: "Yangi kitoblar", description: "Eng so'nggi kitoblar bilan tanishing", imageUrl: "/covers/abdulla-qahhor-sarob-roman.svg", link: "/books", order: 2, isActive: true },
+  { title: "O'qishni boshlang", description: "3 ta kitobni bir vaqtda o'qishingiz mumkin", imageUrl: "/covers/abdulla-qodiriy-mehrobdan-chayon-roman.svg", link: "/books", order: 3, isActive: true },
 ];
 
 const RECOMMENDATIONS = [];
@@ -763,7 +313,7 @@ async function main() {
         authorId: b.authorId,
         categoryId: b.categoryId,
         isPublished: b.isPublished,
-              },
+      },
       update: {
         title: b.title,
         slug,
@@ -775,12 +325,35 @@ async function main() {
         authorId: b.authorId,
         categoryId: b.categoryId,
         isPublished: b.isPublished,
-              },
+      },
     });
   }
   console.log(`   ✅ ${BOOKS.length} books created`);
 
-  // 4b. Cleanup: test/dev ma'lumotlarini production'dan o'chirish.
+  // 4b. Eski demo (placeholder) kitoblarni o'chirish.
+  // Bog'liq yozuvlar (progress, sessions, bookmarks, favorites, ratings,
+  // reviews, recommendations, content) schema'da Cascade — avtomatik o'chadi.
+  console.log("🧹 Removing old demo books...");
+  const removedBooks = await prisma.book.deleteMany({
+    where: {
+      OR: [
+        { id: { in: OLD_BOOK_IDS } },
+        // Eski demo/import qoldiqlari: statik /covers/ muqovali, lekin
+        // joriy katalogga (book-uz-*) kirmagan kitoblar.
+        { id: { not: { startsWith: "book-uz-" } }, coverUrl: { startsWith: "/covers/" } },
+      ],
+    },
+  });
+  console.log(`   🗑️  Removed ${removedBooks.count} old demo books`);
+
+  // 4c. Eski demo mualliflardan kitobsiz qolganlarini o'chirish.
+  // Haqiqiy kitoblari bor mualliflarga tegmaydi.
+  const removedAuthors = await prisma.author.deleteMany({
+    where: { id: { in: OLD_AUTHOR_IDS }, books: { none: {} } },
+  });
+  console.log(`   🗑️  Removed ${removedAuthors.count} unused demo authors`);
+
+  // 4d. Cleanup: test/dev ma'lumotlarini production'dan o'chirish.
   // "E2E Test" kategoriyasi va unga bog'langan test kitoblari foydalanuvchiga ko'rinmasligi kerak.
   console.log("🧹 Cleaning test data...");
   const testCategories = await prisma.category.findMany({
@@ -956,6 +529,3 @@ if (isDirectRun) {
       await prisma.$disconnect();
     });
 }
-
-// ─── Eksport (restore skriptlari uchun — faqat kitob/muallif/kategoriya/reyting) ───
-export { USERS, AUTHORS, CATEGORIES, BOOKS, RATINGS };

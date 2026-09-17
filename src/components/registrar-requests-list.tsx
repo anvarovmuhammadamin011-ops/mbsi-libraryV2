@@ -251,7 +251,7 @@ export function RegistrarRequestsList({ items }: { items: RegistrarRequestRow[] 
                 </p>
                 <p className="mt-1 text-xs text-muted-foreground">
                   {viewing.status === "PENDING"
-                    ? "Admin tasdiqlashi kutilmoqda — Telegram orqali ham xabar beriladi."
+                    ? "Admin tasdiqlashi kutilmoqda."
                     : viewing.status === "APPROVED"
                       ? "O'quvchi tizimga qo'shildi va kutubxonadan foydalana oladi."
                       : "Bu ariza rad etilgan."}

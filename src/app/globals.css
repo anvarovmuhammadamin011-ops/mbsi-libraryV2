@@ -241,25 +241,6 @@ html, body {
   }
 }
 
-/* ─── Telegram Mini App Styles ──────────────────────────────── */
-html.telegram-webapp .desktop-sidebar,
-html.telegram-webapp [data-sidebar] {
-  display: none !important;
-}
-
-html.telegram-webapp main {
-  padding-bottom: 80px !important;
-}
-
-/* Telegram WebApp safe area insets */
-html.telegram-webapp {
-  --tg-safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
-}
-
-html.telegram-webapp .mobile-nav {
-  padding-bottom: calc(8px + var(--tg-safe-area-inset-bottom)) !important;
-}
-
 /* ─── Dark Mode Component Improvements ──────────────────────── */
 .dark .border-border {
   border-color: rgba(255, 255, 255, 0.12);

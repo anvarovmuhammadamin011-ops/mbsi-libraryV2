@@ -4,7 +4,6 @@ import { prisma } from "@/lib/db";
 import { savePdf, saveCover } from "@/lib/server/storage";
 import { createBook } from "@/lib/server/books";
 import { ApiError, ERROR_CODES, success } from "@/lib/server/errors";
-import { notifyNewBook } from "@/lib/server/notify";
 
 const MAX_PDF_BYTES = 25 * 1024 * 1024; // 25 MB
 const MAX_COVER_BYTES = 5 * 1024 * 1024; // 5 MB
@@ -134,19 +133,6 @@ export async function POST(req: NextRequest) {
     fileSize: saved.size,
     userId: user.id,
   });
-
-  // Admin Telegram xabarnomasi (env sozlanmagan bo'lsa jim turadi)
-  try {
-    const cat = categoryId
-      ? await prisma.category.findUnique({
-          where: { id: categoryId },
-          select: { name: true },
-        })
-      : null;
-    notifyNewBook(title, authorName, cat?.name ?? "—");
-  } catch {
-    /* ignore */
-  }
 
   return success(book, 201);
 }
