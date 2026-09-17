@@ -7,8 +7,16 @@
 import { NextRequest } from "next/server";
 import { bot } from "@/bot";
 
+const WEBHOOK_SECRET = process.env.TELEGRAM_WEBHOOK_SECRET || "";
+
 export async function POST(req: NextRequest) {
   try {
+    if (WEBHOOK_SECRET) {
+      const token = req.headers.get("x-telegram-bot-api-secret-token");
+      if (token !== WEBHOOK_SECRET) {
+        return new Response("Forbidden", { status: 403 });
+      }
+    }
     // grammy needs botInfo before handling updates in serverless
     // environments — init() fetches it once and caches it.
     await bot.init();
