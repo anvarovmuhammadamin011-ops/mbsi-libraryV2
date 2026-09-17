@@ -40,33 +40,29 @@ const USERS = [
   { id: "user-8", name: "Alisher Navoiy", role: "ADMIN", avatar: "/avatars/admin-1.svg" },
 ];
 
-// ── Mualliflar: kutubxonadagi real asarlar mualliflari ──
+// ── Mualliflar: faol (handybook) fondidagi asarlar mualliflari ──
 const AUTHORS = [
-  { id: "a-qodiriy", name: "Abdulla Qodiriy", biography: "O'zbek adabiyotining klassiki, \"O'tkan kunlar\" romani muallifi." },
-  { id: "a-qahhor", name: "Abdulla Qahhor", biography: "O'zbek xalq yozuvchisi, \"Sarob\" va \"Qo'shchinor chiroqlari\" romanlari muallifi." },
-  { id: "a-fitrat", name: "Abdurauf Fitrat", biography: "Jadid yozuvchisi, tarixchi va ma'rifatparvar." },
-  { id: "a-cholpon", name: "Abdulhamid Cho'lpon", biography: "Shoir, yozuvchi, dramaturg va tarjimon." },
-  { id: "a-ismoil", name: "Abdulhamid Ismoil", biography: "Zamonaviy o'zbek yozuvchisi." },
-  { id: "a-kocar", name: "Abdulhamid Ko'char", biography: "O'zbek yozuvchisi va tarixchi-o'lkashunos." },
-  { id: "a-abbos-said", name: "Abbos Said", biography: "Zamonaviy o'zbek yozuvchisi." },
-  { id: "a-ayizov", name: "Abdulla Ayizov", biography: "O'zbek yozuvchisi." },
-  { id: "a-chimirzayev", name: "Abdulla Chimirzayev", biography: "O'zbek yozuvchisi." },
-  { id: "a-abdumutal", name: "Abdumutal Abdullayev", biography: "O'zbek yozuvchisi." },
-  { id: "a-abdiyev", name: "Abdunabi Abdiyev", biography: "O'zbek yozuvchisi." },
-  { id: "a-hamro", name: "Abdunabi Hamro", biography: "Zamonaviy o'zbek yozuvchisi." },
-  { id: "a-ibrohimov", name: "Abduqahhor Ibrohimov", biography: "O'zbek yozuvchisi va tarjimon." },
-  { id: "a-yoldosh", name: "Abduqayum Yo'ldosh", biography: "O'zbek yozuvchisi, \"Timsohning ko'z yoshlari\" muallifi." },
-  { id: "a-abdurahmon", name: "Abdurahmon Karimov", biography: "O'zbek yozuvchisi." },
-  { id: "a-nurmurodov", name: "Abdurashid Nurmurodov", biography: "O'zbek yozuvchisi." },
-  { id: "a-pardayev", name: "Abdurashid Pardayev", biography: "Zamonaviy o'zbek yozuvchisi." },
-  { id: "a-kochimov", name: "Abdusaid Ko'chimov", biography: "O'zbek yozuvchisi." },
-  { id: "a-hotamov", name: "Abdusattor Hotamov", biography: "O'zbek yozuvchisi." },
-  { id: "a-sodiqov", name: "Abdusattor Sodiqov", biography: "O'zbek yozuvchisi." },
-  { id: "a-mamarasulov", name: "Abulqosim Mamarasulov", biography: "O'zbek yozuvchisi." },
-  { id: "a-damin", name: "Adham Damin", biography: "Zamonaviy o'zbek yozuvchisi." },
-  { id: "a-tohirov", name: "Afzal Tohirov", biography: "O'zbek yozuvchisi va adabiyotshunos." },
-  { id: "a-ahad-hasan", name: "Ahad Hasan", biography: "O'zbek yozuvchisi." },
-  { id: "a-azam", name: "Ahmad A'zam", biography: "Zamonaviy o'zbek yozuvchisi." },
+  { id: "cmu5aqbtx000cov4c4nszrbzz", name: "Anthony Burgess", biography: "Britaniyalik yozuvchi." },
+  { id: "author-charles-dickens", name: "Charles Dickens", biography: "Ingliz klassik yozuvchisi." },
+  { id: "cmu5ap8bd0001ov4c5xvq7sjy", name: "Paulo Koelo", biography: "Braziliyalik yozuvchi." },
+  { id: "cmu5aqjgy000jov4c1a26w73w", name: "Toni Morrison", biography: "Amerikalik yozuvchi." },
+  { id: "cmu54g4gr0039ovm4s3ltef2u", name: "Aldous Huxley", biography: "Ingliz yozuvchisi." },
+  { id: "cmu5armel000rov4c9qa9pwwl", name: "Fyodor Dostoevsky", biography: "Rus klassik yozuvchisi." },
+  { id: "cmu5azz5r0001ovy8itjj2s3y", name: "Oʻtkir Hoshimov", biography: "O'zbek xalq yozuvchisi." },
+  { id: "cmu5apt560005ov4cpl2l5ygj", name: "Said Ahmad", biography: "O'zbek yozuvchisi." },
+  { id: "cmu5botdr0001ova0521e9eew", name: "Fyodor Mihaylovich Dostoyevsk", biography: "Rus klassik yozuvchisi." },
+  { id: "cmu5aqy8c000nov4cqieza99n", name: "John Steinbeck", biography: "Amerikalik yozuvchi." },
+  { id: "cmu54gh3v0041ovm42o8kiu1q", name: "Franz Kafka", biography: "Nemis tilida ijod qilgan yozuvchi." },
+  { id: "cmu5asvh0001eov4c6uabw6x6", name: "William Faulkner", biography: "Amerikalik yozuvchi." },
+  { id: "author-ernest-hemingway", name: "Ernest Hemingway", biography: "Amerikalik yozuvchi." },
+  { id: "cmu5asefc0017ov4cl3jbydaw", name: "Chinua Achebe", biography: "Nigeriyalik yozuvchi." },
+  { id: "cmu54bl850005ov64gtuc5k02", name: "Harper Lee", biography: "Amerikalik yozuvchi." },
+  { id: "cmu5asatm0013ov4c374n59mv", name: "Yu Hua", biography: "Xitoylik yozuvchi." },
+  { id: "author-97", name: "O'zbek xalq ertaklari", biography: "O'zbek xalq og'zaki ijodi." },
+  { id: "cmu5as5os000zov4c5eovbhql", name: "Thomas More", biography: "Ingliz faylasufi va yozuvchisi." },
+  { id: "cmu5as2pw000vov4cl8xfkmq8", name: "Leo Tolstoy", biography: "Rus klassik yozuvchisi." },
+  { id: "cmu54g18p0033ovm4stbndlsc", name: "Emily Brontë", biography: "Ingliz yozuvchisi." },
+  { id: "author-59", name: "Pirimqul Qodirov", biography: "O'zbek xalq yozuvchisi." },
 ];
 
 const CATEGORIES = [
@@ -81,110 +77,10 @@ const CATEGORIES = [
 ];
 
 // ── Real kutubxona fondi: [sarlavha, muqova fayli, muallif, betlar] ──
-const UZ_BOOKS = [
-  // ── Abdulla Qahhor ──
-  { t: "Asarlar. 1-jild: Sarob (roman)", c: "abdulla-qahhor-asarlar-1-jild-sarob-roman", a: "a-qahhor", p: 512 },
-  { t: "Asarlar. 5 jildlik. 2-jild: Qo'shchinor chiroqlari", c: "abdulla-qahhor-asarlar-5-jildlik-2-jild-qoshchinor-chiroqlari", a: "a-qahhor", p: 496 },
-  { t: "Asarlar. 5 jildlik. 3-jild: O'tmishdan ertaklar", c: "abdulla-qahhor-asarlar-5-jildlik-3-jild-otmishdan-ertaklar", a: "a-qahhor", p: 464 },
-  { t: "Asarlar. 6 tomlik. 3-tom (1967)", c: "abdulla-qahhor-asarlar-6-tomlik-3-tom-1967", a: "a-qahhor", p: 528 },
-  { t: "Asarlar. 6 tomlik. 4-tom (1967)", c: "abdulla-qahhor-asarlar-6-tomlik-4-tom-1967", a: "a-qahhor", p: 536 },
-  { t: "Asarlar. 6 tomlik. 6-tom (1971)", c: "abdulla-qahhor-asarlar-6-tomlik-6-tom-1971", a: "a-qahhor", p: 544 },
-  { t: "Dahshat (hikoyalar to'plami)", c: "abdulla-qahhor-dahshat-hikoyalar-toplami", a: "a-qahhor", p: 208 },
-  { t: "Hikoyalar (1933)", c: "abdulla-qahhor-hikoyalar-1933", a: "a-qahhor", p: 176 },
-  { t: "Hikoyalar (1949)", c: "abdulla-qahhor-hikoyalar-1949", a: "a-qahhor", p: 232 },
-  { t: "Ming bir jon (1959)", c: "abdulla-qahhor-ming-bir-jon-1959", a: "a-qahhor", p: 312 },
-  { t: "Muhabbat (qissa)", c: "abdulla-qahhor-muhabbat-qissa", a: "a-qahhor", p: 160 },
-  { t: "Nurli cho'qqilar (1967)", c: "abdulla-qahhor-nurli-choqqilar-1967", a: "a-qahhor", p: 288 },
-  { t: "Oltin yulduz (1965)", c: "abdulla-qahhor-oltin-yulduz-1965", a: "a-qahhor", p: 328 },
-  { t: "Oltin yulduz (qissa)", c: "abdulla-qahhor-oltin-yulduz-qissa", a: "a-qahhor", p: 184 },
-  { t: "O'tmishdan ertaklar (1976)", c: "abdulla-qahhor-otmishdan-ertaklar-1976", a: "a-qahhor", p: 360 },
-  { t: "O'tmishdan ertaklar (qissa)", c: "abdulla-qahhor-otmishdan-ertaklar-qissa", a: "a-qahhor", p: 216 },
-  { t: "Portretlar, felyetonlar", c: "abdulla-qahhor-portretlar-felyetonlar", a: "a-qahhor", p: 248 },
-  { t: "Qanotsiz chittak (1937)", c: "abdulla-qahhor-qanotsiz-chittak-1937", a: "a-qahhor", p: 144 },
-  { t: "Qo'shchinor chiroqlari (roman)", c: "abdulla-qahhor-qoshchinor-chiroqlari-roman", a: "a-qahhor", p: 344 },
-  { t: "Qotilning tug'ilishi (1933)", c: "abdulla-qahhor-qotilning-tugilishi-1933", a: "a-qahhor", p: 152 },
-  { t: "Sarob (roman)", c: "abdulla-qahhor-sarob-roman", a: "a-qahhor", p: 384 },
-  { t: "Sinchalak (1960)", c: "abdulla-qahhor-sinchalak-1960", a: "a-qahhor", p: 264 },
-  { t: "Sinchalak (qissa)", c: "abdulla-qahhor-sinchalak-qissa", a: "a-qahhor", p: 192 },
-  { t: "Tanlangan asarlar. 3 tomlik. 1-tom (1957)", c: "abdulla-qahhor-tanlangan-asarlar-3-tomlik-1-tom-1957", a: "a-qahhor", p: 480 },
-  { t: "Tanlangan asarlar. 3 tomlik. 2-tom (1957)", c: "abdulla-qahhor-tanlangan-asarlar-3-tomlik-2-tom-1957", a: "a-qahhor", p: 472 },
-  { t: "Tanlangan asarlar. 3 tomlik. 3-tom (1956)", c: "abdulla-qahhor-tanlangan-asarlar-3-tomlik-3-tom-1956", a: "a-qahhor", p: 440 },
-  // ── Abdulla Qodiriy ──
-  { t: "Diyori bakr", c: "abdulla-qodiriy-diyori-bakr", a: "a-qodiriy", p: 96 },
-  { t: "G'irvonlik Mallavoy (1987)", c: "abdulla-qodiriy-girvonlik-mallavoy-1987", a: "a-qodiriy", p: 224 },
-  { t: "Jinlar bazmi (hikoyalar)", c: "abdulla-qodiriy-jinlar-bazmi-hikoyalar", a: "a-qodiriy", p: 256 },
-  { t: "Mehrobdan chayon (1967)", c: "abdulla-qodiriy-mehrobdan-chayon-1967", a: "a-qodiriy", p: 320 },
-  { t: "Mehrobdan chayon (roman)", c: "abdulla-qodiriy-mehrobdan-chayon-roman", a: "a-qodiriy", p: 352 },
-  { t: "O'bid ketmon (1959)", c: "abdulla-qodiriy-obid-ketmon-1959", a: "a-qodiriy", p: 368 },
-  { t: "O'tkan kunlar (1974)", c: "abdulla-qodiriy-otkan-kunlar-1974", a: "a-qodiriy", p: 400 },
-  { t: "O'tkan kunlar (roman)", c: "abdulla-qodiriy-otkan-kunlar-roman", a: "a-qodiriy", p: 432 },
-  { t: "To'la asarlar to'plami. 6 jildlik. 1-jild", c: "abdulla-qodiriy-tola-asarlar-toplami-6-jildlik-1-jild", a: "a-qodiriy", p: 560 },
-  // ── Abdurauf Fitrat ──
-  { t: "Hindistonda bir farangi ila buxorolik mudarrisning munozarasi", c: "abdurauf-fitrat-hindistonda-bir-farangi-ila-buxorolik-mudarrisning-munozarasi", a: "a-fitrat", p: 128 },
-  { t: "Hind sayyohining qissasi", c: "abdurauf-fitrat-hind-sayyohining-qissasi", a: "a-fitrat", p: 144 },
-  { t: "Tanlangan asarlar. 1-jild", c: "abdurauf-fitrat-tanlangan-asarlar-1-jild", a: "a-fitrat", p: 480 },
-  // ── Abdulhamid Cho'lpon ──
-  { t: "Hikoyalar, tarjimalar", c: "abdulhamid-cholpon-hikoyalar-tarjimalar", a: "a-cholpon", p: 288 },
-  // ── Abdulhamid Ismoil ──
-  { t: "Jinlar bazmi", c: "abdulhamid-ismoil-jinlar-bazmi", a: "a-ismoil", p: 272 },
-  { t: "Manaschi (roman)", c: "abdulhamid-ismoil-manaschi-roman", a: "a-ismoil", p: 336 },
-  { t: "Murtad (qissa)", c: "abdulhamid-ismoil-murtad-qissa", a: "a-ismoil", p: 208 },
-  // ── Abdulhamid Ko'char ──
-  { t: "Qullikdan hurlikka", c: "abdulhamid-kochar-qullikdan-hurlikka", a: "a-kocar", p: 240 },
-  // ── Abbos Said ──
-  { t: "Qariya (qissalar, hikoyalar)", c: "abbos-said-qariya-qissalar-hikoyalar", a: "a-abbos-said", p: 192 },
-  // ── Abdulla Ayizov ──
-  { t: "Polvon yig'lagan tun (qissa)", c: "abdulla-ayizov-polvon-yiglagan-tun-qissa", a: "a-ayizov", p: 176 },
-  // ── Abdulla Chimirzayev ──
-  { t: "Hayot yog'dulari (hikoyalar)", c: "abdulla-chimirzayev-hayot-yogdulari-hikoyalar", a: "a-chimirzayev", p: 208 },
-  // ── Abdumutal Abdullayev ──
-  { t: "Alushta ertagi (qissa)", c: "abdumutal-abdullayev-alushta-ertagi-qissa", a: "a-abdumutal", p: 168 },
-  { t: "Dard (qissa)", c: "abdumutal-abdullayev-dard-qissa", a: "a-abdumutal", p: 192 },
-  { t: "Hazrati Attor (qissa)", c: "abdumutal-abdullayev-hazrati-attor-qissa", a: "a-abdumutal", p: 224 },
-  // ── Abdunabi Abdiyev ──
-  { t: "Muallaq odam (qissa)", c: "abdunabi-abdiyev-muallaq-odam-qissa", a: "a-abdiyev", p: 184 },
-  // ── Abdunabi Hamro ──
-  { t: "Vaqt daryosi", c: "abdunabi-hamro-vaqt-daryosi", a: "a-hamro", p: 216 },
-  // ── Abduqahhor Ibrohimov ──
-  { t: "Osmon yaqin, yer yumshoq (1982)", c: "abduqahhor-ibrohimov-osmon-yaqin-yer-yumshoq-1982", a: "a-ibrohimov", p: 288 },
-  { t: "Uyqu kelmas kechalar (roman)", c: "abduqahhor-ibrohimov-uyqu-kelmas-kechalar-roman", a: "a-ibrohimov", p: 320 },
-  // ── Abduqayum Yo'ldosh ──
-  { t: "Otchopar yoxud o'n uchinchi uy (qissa)", c: "abduqayum-yoldosh-otchopar-yoxud-on-uchinchi-uy-qissa", a: "a-yoldosh", p: 200 },
-  { t: "Sunbulaning ilk shanbasi (qissa)", c: "abduqayum-yoldosh-sunbulaning-ilk-shanbasi-qissa", a: "a-yoldosh", p: 176 },
-  { t: "Timsohning ko'z yoshlari", c: "abduqayum-yoldosh-timsohning-koz-yoshlari", a: "a-yoldosh", p: 232 },
-  { t: "Timsohning ko'z yoshlari (qissa)", c: "abduqayum-yoldosh-timsohning-koz-yoshlari-qissa", a: "a-yoldosh", p: 208 },
-  { t: "To'y (qissa)", c: "abduqayum-yoldosh-toy-qissa", a: "a-yoldosh", p: 160 },
-  { t: "Yulduzning yo'li (qissa)", c: "abduqayum-yoldosh-yulduzning-yoli-qissa", a: "a-yoldosh", p: 192 },
-  // ── Abdurahmon Karimov ──
-  { t: "Qoro ko'zim", c: "abdurahmon-karimov-abduqayum-yoldosh-qaro-kozim", a: "a-abdurahmon", p: 240 },
-  // ── Abdurashid Nurmurodov ──
-  { t: "Nurafshon yog'du (roman)", c: "abdurashid-nurmurodov-nurafshon-yogdu-roman", a: "a-nurmurodov", p: 304 },
-  // ── Abdurashid Pardayev ──
-  { t: "Uch g'ildirakli velosiped (qissa va hikoyalar)", c: "abdurashid-pardayev-uch-gildirakli-velosiped-qissa-va-hikoyalar", a: "a-pardayev", p: 184 },
-  // ── Abdusaid Ko'chimov ──
-  { t: "Halqa", c: "abdusaid-kochimov-halqa", a: "a-kochimov", p: 176 },
-  // ── Abdusattor Hotamov ──
-  { t: "Yaxshilik daraxti (saylanma)", c: "abdusattor-hotamov-yaxshilik-daraxti-saylanma", a: "a-hotamov", p: 288 },
-  // ── Abdusattor Sodiqov ──
-  { t: "Oriyat (hikoyalar)", c: "abdusattor-sodiqov-oriyat-hikoyalar", a: "a-sodiqov", p: 208 },
-  // ── Abulqosim Mamarasulov ──
-  { t: "Alibek va qirq dostining sarguzashtlari (hikoyalar)", c: "abulqosim-mamarasulov-alibek-va-qirq-dostining-sarguzashtlari-hikoyalar", a: "a-mamarasulov", p: 240 },
-  { t: "Barlos qishlog'ining oydin kechalari (hikoyalar)", c: "abulqosim-mamarasulov-barlos-qishlogining-oydin-kechalari-hikoyalar", a: "a-mamarasulov", p: 256 },
-  { t: "Barlos qishlog'ining zumrad tonglari (hikoyalar)", c: "abulqosim-mamarasulov-barlos-qishlogining-zumrad-tonglari-hikoyalar", a: "a-mamarasulov", p: 264 },
-  // ── Adham Damin ──
-  { t: "Jur'at (hikoyalar)", c: "adham-damin-jurat-hikoyalar", a: "a-damin", p: 192 },
-  { t: "Saylanma. 1-jild (roman va qissalar)", c: "adham-damin-saylanma-1-jild-roman-va-qissalar", a: "a-damin", p: 416 },
-  // ── Afzal Tohirov ──
-  { t: "Toshqin daryo (qissa)", c: "afzal-tohirov-toshqin-daryo-qissa", a: "a-tohirov", p: 176 },
-  // ── Ahad Hasan ──
-  { t: "Ko'hna Buxoro qissalari", c: "ahad-hasan-kohna-buxoro-qissalari", a: "a-ahad-hasan", p: 208 },
-  // ── Ahmad A'zam ──
-  { t: "Asqartog' tomonlarda (qissa)", c: "ahmad-azam-asqartog-tomonlarda-qissa", a: "a-azam", p: 208 },
-  { t: "Bu kunning davomi (qissa)", c: "ahmad-azam-bu-kunning-davomi-qissa", a: "a-azam", p: 192 },
-  { t: "Hali hayot bor (qissa)", c: "ahmad-azam-hali-hayot-bor-qissa", a: "a-azam", p: 224 },
-  { t: "Odam zahri (kinoqissa)", c: "ahmad-azam-odam-zahri-kinoqissa", a: "a-azam", p: 160 },
-  { t: "O'zi uylanmagan sovchi (roman)", c: "ahmad-azam-ozi-uylanmagan-sovchi-roman", a: "a-azam", p: 288 },
-];
+// Eslatma: faol fond zaif handybook importi orqali boshqariladi (PDF'li 22 kitob).
+// Eski ziyouz statik katalogi (77 kitob) to'liq olib tashlandi — qayta seed'da
+// qaytib kelmasligi uchun UZ_BOOKS bo'sh qoldirildi.
+const UZ_BOOKS = [];
 
 function authorNameOf(id) {
   return AUTHORS.find((a) => a.id === id)?.name ?? "Noma'lum muallif";
@@ -205,17 +101,9 @@ function buildDescription(authorId, title) {
   return `${name}ning "${title}" asari — o'zbek adabiyotining suyukli namunalaridan. Kutubxona fondidan.`;
 }
 
-const BOOKS = UZ_BOOKS.map((b, i) => ({
-  id: `book-uz-${String(i + 1).padStart(3, "0")}`,
-  title: b.t,
-  description: buildDescription(b.a, b.t),
-  coverUrl: `/covers/${b.c}.svg`,
-  language: "UZ",
-  totalPages: b.p,
-  authorId: b.a,
-  categoryId: "cat-3", // O'zbek adabiyoti
-  isPublished: true,
-}));
+// Haqiqiy fonde kitoblar handybook importi orqali yuklanadi (PDF + muqova bilan).
+// UZ_BOOKS bo'sh — eski ziyouz statik katalogi (77 ta) to'liq olib tashlandi.
+const BOOKS = [];
 
 // ── Eski demo (placeholder) kitob va mualliflar ──
 const OLD_BOOK_IDS = ["book-ali", ...Array.from({ length: 50 }, (_, i) => `book-${i + 1}`)];
@@ -251,9 +139,9 @@ BOOKS.slice(0, 30).forEach((b, i) => {
 const SESSIONS_DATA = [];
 
 const BANNERS = [
-  { title: "Xush kelibsiz!", description: "MBSI Library — bilimga yo'l oching", imageUrl: "/covers/abdulla-qodiriy-otkan-kunlar-roman.svg", link: "/", order: 1, isActive: true },
-  { title: "Yangi kitoblar", description: "Eng so'nggi kitoblar bilan tanishing", imageUrl: "/covers/abdulla-qahhor-sarob-roman.svg", link: "/books", order: 2, isActive: true },
-  { title: "O'qishni boshlang", description: "3 ta kitobni bir vaqtda o'qishingiz mumkin", imageUrl: "/covers/abdulla-qodiriy-mehrobdan-chayon-roman.svg", link: "/books", order: 3, isActive: true },
+  { title: "Xush kelibsiz!", description: "MBSI Library — bilimga yo'l oching", imageUrl: "/api/files/covers/hb-3.jpg", link: "/", order: 1, isActive: true },
+  { title: "Yangi kitoblar", description: "Eng so'nggi kitoblar bilan tanishing", imageUrl: "/api/files/covers/hb-3.jpg", link: "/books", order: 2, isActive: true },
+  { title: "O'qishni boshlang", description: "3 ta kitobni bir vaqtda o'qishingiz mumkin", imageUrl: "/api/files/covers/hb-3.jpg", link: "/books", order: 3, isActive: true },
 ];
 
 const RECOMMENDATIONS = [];
