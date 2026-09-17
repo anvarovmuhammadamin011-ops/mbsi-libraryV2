@@ -34,7 +34,6 @@ function toUser(u: {
   name: string;
   role: string;
   avatar: string | null;
-  coins: number | null;
   balls: number | null;
   isActive: boolean;
   createdAt: Date;
@@ -45,7 +44,6 @@ function toUser(u: {
     name: u.name,
     role: u.role as User["role"],
     avatar: u.avatar ?? undefined,
-    coins: u.coins ?? 0,
     balls: u.balls ?? 0,
     isActive: u.isActive,
     createdAt: u.createdAt.toISOString(),

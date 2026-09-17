@@ -70,7 +70,6 @@ export function toApiBook(row: BookRow, stat?: BookStat): Book {
     pdfUrl: row.pdfUrl ?? "",
     language: row.language as Language,
     totalPages: row.totalPages,
-    coinReward: (row as any).coinReward ?? 10,
     fileSize: row.fileSize ?? 0,
     authorId: row.authorId,
     author: row.author
@@ -255,7 +254,6 @@ export async function createBook(params: {
   coverUrl?: string;
   pdfUrl?: string;
   totalPages: number;
-  coinReward?: number;
   fileSize?: number;
   userId: string;
 }) {
@@ -272,7 +270,6 @@ export async function createBook(params: {
       coverUrl: params.coverUrl || null,
       pdfUrl: params.pdfUrl || null,
       totalPages: params.totalPages,
-      coinReward: params.coinReward ?? 10,
       fileSize: params.fileSize ?? null,
     },
     include: bookInclude,
@@ -304,7 +301,6 @@ export async function updateBook(
     coverUrl?: string;
     pdfUrl?: string;
     totalPages?: number;
-    coinReward?: number;
     fileSize?: number;
     userId: string;
   }
@@ -321,7 +317,6 @@ export async function updateBook(
   if (params.coverUrl !== undefined) data.coverUrl = params.coverUrl;
   if (params.pdfUrl !== undefined) data.pdfUrl = params.pdfUrl;
   if (params.totalPages !== undefined) data.totalPages = params.totalPages;
-  if (params.coinReward !== undefined) (data as any).coinReward = params.coinReward;
   if (params.fileSize !== undefined) data.fileSize = params.fileSize;
 
   const book = await prisma.book.update({

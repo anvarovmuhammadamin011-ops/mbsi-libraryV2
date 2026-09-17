@@ -100,8 +100,7 @@ const BOOKS = [
     authorId: "author-10",
     categoryId: "cat-2",
     isPublished: true,
-    coinReward: 10,
-  },
+      },
   // 50 new books
   {
     id: "book-1",
@@ -113,8 +112,7 @@ const BOOKS = [
     authorId: "author-1",
     categoryId: "cat-7",
     isPublished: true,
-    coinReward: 15,
-  },
+      },
   {
     id: "book-2",
     title: "The Alchemist",
@@ -125,8 +123,7 @@ const BOOKS = [
     authorId: "author-9",
     categoryId: "cat-2",
     isPublished: true,
-    coinReward: 12,
-  },
+      },
   {
     id: "book-3",
     title: "Deep Work",
@@ -137,8 +134,7 @@ const BOOKS = [
     authorId: "author-cal-newport",
     categoryId: "cat-7",
     isPublished: true,
-    coinReward: 14,
-  },
+      },
   {
     id: "book-4",
     title: "Thinking, Fast and Slow",
@@ -149,8 +145,7 @@ const BOOKS = [
     authorId: "author-cal-newport",
     categoryId: "cat-1",
     isPublished: true,
-    coinReward: 18,
-  },
+      },
   {
     id: "book-5",
     title: "Sapiens",
@@ -161,8 +156,7 @@ const BOOKS = [
     authorId: "author-22",
     categoryId: "cat-8",
     isPublished: true,
-    coinReward: 20,
-  },
+      },
   {
     id: "book-6",
     title: "The Monk Who Sold His Ferrari",
@@ -173,8 +167,7 @@ const BOOKS = [
     authorId: "author-6",
     categoryId: "cat-7",
     isPublished: true,
-    coinReward: 12,
-  },
+      },
   {
     id: "book-7",
     title: "How to Win Friends",
@@ -185,8 +178,7 @@ const BOOKS = [
     authorId: "author-7",
     categoryId: "cat-7",
     isPublished: true,
-    coinReward: 14,
-  },
+      },
   {
     id: "book-8",
     title: "Word Power Made Easy",
@@ -197,8 +189,7 @@ const BOOKS = [
     authorId: "author-8",
     categoryId: "cat-6",
     isPublished: true,
-    coinReward: 16,
-  },
+      },
   {
     id: "book-9",
     title: "O'tkan Kunlar",
@@ -209,8 +200,7 @@ const BOOKS = [
     authorId: "author-3",
     categoryId: "cat-3",
     isPublished: true,
-    coinReward: 15,
-  },
+      },
   {
     id: "book-10",
     title: "Jaynomad",
@@ -221,8 +211,7 @@ const BOOKS = [
     authorId: "author-4",
     categoryId: "cat-3",
     isPublished: true,
-    coinReward: 13,
-  },
+      },
   {
     id: "book-11",
     title: "A Brief History of Time",
@@ -233,8 +222,7 @@ const BOOKS = [
     authorId: "author-5",
     categoryId: "cat-1",
     isPublished: true,
-    coinReward: 18,
-  },
+      },
   {
     id: "book-12",
     title: "Jur'a Tandir",
@@ -245,8 +233,7 @@ const BOOKS = [
     authorId: "author-2",
     categoryId: "cat-3",
     isPublished: true,
-    coinReward: 14,
-  },
+      },
   {
     id: "book-13",
     title: "Mental Arithmetic",
@@ -257,8 +244,7 @@ const BOOKS = [
     authorId: "author-10",
     categoryId: "cat-5",
     isPublished: true,
-    coinReward: 10,
-  },
+      },
   {
     id: "book-14",
     title: "The Power of Now",
@@ -269,8 +255,7 @@ const BOOKS = [
     authorId: "author-eckhart-tolle",
     categoryId: "cat-7",
     isPublished: true,
-    coinReward: 12,
-  },
+      },
   {
     id: "book-15",
     title: "Rich Dad Poor Dad",
@@ -281,8 +266,7 @@ const BOOKS = [
     authorId: "author-eckhart-tolle",
     categoryId: "cat-7",
     isPublished: true,
-    coinReward: 15,
-  },
+      },
   {
     id: "book-16",
     title: "The 48 Laws of Power",
@@ -293,8 +277,7 @@ const BOOKS = [
     authorId: "author-robert-kiyosaki",
     categoryId: "cat-8",
     isPublished: true,
-    coinReward: 20,
-  },
+      },
   {
     id: "book-17",
     title: "Start with Why",
@@ -305,8 +288,7 @@ const BOOKS = [
     authorId: "author-17",
     categoryId: "cat-7",
     isPublished: true,
-    coinReward: 13,
-  },
+      },
   {
     id: "book-18",
     title: "Zero to One",
@@ -317,8 +299,7 @@ const BOOKS = [
     authorId: "author-peter-thiel",
     categoryId: "cat-7",
     isPublished: true,
-    coinReward: 12,
-  },
+      },
   {
     id: "book-19",
     title: "Good to Great",
@@ -329,8 +310,7 @@ const BOOKS = [
     authorId: "author-peter-thiel",
     categoryId: "cat-7",
     isPublished: true,
-    coinReward: 14,
-  },
+      },
   {
     id: "book-20",
     title: "The Lean Startup",
@@ -341,8 +321,7 @@ const BOOKS = [
     authorId: "author-jim-collins",
     categoryId: "cat-7",
     isPublished: true,
-    coinReward: 15,
-  },
+      },
   {
     id: "book-21",
     title: "Thinking in Systems",
@@ -353,8 +332,7 @@ const BOOKS = [
     authorId: "author-27",
     categoryId: "cat-1",
     isPublished: true,
-    coinReward: 12,
-  },
+      },
   {
     id: "book-22",
     title: "The Art of War",
@@ -365,8 +343,7 @@ const BOOKS = [
     authorId: "author-24",
     categoryId: "cat-8",
     isPublished: true,
-    coinReward: 8,
-  },
+      },
   {
     id: "book-23",
     title: "Meditations",
@@ -377,8 +354,7 @@ const BOOKS = [
     authorId: "author-25",
     categoryId: "cat-8",
     isPublished: true,
-    coinReward: 13,
-  },
+      },
   {
     id: "book-24",
     title: "The Obstacle Is the Way",
@@ -389,8 +365,7 @@ const BOOKS = [
     authorId: "author-19",
     categoryId: "cat-7",
     isPublished: true,
-    coinReward: 12,
-  },
+      },
   {
     id: "book-25",
     title: "Ego Is the Enemy",
@@ -401,8 +376,7 @@ const BOOKS = [
     authorId: "author-19",
     categoryId: "cat-7",
     isPublished: true,
-    coinReward: 13,
-  },
+      },
   {
     id: "book-26",
     title: "Principles",
@@ -413,8 +387,7 @@ const BOOKS = [
     authorId: "author-ray-dalio",
     categoryId: "cat-7",
     isPublished: true,
-    coinReward: 22,
-  },
+      },
   {
     id: "book-27",
     title: "Can't Hurt Me",
@@ -425,8 +398,7 @@ const BOOKS = [
     authorId: "author-ray-dalio",
     categoryId: "cat-7",
     isPublished: true,
-    coinReward: 16,
-  },
+      },
   {
     id: "book-28",
     title: "The 5 AM Club",
@@ -437,8 +409,7 @@ const BOOKS = [
     authorId: "author-6",
     categoryId: "cat-7",
     isPublished: true,
-    coinReward: 13,
-  },
+      },
   {
     id: "book-29",
     title: "Ikigai",
@@ -449,8 +420,7 @@ const BOOKS = [
     authorId: "author-26",
     categoryId: "cat-7",
     isPublished: true,
-    coinReward: 11,
-  },
+      },
   {
     id: "book-30",
     title: "Atomic Habits (Uzbek)",
@@ -461,8 +431,7 @@ const BOOKS = [
     authorId: "author-1",
     categoryId: "cat-7",
     isPublished: true,
-    coinReward: 15,
-  },
+      },
   {
     id: "book-31",
     title: "O'zbekiston Tarixi",
@@ -473,8 +442,7 @@ const BOOKS = [
     authorId: "author-28",
     categoryId: "cat-8",
     isPublished: true,
-    coinReward: 18,
-  },
+      },
   {
     id: "book-32",
     title: "Matematika Asoslari",
@@ -485,8 +453,7 @@ const BOOKS = [
     authorId: "author-10",
     categoryId: "cat-5",
     isPublished: true,
-    coinReward: 14,
-  },
+      },
   {
     id: "book-33",
     title: "Fizika Qonunlari",
@@ -497,8 +464,7 @@ const BOOKS = [
     authorId: "author-5",
     categoryId: "cat-4",
     isPublished: true,
-    coinReward: 15,
-  },
+      },
   {
     id: "book-34",
     title: "Ingliz Tili Grammatikasi",
@@ -509,8 +475,7 @@ const BOOKS = [
     authorId: "author-8",
     categoryId: "cat-6",
     isPublished: true,
-    coinReward: 16,
-  },
+      },
   {
     id: "book-35",
     title: "Adabiyot Tanlangan",
@@ -521,8 +486,7 @@ const BOOKS = [
     authorId: "author-4",
     categoryId: "cat-3",
     isPublished: true,
-    coinReward: 14,
-  },
+      },
   {
     id: "book-36",
     title: "Psixologiya Kirish",
@@ -533,8 +497,7 @@ const BOOKS = [
     authorId: "author-7",
     categoryId: "cat-7",
     isPublished: true,
-    coinReward: 13,
-  },
+      },
   {
     id: "book-37",
     title: "Biznes Asoslari",
@@ -545,8 +508,7 @@ const BOOKS = [
     authorId: "author-11",
     categoryId: "cat-7",
     isPublished: true,
-    coinReward: 14,
-  },
+      },
   {
     id: "book-38",
     title: "Falsafa Lug'at",
@@ -557,8 +519,7 @@ const BOOKS = [
     authorId: "author-10",
     categoryId: "cat-8",
     isPublished: true,
-    coinReward: 11,
-  },
+      },
   {
     id: "book-39",
     title: "Sun'iy Intellekt",
@@ -569,8 +530,7 @@ const BOOKS = [
     authorId: "author-20",
     categoryId: "cat-1",
     isPublished: true,
-    coinReward: 15,
-  },
+      },
   {
     id: "book-40",
     title: "Iqlim O'zgarishi",
@@ -581,8 +541,7 @@ const BOOKS = [
     authorId: "author-5",
     categoryId: "cat-1",
     isPublished: true,
-    coinReward: 14,
-  },
+      },
   {
     id: "book-41",
     title: "Biologiya",
@@ -593,8 +552,7 @@ const BOOKS = [
     authorId: "author-10",
     categoryId: "cat-1",
     isPublished: true,
-    coinReward: 16,
-  },
+      },
   {
     id: "book-42",
     title: "Kimyo Asoslari",
@@ -605,8 +563,7 @@ const BOOKS = [
     authorId: "author-10",
     categoryId: "cat-1",
     isPublished: true,
-    coinReward: 15,
-  },
+      },
   {
     id: "book-43",
     title: "Geografiya",
@@ -617,8 +574,7 @@ const BOOKS = [
     authorId: "author-10",
     categoryId: "cat-1",
     isPublished: true,
-    coinReward: 14,
-  },
+      },
   {
     id: "book-44",
     title: "Informatika",
@@ -629,8 +585,7 @@ const BOOKS = [
     authorId: "author-10",
     categoryId: "cat-5",
     isPublished: true,
-    coinReward: 15,
-  },
+      },
   {
     id: "book-45",
     title: "Tarixiy Asarlar",
@@ -641,8 +596,7 @@ const BOOKS = [
     authorId: "author-28",
     categoryId: "cat-8",
     isPublished: true,
-    coinReward: 16,
-  },
+      },
   {
     id: "book-46",
     title: "Zamonaviy Adabiyot",
@@ -653,8 +607,7 @@ const BOOKS = [
     authorId: "author-4",
     categoryId: "cat-2",
     isPublished: true,
-    coinReward: 14,
-  },
+      },
   {
     id: "book-47",
     title: "Ilmiy Kashfiyotlar",
@@ -665,8 +618,7 @@ const BOOKS = [
     authorId: "author-5",
     categoryId: "cat-1",
     isPublished: true,
-    coinReward: 15,
-  },
+      },
   {
     id: "book-48",
     title: "Moliya Boshqaruvi",
@@ -677,8 +629,7 @@ const BOOKS = [
     authorId: "author-11",
     categoryId: "cat-7",
     isPublished: true,
-    coinReward: 13,
-  },
+      },
   {
     id: "book-49",
     title: "Muloqot San'ati",
@@ -689,8 +640,7 @@ const BOOKS = [
     authorId: "author-7",
     categoryId: "cat-7",
     isPublished: true,
-    coinReward: 14,
-  },
+      },
   {
     id: "book-50",
     title: "Hayot Falsafasi",
@@ -701,8 +651,7 @@ const BOOKS = [
     authorId: "author-19",
     categoryId: "cat-7",
     isPublished: true,
-    coinReward: 12,
-  },
+      },
 ];
 
 const READING_PROGRESS = [];
@@ -814,8 +763,7 @@ async function main() {
         authorId: b.authorId,
         categoryId: b.categoryId,
         isPublished: b.isPublished,
-        coinReward: b.coinReward ?? 10,
-      },
+              },
       update: {
         title: b.title,
         slug,
@@ -827,8 +775,7 @@ async function main() {
         authorId: b.authorId,
         categoryId: b.categoryId,
         isPublished: b.isPublished,
-        coinReward: b.coinReward ?? 10,
-      },
+              },
     });
   }
   console.log(`   ✅ ${BOOKS.length} books created`);

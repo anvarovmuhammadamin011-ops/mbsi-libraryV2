@@ -51,7 +51,6 @@ model User {
   about           String?  // Qo'shimcha ma'lumot
   email           String?
   phone           String?
-  coins           Int      @default(0)
   balls           Float    @default(0) // Ball system (0-12)
   // Sessiya versiyasi — parol o'zgargan/qayta tiklanganida oshiriladi, eski
   // sessiya tokenlari yaroqsiz bo'ladi (session invalidation).
@@ -115,7 +114,6 @@ model Book {
   language    String   @default("UZ") // UZ | RU | EN
   totalPages  Int      @default(0) @map("total_pages")
   fileSize    Int?     @map("file_size")
-  coinReward  Int      @default(10) @map("coin_reward")
   authorId    String   @map("author_id")
   categoryId  String   @map("category_id")
   isPublished Boolean  @default(false) @map("is_published")
@@ -270,7 +268,6 @@ model Mission {
   description String?
   targetType  String   // PAGES | BOOKS
   target      Int
-  reward      Int      @default(10)
   difficulty  String   @default("MEDIUM") // EASY | MEDIUM | HARD | EPIC
   ballReward  Float    @default(0.5) @map("ball_reward") // ball bonus for this mission
   startDate   DateTime @map("start_date")

@@ -275,8 +275,8 @@ async function main(){
 
     await prisma.book.upsert({
       where:{ id },
-      update:{ title:b.title, slug:finalSlug, description:b.desc, coverUrl, pdfUrl, language:b.lang, totalPages:b.pages, fileSize, coinReward: 10 + (b.pages % 7), authorId, categoryId:b.cat, isPublished:true },
-      create:{ id, title:b.title, slug:finalSlug, description:b.desc, coverUrl, pdfUrl, language:b.lang, totalPages:b.pages, fileSize, coinReward: 10 + (b.pages % 7), authorId, categoryId:b.cat, isPublished:true }
+      update:{ title:b.title, slug:finalSlug, description:b.desc, coverUrl, pdfUrl, language:b.lang, totalPages:b.pages, fileSize, authorId, categoryId:b.cat, isPublished:true },
+      create:{ id, title:b.title, slug:finalSlug, description:b.desc, coverUrl, pdfUrl, language:b.lang, totalPages:b.pages, fileSize, authorId, categoryId:b.cat, isPublished:true }
     });
     imported.push({ id, title:b.title, author:b.author, category:b.cat, pdf: usedRealPdf ? "REAL":"PLACEHOLDER", pages:b.pages, cover:coverUrl, pdfUrl });
     const tag = usedRealPdf ? "REAL PDF" : "placeholder";

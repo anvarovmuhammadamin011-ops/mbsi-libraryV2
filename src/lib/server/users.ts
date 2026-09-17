@@ -260,7 +260,6 @@ export async function getManagedUserDetail(id: string) {
       address: user.address,
       parentContact: user.parentContact,
       about: user.about,
-      coins: user.coins,
       balls: user.balls,
       isActive: user.isActive,
       createdAt: user.createdAt.toISOString(),

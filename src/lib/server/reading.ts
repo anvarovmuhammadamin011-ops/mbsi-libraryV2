@@ -451,7 +451,7 @@ export async function getRanking(role: "STUDENT" | "TEACHER") {
   // Reyting endi ballar (0-12) bo'yicha hisoblanadi
   const users = await prisma.user.findMany({
     where: { role, isActive: true },
-    select: { id: true, name: true, role: true, avatar: true, coins: true, balls: true, isActive: true, createdAt: true, updatedAt: true },
+    select: { id: true, name: true, role: true, avatar: true, balls: true, isActive: true, createdAt: true, updatedAt: true },
   });
 
   // Ball bo'yicha saralash (kattadan kichikga)
@@ -466,7 +466,6 @@ export async function getRanking(role: "STUDENT" | "TEACHER") {
         name: u.name,
         role: u.role as UserRole,
         avatar: u.avatar ?? undefined,
-        coins: u.coins ?? 0,
         isActive: u.isActive,
         createdAt: u.createdAt.toISOString(),
         updatedAt: u.updatedAt.toISOString(),

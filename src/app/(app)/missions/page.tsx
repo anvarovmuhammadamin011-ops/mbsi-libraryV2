@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Target, Clock, CheckCircle, XCircle, Trophy, Coins, Gift, Star } from "lucide-react";
+import { Target, Clock, CheckCircle, XCircle, Trophy, Gift, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { api } from "@/lib/api-client";
@@ -12,7 +12,6 @@ type Mission = {
   description: string | null;
   targetType: string;
   target: number;
-  reward: number;
   difficulty: string;
   ballReward: number;
   startDate: string;
@@ -52,7 +51,7 @@ export default function MissionsPage() {
   const claim = async (id: string) => {
     try {
       const res: any = await api.post(`/api/missions/${id}/claim`, {});
-      toast.success(`Tabriklaymiz! +${res.data?.reward ?? 10} coin olindi! Rank ko'tarildi!`);
+      toast.success(`Tabriklaymiz! Rank ko'tarildi!`);
       load();
     } catch (e: any) {
       toast.error(e.message);
@@ -73,7 +72,7 @@ export default function MissionsPage() {
           <Target size={20} className="text-primary" />
           Missiyalar
         </h1>
-        <p className="text-sm text-muted-foreground mt-1">Admin bergan topshiriqlarni bajaring, coin oling va reytingni ko'taring</p>
+        <p className="text-sm text-muted-foreground mt-1">Admin bergan topshiriqlarni bajaring, ball oling va reytingni ko'taring</p>
       </div>
 
       {claimable.length > 0 && (
@@ -108,9 +107,6 @@ export default function MissionsPage() {
                   </div>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <span className="flex items-center gap-1 text-xs font-medium text-green-600">
-                        <Coins size={12} /> +{m.reward} coin
-                      </span>
                       <span className="flex items-center gap-1 text-xs font-medium text-yellow-600">
                         <Star size={12} /> +{m.ballReward} ball
                       </span>
@@ -163,9 +159,6 @@ export default function MissionsPage() {
                     </span>
                     <div className="flex items-center gap-3">
                       <div className="flex items-center gap-2">
-                        <span className="flex items-center gap-1 text-green-600">
-                          <Coins size={12} /> +{m.reward} coin
-                        </span>
                         <span className="flex items-center gap-1 text-yellow-600">
                           <Star size={12} /> +{m.ballReward} ball
                         </span>
@@ -198,7 +191,7 @@ export default function MissionsPage() {
                   <p className="text-sm font-medium text-foreground">{m.title}</p>
                   <p className="text-xs text-muted-foreground">{m.description}</p>
                 </div>
-                <span className="text-xs font-medium text-green-600">+{m.reward} coin +{m.ballReward} ball</span>
+                <span className="text-xs font-medium text-green-600">+{m.ballReward} ball</span>
               </div>
             ))}
           </div>

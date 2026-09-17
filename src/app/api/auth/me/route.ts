@@ -10,7 +10,6 @@ export const GET = route(async () => {
         name: u.name,
         role: u.role as User["role"],
         avatar: u.avatar ?? undefined,
-        coins: (u as any).coins ?? 0,
         balls: (u as any).balls ?? 0,
         isActive: u.isActive,
         createdAt: u.createdAt.toISOString(),

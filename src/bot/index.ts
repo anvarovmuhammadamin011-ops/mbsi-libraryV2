@@ -82,8 +82,8 @@ bot.command("start", async (ctx) => {
           inline_keyboard: [
             [{ text: "📚 Kutubxona", callback_data: "menu_books" }, { text: "🔍 Qidirish", callback_data: "menu_search" }],
             [{ text: "📖 Davom ettirish", callback_data: "menu_continue" }, { text: "🎯 Missiyalar", callback_data: "menu_missions" }],
-            [{ text: "🏆 Reyting", callback_data: "menu_ranking" }, { text: "🪙 Coinlarim", callback_data: "menu_coins" }],
-            [{ text: "📊 Statistikam", callback_data: "menu_stats" }, { text: "👤 Profil", callback_data: "menu_profile" }],
+            [{ text: "🏆 Reyting", callback_data: "menu_ranking" }, { text: "📊 Statistikam", callback_data: "menu_stats" }],
+            [{ text: "👤 Profil", callback_data: "menu_profile" }],
             [{ text: "🌐 Kutubxonani ochish", web_app: { url: MINI_APP_URL } }],
           ],
         },
@@ -435,31 +435,6 @@ bot.callbackQuery("menu_ranking", async (ctx) => {
   });
 });
 
-// ─── Menu: Coins ───────────────────────────────────────────
-
-bot.callbackQuery("menu_coins", async (ctx) => {
-  await ctx.answerCallbackQuery();
-
-  await ctx.editMessageText(
-    `🪙 <b>Mening coinlarim</b>\n\n` +
-      `💰 Balans: <b>450</b> coin\n\n` +
-      `📋 Tarix:\n` +
-      `  +50 Missiya bajarildi\n` +
-      `  +20 Kitob tugatildi\n` +
-      `  +10 Kunlik maqsad\n` +
-      `  -100 Marketdan sotib olindi`,
-    {
-      parse_mode: "HTML",
-      reply_markup: {
-        inline_keyboard: [
-          [{ text: "🛒 Market", web_app: { url: `${MINI_APP_URL}/coins` } }],
-          [{ text: "🔙 Orqaga", callback_data: "back_main" }],
-        ],
-      },
-    }
-  );
-});
-
 // ─── Menu: Statistics ──────────────────────────────────────
 
 bot.callbackQuery("menu_stats", async (ctx) => {
@@ -541,8 +516,8 @@ bot.callbackQuery("back_main", async (ctx) => {
           inline_keyboard: [
             [{ text: "📚 Kutubxona", callback_data: "menu_books" }, { text: "🔍 Qidirish", callback_data: "menu_search" }],
             [{ text: "📖 Davom ettirish", callback_data: "menu_continue" }, { text: "🎯 Missiyalar", callback_data: "menu_missions" }],
-            [{ text: "🏆 Reyting", callback_data: "menu_ranking" }, { text: "🪙 Coinlarim", callback_data: "menu_coins" }],
-            [{ text: "📊 Statistikam", callback_data: "menu_stats" }, { text: "👤 Profil", callback_data: "menu_profile" }],
+            [{ text: "🏆 Reyting", callback_data: "menu_ranking" }, { text: "📊 Statistikam", callback_data: "menu_stats" }],
+            [{ text: "👤 Profil", callback_data: "menu_profile" }],
             [{ text: "🌐 Kutubxonani ochish", web_app: { url: MINI_APP_URL } }],
           ],
         },

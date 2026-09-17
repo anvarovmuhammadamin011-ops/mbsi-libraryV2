@@ -5,7 +5,6 @@ import {
   Bell,
   BookOpen,
   Target,
-  Coins,
   Trophy,
   CheckCircle,
   Settings,
@@ -16,7 +15,7 @@ type Notification = {
   id: string;
   title: string;
   message: string;
-  type: "mission" | "book" | "coin" | "rank" | "system" | "achievement";
+  type: "mission" | "book" | "rank" | "system" | "achievement";
   read: boolean;
   time: string;
 };
@@ -32,9 +31,9 @@ const DEMO_NOTIFICATIONS: Notification[] = [
   },
   {
     id: "2",
-    title: "Coin olindi",
-    message: "Tabriklaymiz! Siz 50 Coin oldingiz — missiya bajarildi",
-    type: "coin",
+    title: "Kitob tugatildi",
+    message: "Tabriklaymiz! Siz kitobni oxirigacha o'qib tugatdingiz",
+    type: "book",
     read: false,
     time: "5 soat oldin",
   },
@@ -85,11 +84,6 @@ const TYPE_CONFIG: Record<
     icon: <BookOpen size={16} />,
     color: "text-blue-600",
     bgColor: "bg-blue-50 dark:bg-blue-950/30",
-  },
-  coin: {
-    icon: <Coins size={16} />,
-    color: "text-yellow-600",
-    bgColor: "bg-yellow-50 dark:bg-yellow-950/30",
   },
   rank: {
     icon: <Trophy size={16} />,

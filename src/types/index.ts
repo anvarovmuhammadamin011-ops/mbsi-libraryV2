@@ -125,7 +125,6 @@ export interface User {
   birthDate?: string; // Tug'ilgan sana
   lastLoginAt?: string; // Oxirgi tizimga kirish
   // ── Global ──
-  coins?: number;
   balls?: number;
   isActive: boolean;
   createdAt: string;
@@ -160,7 +159,6 @@ export interface Book {
   pdfUrl: string;
   language: Language;
   totalPages: number;
-  coinReward?: number;
   authorId: string;
   author?: Author;
   categoryId: string;
