@@ -13,7 +13,16 @@ import {
   EyeOff,
   AlertCircle,
   KeyRound,
+  ChevronDown,
 } from "lucide-react";
+
+const DEMO_ACCOUNTS = [
+  { login: "admin", role: "Administrator" },
+  { login: "teacher", role: "O'qituvchi" },
+  { login: "student", role: "O'quvchi" },
+  { login: "bookmanager", role: "Kitob menejeri" },
+  { login: "registrar", role: "Ro'yxatga oluvchi" },
+];
 
 export default function LoginPage() {
   const router = useRouter();
@@ -171,6 +180,35 @@ export default function LoginPage() {
         <p className="mt-6 text-center text-xs text-muted-foreground">
           MBSI Library © {new Date().getFullYear()}
         </p>
+
+        {/* Demo akkauntlar */}
+        <details className="group mt-4 rounded-2xl border border-dashed border-border bg-card/60 p-3">
+          <summary className="flex cursor-pointer list-none items-center justify-center gap-1.5 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground">
+            <KeyRound className="h-3.5 w-3.5" />
+            Demo akkauntlar bilan tanishish
+            <ChevronDown className="h-3.5 w-3.5 transition-transform group-open:rotate-180" />
+          </summary>
+          <div className="mt-3 space-y-1.5">
+            {DEMO_ACCOUNTS.map((a) => (
+              <button
+                key={a.login}
+                type="button"
+                onClick={() => {
+                  setUsername(a.login);
+                  setPassword("demo123");
+                  if (error) setError(null);
+                }}
+                className="flex w-full items-center justify-between rounded-xl border border-border bg-background px-3 py-2 text-left text-xs transition-colors hover:border-primary/40 hover:bg-primary/5"
+              >
+                <span className="font-mono font-medium text-foreground">{a.login}</span>
+                <span className="flex items-center gap-1.5 text-muted-foreground">
+                  {a.role}
+                  <span className="text-primary font-mono">demo123</span>
+                </span>
+              </button>
+            ))}
+          </div>
+        </details>
       </div>
     </div>
   );

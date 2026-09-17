@@ -1,5 +1,22 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## Demo akkauntlar
+
+Barcha akkauntlar uchun parol: **`demo123`**
+
+| Login         | Rol                       |
+| ------------- | ------------------------- |
+| `admin`       | Administrator             |
+| `teacher`     | O'qituvchi                |
+| `student`     | O'quvchi                  |
+| `bookmanager` | Kitob menejeri            |
+| `registrar`   | Ro'yxatga oluvchi         |
+
+Akkauntlar `scripts/add-demo-users.ts` orqali yaratiladi:
+```bash
+npx tsx scripts/add-demo-users.ts
+```
+
 ## Getting Started
 
 First, run the development server:
