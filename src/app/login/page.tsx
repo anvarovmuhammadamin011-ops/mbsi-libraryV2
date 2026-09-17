@@ -99,6 +99,32 @@ export default function LoginPage() {
           </div>
         )}
 
+        {/* Bir bosishlik demo login */}
+        <Button
+          type="button"
+          variant="secondary"
+          onClick={async () => {
+            if (loading) return;
+            setLoading(true);
+            setError(null);
+            const ok = await login("student", "demo123");
+            setLoading(false);
+            if (!ok) {
+              setError("Demo login muvaffaqiyatsiz. Student akkaunti mavjudligini tekshiring.");
+              return;
+            }
+            router.push("/home");
+          }}
+          className="mb-4 h-11 w-full rounded-xl border-dashed text-sm font-medium"
+        >
+          {loading ? (
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          ) : (
+            <KeyRound className="mr-2 h-4 w-4" />
+          )}
+          Demo sifatida kirish (student)
+        </Button>
+
         {/* Login formasi */}
         <form
           onSubmit={handleSubmit}
