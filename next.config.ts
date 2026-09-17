@@ -14,6 +14,15 @@ const nextConfig: NextConfig = {
   // works at runtime for server-side page counting.
   serverExternalPackages: ["pdfjs-dist", "@aws-sdk/client-s3"],
 
+  // Exclude the heavy storage directory (PDFs, large covers) from the
+  // serverless function bundle. On Vercel Hobby this keeps each lambda
+  // under the 50 MB limit and avoids the 12-function cap.
+  // Cover images in public/ are still deployed as static assets by Vercel.
+  // PDFs fall through to the DB (StoredFile) or S3 fallback at runtime.
+  outputFileTracingExcludes: {
+    "/*": ["storage/**"],
+  },
+
   // PWA headers
   async headers() {
     return [
