@@ -67,10 +67,10 @@ export default function LoginPage() {
         {/* Sarlavha */}
         <div className="mb-6 text-center">
           <h1 className="text-2xl font-bold tracking-tight text-foreground">
-            Tizimga kirish
+            Foydalanuvchilar
           </h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            Rolni tanlang va kirish
+            Tizimga kirish uchun hisobingizni tanlang
           </p>
         </div>
 

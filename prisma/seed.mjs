@@ -119,52 +119,62 @@ const OLD_AUTHOR_IDS = [
 
 // Demo user (user-1) uchun o'qish progressi va sessiyalari - yutuqlar uchun
 const DEMO_BOOK_IDS = [
-  "book-uz-1", "book-uz-2", "book-uz-3", "book-uz-4", "book-uz-5",
-  "book-uz-6", "book-uz-7", "book-uz-8", "book-uz-9", "book-uz-10"
+  "cmu5ap9cs0003ov4c0vjy2qwu", "cmu5aptki0007ov4cwlue8vu9", "cmu5aq7jb000aov4cn7pcqayf",
+  "cmu5aqcbc000eov4cf58mmj0s", "cmu5aqgvv000hov4c3wff5r39", "cmu5aqk3m000lov4ceeqc3d1v",
+  "cmu5aqylo000pov4ciiacmqpj", "cmu5arn3n000tov4cp8zxl1d8", "cmu5as32t000xov4c4vo83c69",
+  "cmu5as6e30011ov4ctfa9q5ia", "cmu5asbaq0015ov4ciwzggnzr", "cmu5asf0t0019ov4cnpwr02jv",
+  "cmu5ash6a001cov4czithh6bq", "cmu5asvtu001gov4c4398gn69", "cmu5at0ph001jov4coo9pz8wn",
+  "cmu5b00530003ovy8pyhe0erz", "cmu5b060x0006ovy8pz6jgbzp", "cmu5boua00003ova0to5pwpym",
+  "cmu5boy6p0006ova0pd4hnokj", "cmu5bozy70009ova0b52ocien",
 ];
 
 const READING_PROGRESS = DEMO_BOOK_IDS.map((bookId, i) => ({
   userId: "user-1",
   bookId,
-  currentPage: i < 3 ? 100 : (i < 6 ? 50 : 10),
-  progress: i < 3 ? 100 : (i < 6 ? 50 : 10),
-  startedAt: new Date(Date.now() - (10 - i) * 24 * 60 * 60 * 1000).toISOString(),
-  lastReadAt: new Date(Date.now() - (5 - i) * 24 * 60 * 60 * 1000).toISOString(),
-  completedAt: i < 3 ? new Date(Date.now() - (3 - i) * 24 * 60 * 60 * 1000).toISOString() : null,
+  currentPage: i < 7 ? 999 : (i < 12 ? 200 : 50),
+  progress: i < 7 ? 100 : (i < 12 ? 70 : 25),
+  startedAt: new Date(Date.now() - (20 - i) * 24 * 60 * 60 * 1000).toISOString(),
+  lastReadAt: new Date(Date.now() - (1 - Math.min(i, 6)) * 24 * 60 * 60 * 1000).toISOString(),
+  completedAt: i < 7 ? new Date(Date.now() - (7 - i) * 24 * 60 * 60 * 1000).toISOString() : null,
 }));
 
-const BOOKMARKS = [];
-const FAVORITES = DEMO_BOOK_IDS.slice(0, 3).map((bookId, i) => ({
+const BOOKMARKS = [
+  { userId: "user-1", bookId: DEMO_BOOK_IDS[0], page: 25, note: "Yaxshi joy", createdAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString() },
+  { userId: "user-1", bookId: DEMO_BOOK_IDS[1], page: 100, note: "Qiziqarli qism", createdAt: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000).toISOString() },
+  { userId: "user-1", bookId: DEMO_BOOK_IDS[3], page: 50, note: "Eslab qolish kerak", createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString() },
+  { userId: "user-1", bookId: DEMO_BOOK_IDS[5], page: 150, note: "Asosiy g'oya", createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString() },
+  { userId: "user-1", bookId: DEMO_BOOK_IDS[8], page: 300, note: "Muammo yechimi", createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString() },
+];
+const FAVORITES = DEMO_BOOK_IDS.slice(0, 8).map((bookId, i) => ({
   userId: "user-1",
   bookId,
-  createdAt: new Date(Date.now() - (10 - i) * 24 * 60 * 60 * 1000).toISOString(),
+  createdAt: new Date(Date.now() - (15 - i) * 24 * 60 * 60 * 1000).toISOString(),
 }));
 
-// Sessiyalar - streak uchun (so'nggi 7 kun)
-const SESSIONS_DATA = Array.from({ length: 7 }, (_, i) => ({
+// Sessiyalar - 30 kunlik faol o'qish (12 soatlik chegarani o'tish uchun uzun)
+const SESSIONS_DATA = Array.from({ length: 30 }, (_, i) => ({
   userId: "user-1",
   bookId: DEMO_BOOK_IDS[i % DEMO_BOOK_IDS.length],
-  startPage: i * 10 + 1,
-  endPage: i * 10 + 15,
-  pagesRead: 15,
-  duration: 1800, // 30 daqiqa
-  startedAt: new Date(Date.now() - (6 - i) * 24 * 60 * 60 * 1000).toISOString(),
+  startPage: i * 20 + 1,
+  endPage: i * 20 + 25,
+  pagesRead: 25,
+  duration: 2400, // 40 daqiqa
+  startedAt: new Date(Date.now() - (29 - i) * 24 * 60 * 60 * 1000).toISOString(),
 }));
+
 // ── Har bir asosiy kitobda kamida 2-3 baho bo'ladi, averages real ko'rinadi.
 const RATING_USERS = ["user-1", "user-2", "user-3", "user-4", "user-5"];
 const RATINGS = [];
-BOOKS.slice(0, 30).forEach((b, i) => {
+DEMO_BOOK_IDS.slice(0, 15).forEach((bookId, i) => {
   for (let j = 0; j < 3; j++) {
-    if ((i + j) % 4 === 3) continue; // har kitobda 2-3 baho
+    if ((i + j) % 4 === 3) continue;
     RATINGS.push({
       userId: RATING_USERS[(i + j) % RATING_USERS.length],
-      bookId: b.id,
+      bookId,
       rating: 4 + ((i + j) % 2),
     });
   }
 });
-
-const SESSIONS_DATA = [];
 
 const BANNERS = [
   { title: "Xush kelibsiz!", description: "MBSI Library — bilimga yo'l oching", imageUrl: "/api/files/covers/hb-3.jpg", link: "/", order: 1, isActive: true },
