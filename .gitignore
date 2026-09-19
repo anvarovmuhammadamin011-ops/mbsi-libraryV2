@@ -53,5 +53,8 @@ tests/
 # scripts
 scripts/
 
+# dev logs
+dev-server.log
+
 .vercel
 .env*
