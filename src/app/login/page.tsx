@@ -5,12 +5,10 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import { useAuthStore } from "@/lib/auth-store";
 import { Button } from "@/components/ui/button";
-import { Loader2, AlertCircle, KeyRound, GraduationCap, BookOpen, Users, Briefcase } from "lucide-react";
+import { Loader2, AlertCircle, KeyRound, Users } from "lucide-react";
 
 const DEMO_ACCOUNTS = [
-  { login: "student", role: "O'quvchi", icon: GraduationCap, description: "Kitob o'qish va baholash" },
-  { login: "teacher", role: "O'qituvchi", icon: BookOpen, description: "O'quvchilar statistikasi" },
-  { login: "staff", role: "Hodim", icon: Briefcase, description: "Maktab xodimi" },
+  { login: "student", role: "Foydalanuvchi", icon: Users, description: "O'quvchi, o'qituvchi va xodimlar uchun" },
   { login: "admin", role: "Administrator", icon: KeyRound, description: "To'liq boshqaruv" },
 ];
 
