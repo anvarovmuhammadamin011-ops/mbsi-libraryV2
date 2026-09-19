@@ -1,10 +1,13 @@
 // ============================================================
 // MBSI Library — Credential Accounts Seed
 // ============================================================
-// Creates/updates the 3 staff login accounts:
+// Creates/updates login accounts:
 //   1. Admin            — login: admin         parol: anvarovmuhammadamin021120111
-//   2. Kitob menejeri   — login: kitobmanager  parol: kitobmenegermbsi
-//   3. O'quvchi qo'shuvchi — login: oquvchimanager parol: oquvchimanagermbsi
+//   2. O'quvchi (Demo)  — login: student       parol: demo123
+//   3. O'qituvchi (Demo)— login: teacher       parol: demo123
+//   4. Hodim (Demo)     — login: staff         parol: demo123
+//   5. Kitob menejeri   — login: kitobmanager  parol: kitobmenegermbsi
+//   6. O'quvchi qo'shuvchi — login: oquvchimanager parol: oquvchimanagermbsi
 // Run: node prisma/accounts-seed.mjs
 // ============================================================
 
@@ -41,6 +44,27 @@ const ACCOUNTS = [
     role: "ADMIN",
   },
   {
+    id: "demo-student",
+    name: "O'quvchi (Demo)",
+    username: "student",
+    password: "demo123",
+    role: "STUDENT",
+  },
+  {
+    id: "demo-teacher",
+    name: "O'qituvchi (Demo)",
+    username: "teacher",
+    password: "demo123",
+    role: "TEACHER",
+  },
+  {
+    id: "demo-staff",
+    name: "Hodim (Demo)",
+    username: "staff",
+    password: "demo123",
+    role: "STAFF",
+  },
+  {
     id: "staff-manager",
     name: "Toxtasinov Sadullo",
     username: "kitobmanager",
@@ -50,7 +74,6 @@ const ACCOUNTS = [
   {
     id: "staff-registrar",
     name: "Anvarov Muhammadamin",
-    nameNote: "O'quvchi qo'shuvchi xodim",
     username: "oquvchimanager",
     password: "oquvchimanagermbsi",
     role: "REGISTRAR",
