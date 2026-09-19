@@ -22,7 +22,6 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
 } from "@/components/ui/select";
 import {
   Search,
@@ -36,6 +35,7 @@ import {
   X,
 } from "lucide-react";
 import { useAuthStore } from "@/lib/auth-store";
+import { useLanguage } from "@/lib/i18n/language-provider";
 import { toast } from "sonner";
 import type { Book } from "@/types";
 
@@ -83,13 +83,47 @@ const EMPTY_FORM: BookForm = {
   cover: null,
 };
 
+function FilterSelect({
+  value,
+  onValueChange,
+  placeholder,
+  allLabel,
+  items,
+}: {
+  value: string;
+  onValueChange: (v: string | null) => void;
+  placeholder: string;
+  allLabel: string;
+  items: { id: string; name: string }[];
+}) {
+  const selectedName = value === "all" || !value
+    ? allLabel
+    : items.find((i) => i.id === value)?.name ?? placeholder;
+
+  return (
+    <Select value={value || "all"} onValueChange={onValueChange}>
+      <SelectTrigger className="h-9 w-auto px-3 text-xs">
+        <span className="truncate max-w-[120px]">{selectedName}</span>
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value="all">{allLabel}</SelectItem>
+        {items.map((item) => (
+          <SelectItem key={item.id} value={item.id}>
+            {item.name}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
+}
+
 export function BooksBrowser({ categories, authors, initial }: Props) {
   const router = useRouter();
   const { user } = useAuthStore();
+  const { t } = useLanguage();
   const isAdmin = user?.role === "ADMIN";
 
   const [q, setQ] = useState(initial.q);
-  // Debounce the query so keystrokes don't fire a request each time
   const [debouncedQ, setDebouncedQ] = useState(initial.q);
   useEffect(() => {
     const t = setTimeout(() => setDebouncedQ(q), 300);
@@ -105,7 +139,6 @@ export function BooksBrowser({ categories, authors, initial }: Props) {
   const [loading, setLoading] = useState(true);
   const [refreshKey, setRefreshKey] = useState(0);
 
-  // Add book dialog state
   const [addOpen, setAddOpen] = useState(false);
   const [form, setForm] = useState<BookForm>(EMPTY_FORM);
   const [saving, setSaving] = useState(false);
@@ -138,7 +171,6 @@ export function BooksBrowser({ categories, authors, initial }: Props) {
     };
   }, [debouncedQ, language, categoryId, authorId, sort, page, refreshKey]);
 
-  // Auto-capitalize author name as the admin types ("james clear" → "James Clear")
   function titleCaseAuthor(v: string) {
     return v.replace(/\S+/g, (w) => w.charAt(0).toUpperCase() + w.slice(1));
   }
@@ -153,23 +185,23 @@ export function BooksBrowser({ categories, authors, initial }: Props) {
   async function submitAdd(e: React.FormEvent) {
     e.preventDefault();
     if (!form.title.trim()) {
-      toast.error("Sarlavha to'ldirilishi shart");
+      toast.error(t.booksBrowser.errorTitle);
       return;
     }
     if (!form.file) {
-      toast.error("PDF fayl tanlash shart");
+      toast.error(t.booksBrowser.errorFile);
       return;
     }
     if (!form.categoryId && !showNewCategory) {
-      toast.error("Kategoriya tanlang yoki yangi nom yozing");
+      toast.error(t.booksBrowser.errorCategory);
       return;
     }
     if (!form.author.trim()) {
-      toast.error("Muallif ismini kiriting");
+      toast.error(t.booksBrowser.errorAuthor);
       return;
     }
     if (/[^\p{L}\s.'-]/u.test(form.author.trim())) {
-      toast.error("Muallif ismi faqat harflardan iborat bo'lishi kerak");
+      toast.error(t.booksBrowser.errorAuthorChars);
       return;
     }
     setSaving(true);
@@ -196,19 +228,18 @@ export function BooksBrowser({ categories, authors, initial }: Props) {
       });
       if (!r.ok) {
         const err = await r.json().catch(() => ({}));
-        throw new Error(err?.error?.message || "Yuklashda xatolik");
+        throw new Error(err?.error?.message || t.booksBrowser.errorUpload);
       }
-      toast.success("Kitob muvaffaqiyatli qo'shildi!");
+      toast.success(t.booksBrowser.successAdd);
       setForm(EMPTY_FORM);
       setNewCategory("");
       setShowNewCategory(false);
       setAddOpen(false);
-      // Refresh the book list
       setPage(1);
       setSort("newest");
       setRefreshKey((k) => k + 1);
     } catch (e: any) {
-      toast.error(e.message || "Kitobni qo'shishda xatolik");
+      toast.error(e.message || t.booksBrowser.errorAdd);
     } finally {
       setSaving(false);
     }
@@ -221,14 +252,28 @@ export function BooksBrowser({ categories, authors, initial }: Props) {
     setAddOpen(true);
   }
 
+  const LANG_OPTIONS = [
+    { id: "all", name: t.booksBrowser.allLanguages },
+    { id: "UZ", name: "O'zbek" },
+    { id: "RU", name: "Rus" },
+    { id: "EN", name: "English" },
+  ];
+
+  const SORT_OPTIONS = [
+    { id: "newest", name: t.booksBrowser.sortByNew },
+    { id: "rating", name: t.booksBrowser.sortByRating },
+    { id: "popular", name: t.booksBrowser.sortByPopular },
+    { id: "pages", name: t.booksBrowser.sortByPages },
+  ];
+
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Kitoblar</h1>
+          <h1 className="text-2xl font-bold text-foreground">{t.booksBrowser.title}</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Kutubxonadagi barcha kitoblar
+            {t.booksBrowser.subtitle}
           </p>
         </div>
         {isAdmin && (
@@ -241,40 +286,40 @@ export function BooksBrowser({ categories, authors, initial }: Props) {
               }
             >
               <Plus size={16} />
-              Kitob qo&apos;shish
+              {t.booksBrowser.addBook}
             </DialogTrigger>
             <DialogContent className="max-h-[90vh] overflow-y-auto max-w-lg">
               <DialogHeader>
                 <DialogTitle className="text-lg">
-                  Yangi kitob qo&apos;shish
+                  {t.booksBrowser.addBookTitle}
                 </DialogTitle>
               </DialogHeader>
               <form onSubmit={submitAdd} className="grid gap-4 py-2">
                 {/* Title */}
                 <div className="space-y-1.5">
                   <Label>
-                    Sarlavha <span className="text-destructive">*</span>
+                    {t.booksBrowser.titleLabel} <span className="text-destructive">*</span>
                   </Label>
                   <Input
                     value={form.title}
                     onChange={(e) =>
                       setForm({ ...form, title: e.target.value })
                     }
-                    placeholder="Kitob nomi"
+                    placeholder={t.booksBrowser.titlePlaceholder}
                   />
                 </div>
 
                 {/* Author */}
                 <div className="space-y-1.5">
                   <Label>
-                    Muallif <span className="text-destructive">*</span>
+                    {t.booksBrowser.authorLabel} <span className="text-destructive">*</span>
                   </Label>
                   <Input
                     value={form.author}
                     onChange={(e) =>
                       setForm({ ...form, author: titleCaseAuthor(e.target.value) })
                     }
-                    placeholder="Masalan: Robert Kiyosaki"
+                    placeholder={t.booksBrowser.authorPlaceholder}
                     autoCapitalize="words"
                     required
                   />
@@ -283,27 +328,17 @@ export function BooksBrowser({ categories, authors, initial }: Props) {
                 {/* Category */}
                 <div className="space-y-1.5">
                   <Label>
-                    Kategoriya <span className="text-destructive">*</span>
+                    {t.booksBrowser.categoryLabel} <span className="text-destructive">*</span>
                   </Label>
                   {!showNewCategory ? (
                     <div className="flex gap-2">
-                      <Select
-                        value={form.categoryId || undefined}
-                        onValueChange={(v) =>
-                          setForm({ ...form, categoryId: v ?? "" })
-                        }
-                      >
-                        <SelectTrigger className="flex-1 h-9">
-                          <SelectValue placeholder="Kategoriya tanlang" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {categories.map((c) => (
-                            <SelectItem key={c.id} value={c.id}>
-                              {c.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <FilterSelect
+                        value={form.categoryId}
+                        onValueChange={(v) => setForm({ ...form, categoryId: v ?? "" })}
+                        placeholder={t.booksBrowser.categoryPlaceholder}
+                        allLabel={t.booksBrowser.allCategories}
+                        items={categories}
+                      />
                       <Button
                         type="button"
                         variant="outline"
@@ -311,7 +346,7 @@ export function BooksBrowser({ categories, authors, initial }: Props) {
                         onClick={() => setShowNewCategory(true)}
                         className="shrink-0"
                       >
-                        Yangi
+                        {t.booksBrowser.newCategory}
                       </Button>
                     </div>
                   ) : (
@@ -319,7 +354,7 @@ export function BooksBrowser({ categories, authors, initial }: Props) {
                       <Input
                         value={newCategory}
                         onChange={(e) => setNewCategory(e.target.value)}
-                        placeholder="Yangi kategoriya nomi"
+                        placeholder={t.booksBrowser.newCategoryPlaceholder}
                         className="flex-1"
                       />
                       <Button
@@ -332,7 +367,7 @@ export function BooksBrowser({ categories, authors, initial }: Props) {
                         }}
                         className="shrink-0"
                       >
-                        Bekor
+                        {t.booksBrowser.cancel}
                       </Button>
                     </div>
                   )}
@@ -341,7 +376,7 @@ export function BooksBrowser({ categories, authors, initial }: Props) {
                 {/* Language + Pages */}
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1.5">
-                    <Label>Til</Label>
+                    <Label>{t.booksBrowser.languageLabel}</Label>
                     <select
                       value={form.language}
                       onChange={(e) =>
@@ -355,7 +390,7 @@ export function BooksBrowser({ categories, authors, initial }: Props) {
                     </select>
                   </div>
                   <div className="space-y-1.5">
-                    <Label>Sahifalar soni</Label>
+                    <Label>{t.booksBrowser.pagesLabel}</Label>
                     <Input
                       type="number"
                       min={1}
@@ -363,28 +398,28 @@ export function BooksBrowser({ categories, authors, initial }: Props) {
                       onChange={(e) =>
                         setForm({ ...form, totalPages: e.target.value })
                       }
-                      placeholder="avtomatik"
+                      placeholder={t.booksBrowser.pagesPlaceholder}
                     />
                   </div>
                 </div>
 
                 {/* Description */}
                 <div className="space-y-1.5">
-                  <Label>Tavsif</Label>
+                  <Label>{t.booksBrowser.descriptionLabel}</Label>
                   <Textarea
                     rows={3}
                     value={form.description}
                     onChange={(e) =>
                       setForm({ ...form, description: e.target.value })
                     }
-                    placeholder="Kitob haqida qisqacha..."
+                    placeholder={t.booksBrowser.descriptionPlaceholder}
                   />
                 </div>
 
                 {/* PDF file */}
                 <div className="space-y-1.5">
                   <Label>
-                    PDF fayl <span className="text-destructive">*</span>
+                    {t.booksBrowser.pdfLabel} <span className="text-destructive">*</span>
                   </Label>
                   <div
                     className="flex items-center gap-3 rounded-xl border-2 border-dashed border-muted-foreground/25 bg-muted/30 p-4 transition-colors hover:border-primary/40 hover:bg-muted/50 cursor-pointer"
@@ -406,7 +441,7 @@ export function BooksBrowser({ categories, authors, initial }: Props) {
                         </div>
                       ) : (
                         <p className="text-sm text-muted-foreground">
-                          PDF faylni tanlang yoki sudrab tashlang
+                          {t.booksBrowser.pdfDragDrop}
                         </p>
                       )}
                     </div>
@@ -424,13 +459,13 @@ export function BooksBrowser({ categories, authors, initial }: Props) {
                     }
                   />
                   <p className="text-[11px] text-muted-foreground">
-                    Maksimal 25 MB
+                    {t.booksBrowser.pdfMaxSize}
                   </p>
                 </div>
 
                 {/* Cover image */}
                 <div className="space-y-1.5">
-                  <Label>Muqova rasm (ixtiyoriy)</Label>
+                  <Label>{t.booksBrowser.coverLabel}</Label>
                   <div
                     className="flex items-center gap-3 rounded-xl border-2 border-dashed border-muted-foreground/25 bg-muted/30 p-3 transition-colors hover:border-primary/40 hover:bg-muted/50 cursor-pointer"
                     onClick={() => coverRef.current?.click()}
@@ -456,7 +491,7 @@ export function BooksBrowser({ categories, authors, initial }: Props) {
                         </p>
                       ) : (
                         <p className="text-sm text-muted-foreground">
-                          Muqova rasm tanlang (ixtiyoriy)
+                          {t.booksBrowser.coverPlaceholder}
                         </p>
                       )}
                     </div>
@@ -470,7 +505,7 @@ export function BooksBrowser({ categories, authors, initial }: Props) {
                           setForm({ ...form, cover: null });
                           if (coverRef.current) coverRef.current.value = "";
                         }}
-                        aria-label="Muqovani olib tashlash"
+                        aria-label={t.booksBrowser.removeCover}
                       >
                         <X size={14} />
                       </Button>
@@ -500,7 +535,7 @@ export function BooksBrowser({ categories, authors, initial }: Props) {
                     }
                     className="accent-primary"
                   />
-                  Darhol nashr etish
+                  {t.booksBrowser.publishNow}
                 </label>
 
                 {/* Submit */}
@@ -515,7 +550,7 @@ export function BooksBrowser({ categories, authors, initial }: Props) {
                     ) : (
                       <Upload className="size-4" />
                     )}
-                    {saving ? "Yuklanmoqda..." : "Kitobni qo'shish"}
+                    {saving ? t.booksBrowser.submitting : t.booksBrowser.submit}
                   </Button>
                 </DialogFooter>
               </form>
@@ -530,70 +565,41 @@ export function BooksBrowser({ categories, authors, initial }: Props) {
         <Input
           value={q}
           onChange={(e) => resetPage(setQ)(e.target.value)}
-          placeholder="Kitob, muallif yoki mavzu qidiring…"
+          placeholder={t.booksBrowser.searchPlaceholder}
           className="h-12 pl-11 text-sm border-transparent bg-muted/50 focus:border-primary/20 focus:bg-card"
         />
       </div>
 
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-2">
-        <Select
-          value={language || "all"}
+        <FilterSelect
+          value={language}
           onValueChange={resetPage(setLanguage)}
-        >
-          <SelectTrigger className="h-9 w-auto px-3 text-xs">
-            <SelectValue placeholder="Til" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Barcha tillar</SelectItem>
-            <SelectItem value="UZ">O&apos;zbek</SelectItem>
-            <SelectItem value="RU">Rus</SelectItem>
-            <SelectItem value="EN">English</SelectItem>
-          </SelectContent>
-        </Select>
-        <Select
-          value={categoryId || "all"}
+          placeholder={t.booksBrowser.languageLabel}
+          allLabel={t.booksBrowser.allLanguages}
+          items={LANG_OPTIONS}
+        />
+        <FilterSelect
+          value={categoryId}
           onValueChange={resetPage(setCategoryId)}
-        >
-          <SelectTrigger className="h-9 w-auto px-3 text-xs">
-            <SelectValue placeholder="Kategoriya" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Barcha kategoriyalar</SelectItem>
-            {categories.map((c) => (
-              <SelectItem key={c.id} value={c.id}>
-                {c.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Select
-          value={authorId || "all"}
+          placeholder={t.booksBrowser.categoryPlaceholder}
+          allLabel={t.booksBrowser.allCategories}
+          items={categories}
+        />
+        <FilterSelect
+          value={authorId}
           onValueChange={resetPage(setAuthorId)}
-        >
-          <SelectTrigger className="h-9 w-auto px-3 text-xs">
-            <SelectValue placeholder="Muallif" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Barcha mualliflar</SelectItem>
-            {authors.map((a) => (
-              <SelectItem key={a.id} value={a.id}>
-                {a.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Select value={sort} onValueChange={resetPage(setSort)}>
-          <SelectTrigger className="h-9 w-auto px-3 text-xs">
-            <SelectValue placeholder="Saralash" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="newest">Yangi</SelectItem>
-            <SelectItem value="rating">Reyting</SelectItem>
-            <SelectItem value="popular">Mashhur</SelectItem>
-            <SelectItem value="pages">Sahifalar</SelectItem>
-          </SelectContent>
-        </Select>
+          placeholder={t.booksBrowser.authorLabel}
+          allLabel={t.booksBrowser.allAuthors}
+          items={authors}
+        />
+        <FilterSelect
+          value={sort}
+          onValueChange={resetPage(setSort)}
+          placeholder={t.booksBrowser.sortByNew}
+          allLabel={t.booksBrowser.sortByNew}
+          items={SORT_OPTIONS}
+        />
       </div>
 
       {/* Results */}
@@ -610,13 +616,13 @@ export function BooksBrowser({ categories, authors, initial }: Props) {
       ) : data.length === 0 ? (
         <EmptyState
           icon={<BookX className="size-8" />}
-          title="Kitoblar topilmadi"
-          description="Boshqa filtrlarni sinab ko'ring."
+          title={t.booksBrowser.emptyTitle}
+          description={t.booksBrowser.emptyDescription}
         />
       ) : (
         <>
           <p className="text-sm text-muted-foreground">
-            {data.length} ta kitob topildi
+            {t.booksBrowser.resultsCount(data.length)}
           </p>
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
             {data.map((b) => (
@@ -636,7 +642,7 @@ export function BooksBrowser({ categories, authors, initial }: Props) {
             onClick={() => setPage((p) => Math.max(1, p - 1))}
             className="gap-1"
           >
-            <ChevronLeft size={14} /> Oldingi
+            <ChevronLeft size={14} /> {t.booksBrowser.prev}
           </Button>
           <span className="text-sm text-muted-foreground">
             {page} / {totalPages}
@@ -648,7 +654,7 @@ export function BooksBrowser({ categories, authors, initial }: Props) {
             onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
             className="gap-1"
           >
-            Keyingi <ChevronRight size={14} />
+            {t.booksBrowser.next} <ChevronRight size={14} />
           </Button>
         </div>
       )}

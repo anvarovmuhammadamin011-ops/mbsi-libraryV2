@@ -5,19 +5,14 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { Search, X, ArrowLeft, Star, BookOpen, BookX } from "lucide-react";
+import { useLanguage } from "@/lib/i18n/language-provider";
 import type { Book } from "@/types";
 
 const STORAGE_KEY = "mbsi-recent-searches";
 type Filter = "all" | "books" | "authors" | "categories";
 
-const FILTERS: { value: Filter; label: string }[] = [
-  { value: "all", label: "Hammasi" },
-  { value: "books", label: "Kitoblar" },
-  { value: "authors", label: "Mualliflar" },
-  { value: "categories", label: "Kategoriyalar" },
-];
-
 function ResultRow({ book, onSelect }: { book: Book; onSelect: (b: Book) => void }) {
+  const { t } = useLanguage();
   return (
     <Link
       href={`/books/${book.slug ?? book.id}`}
@@ -44,7 +39,7 @@ function ResultRow({ book, onSelect }: { book: Book; onSelect: (b: Book) => void
           {book.title}
         </h3>
         <p className="text-xs text-muted-foreground truncate mt-1">
-          {book.author?.name ?? "Noma'lum muallif"}
+          {book.author?.name ?? t.search.unknownAuthor}
         </p>
         <div className="flex items-center gap-1 mt-1.5">
           {book.averageRating ? (
@@ -56,7 +51,7 @@ function ResultRow({ book, onSelect }: { book: Book; onSelect: (b: Book) => void
             </>
           ) : (
             <span className="rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-semibold text-blue-600 dark:bg-blue-950/40 dark:text-blue-300">
-              Yangi
+              {t.search.new}
             </span>
           )}
           {book.category?.name && (
@@ -77,6 +72,14 @@ function SearchPageInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const initialQ = searchParams.get("q") ?? "";
+  const { t } = useLanguage();
+
+  const FILTERS: { value: Filter; label: string }[] = [
+    { value: "all", label: t.search.all },
+    { value: "books", label: t.search.books },
+    { value: "authors", label: t.search.authors },
+    { value: "categories", label: t.search.categories },
+  ];
 
   const [query, setQuery] = useState(initialQ);
   const [filter, setFilter] = useState<Filter>("all");
@@ -95,9 +98,6 @@ function SearchPageInner() {
   const overlayInputRef = useRef<HTMLInputElement>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Don't auto-focus on mount to avoid overlay showing immediately
-
-  // focus overlay input + lock body scroll while overlay open
   useEffect(() => {
     if (focused) {
       const t = setTimeout(() => overlayInputRef.current?.focus(), 60);
@@ -109,7 +109,6 @@ function SearchPageInner() {
     }
   }, [focused]);
 
-  // load recents from localStorage
   useEffect(() => {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
@@ -157,7 +156,6 @@ function SearchPageInner() {
     addRecent(term);
   };
 
-  // ─── Books based on search history (shown when query is empty) ───
   useEffect(() => {
     const q = query.trim();
     if (q || recents.length === 0) {
@@ -190,7 +188,6 @@ function SearchPageInner() {
     });
   }, [query, recents]);
 
-  // Load default books when no query
   useEffect(() => {
     const q = query.trim();
     if (q) {
@@ -205,7 +202,6 @@ function SearchPageInner() {
       .finally(() => setDefaultLoading(false));
   }, [query]);
 
-  // live fetch with debounce
   useEffect(() => {
     const q = query.trim();
     if (!q) {
@@ -276,12 +272,12 @@ function SearchPageInner() {
         <div className="flex items-center gap-3 mb-3">
           <button
             onClick={() => router.back()}
-            aria-label="Orqaga"
+            aria-label={t.search.back}
             className="inline-flex h-9 w-9 items-center justify-center rounded-full hover:bg-muted transition-colors shrink-0"
           >
             <ArrowLeft size={20} className="text-foreground" />
           </button>
-          <h1 className="text-lg font-semibold text-foreground">Qidiruv</h1>
+          <h1 className="text-lg font-semibold text-foreground">{t.search.title}</h1>
         </div>
 
         {/* Search bar */}
@@ -314,8 +310,8 @@ function SearchPageInner() {
                 }
               }
             }}
-            placeholder="Kitob, muallif qidiring..."
-            aria-label="Kitob, muallif qidirish"
+            placeholder={t.search.placeholder}
+            aria-label={t.search.placeholder}
             className="h-12 w-full rounded-2xl border border-border bg-white dark:bg-card pl-11 pr-10 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-colors"
           />
           {query && (
@@ -324,7 +320,7 @@ function SearchPageInner() {
                 setQuery("");
                 setHasSearched(false);
               }}
-              aria-label="Tozalash"
+              aria-label={t.search.clear}
               className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
             >
               <X size={16} />
@@ -341,7 +337,7 @@ function SearchPageInner() {
                 <button
                   key={f.value}
                   onClick={() => setFilter(f.value)}
-                  aria-label={`${f.label} bo'yicha saralash`}
+                  aria-label={f.label}
                   aria-pressed={active}
                   className={
                     active
@@ -357,7 +353,7 @@ function SearchPageInner() {
         )}
       </div>
 
-      {/* ═══ Search focus overlay — recents + history-based books ═══ */}
+      {/* Search focus overlay — recents + history-based books */}
       {focused && (
         <div className="fixed inset-0 z-50 bg-background overflow-y-auto animate-fade-in">
           <div className="mx-auto max-w-2xl md:max-w-3xl lg:max-w-4xl px-4 pt-2 pb-28">
@@ -366,12 +362,12 @@ function SearchPageInner() {
               <div className="flex items-center gap-3 mb-3">
                 <button
                   onClick={closeOverlay}
-                  aria-label="Orqaga"
+                  aria-label={t.search.back}
                   className="inline-flex h-9 w-9 items-center justify-center rounded-full hover:bg-muted transition-colors shrink-0"
                 >
                   <ArrowLeft size={20} className="text-foreground" />
                 </button>
-                <h1 className="text-lg font-semibold text-foreground">Qidiruv</h1>
+                <h1 className="text-lg font-semibold text-foreground">{t.search.title}</h1>
               </div>
               <div className="relative">
                 <Search className="absolute left-4 top-1/2 size-4 -translate-y-1/2 text-muted-foreground pointer-events-none" />
@@ -394,14 +390,14 @@ function SearchPageInner() {
                       closeOverlay();
                     }
                   }}
-                  placeholder="Kitob, muallif qidiring..."
-                  aria-label="Kitob, muallif qidirish"
+                  placeholder={t.search.placeholder}
+                  aria-label={t.search.placeholder}
                   className="h-12 w-full rounded-2xl border border-border bg-white dark:bg-card pl-11 pr-10 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-colors"
                 />
                 {query && (
                   <button
                     onClick={() => setQuery("")}
-                    aria-label="Tozalash"
+                    aria-label={t.search.clear}
                     className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
                   >
                     <X size={16} />
@@ -412,9 +408,9 @@ function SearchPageInner() {
 
             {/* Recent searches — last 5 */}
             <div className="mt-4">
-              <h2 className="text-sm font-semibold text-foreground mb-3">Oxirgi qidiruvlar</h2>
+              <h2 className="text-sm font-semibold text-foreground mb-3">{t.search.recentSearches}</h2>
               {recents.length === 0 ? (
-                <p className="text-sm text-muted-foreground">Hali qidiruvlar yo'q</p>
+                <p className="text-sm text-muted-foreground">{t.search.noRecentSearches}</p>
               ) : (
                 <>
                   <ul className="space-y-1">
@@ -431,7 +427,7 @@ function SearchPageInner() {
                         </button>
                         <button
                           onClick={() => removeRecent(term)}
-                          aria-label={`${term} ni o'chirish`}
+                          aria-label={t.search.removeRecent(term)}
                           className="inline-flex h-7 w-7 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground transition-colors shrink-0"
                         >
                           <X size={14} />
@@ -444,7 +440,7 @@ function SearchPageInner() {
                       onClick={() => setShowAllRecents((v) => !v)}
                       className="mt-2 text-sm font-medium text-primary hover:underline"
                     >
-                      {showAllRecents ? "Yashirish" : `Yana ${recents.length - 5} ta ko'rsatish`}
+                      {showAllRecents ? t.search.hide : t.search.showMore(recents.length - 5)}
                     </button>
                   )}
                 </>
@@ -456,7 +452,7 @@ function SearchPageInner() {
               <div className="mt-6">
                 <h2 className="text-base font-semibold text-foreground mb-3 flex items-center gap-2">
                   <Search size={16} className="text-primary" />
-                  Qidiruvlaringiz asosida
+                  {t.search.basedOnHistory}
                 </h2>
                 {historyLoading ? (
                   <div className="space-y-3">
@@ -480,7 +476,7 @@ function SearchPageInner() {
                     ))}
                   </div>
                 ) : (
-                  <p className="text-sm text-muted-foreground">Tarix bo'yicha kitob topilmadi</p>
+                  <p className="text-sm text-muted-foreground">{t.search.historyNoBooks}</p>
                 )}
               </div>
             )}
@@ -493,7 +489,7 @@ function SearchPageInner() {
         <div className="mt-4">
           <h2 className="text-base font-semibold text-foreground mb-3 flex items-center gap-2">
             <BookOpen size={16} className="text-primary" />
-            Barcha kitoblar
+            {t.search.allBooks}
           </h2>
           {defaultLoading ? (
             <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
@@ -530,13 +526,12 @@ function SearchPageInner() {
                         </div>
                       )}
                     </div>
-                    {/* Fixed-height blocks so every card is the same size */}
                     <div className="pt-2">
                       <p className="h-10 text-sm font-semibold text-foreground line-clamp-2 leading-tight">
                         {book.title}
                       </p>
                       <p className="mt-0.5 h-5 truncate text-xs text-muted-foreground">
-                        {book.author?.name ?? "Noma'lum"}
+                        {book.author?.name ?? t.search.unknownAuthor}
                       </p>
                       <div className="mt-1 flex h-5 items-center gap-1">
                         {avg && (
@@ -552,7 +547,7 @@ function SearchPageInner() {
               })}
             </div>
           ) : (
-            <p className="text-sm text-muted-foreground text-center py-8">Kitoblar hali mavjud emas</p>
+            <p className="text-sm text-muted-foreground text-center py-8">{t.search.noBooks}</p>
           )}
         </div>
       )}
@@ -581,15 +576,15 @@ function SearchPageInner() {
               <div className="mb-5 rounded-2xl bg-muted/70 p-5 text-muted-foreground">
                 <BookX className="size-8" />
               </div>
-              <h3 className="mb-1.5 text-base font-semibold text-foreground">Hech narsa topilmadi</h3>
+              <h3 className="mb-1.5 text-base font-semibold text-foreground">{t.search.nothingFound}</h3>
               <p className="max-w-sm text-sm leading-relaxed text-muted-foreground">
-                Boshqa so'z bilan qidiring yoki filtni o'zgartiring.
+                {t.search.nothingFoundSub}
               </p>
             </div>
           ) : (
             <>
               <p className="text-sm text-muted-foreground mb-3">
-                {filteredBooks.length} ta kitob topildi
+                {t.search.resultsCount(filteredBooks.length)}
               </p>
               <div className="space-y-3 md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-3 md:space-y-0">
                 {filteredBooks.map((book) => (
@@ -605,8 +600,9 @@ function SearchPageInner() {
 }
 
 export default function SearchPage() {
+  const { t } = useLanguage();
   return (
-    <Suspense fallback={<div className="mx-auto max-w-2xl p-4 text-sm text-muted-foreground">Yuklanmoqda...</div>}>
+    <Suspense fallback={<div className="mx-auto max-w-2xl p-4 text-sm text-muted-foreground">{t.search.loading}</div>}>
       <SearchPageInner />
     </Suspense>
   );
