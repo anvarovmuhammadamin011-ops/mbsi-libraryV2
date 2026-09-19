@@ -4,6 +4,7 @@ import { computeStreak, getPersonalStats } from "@/lib/server/reading";
 import { getUserAchievements } from "@/lib/server/achievements";
 import { ReadingJourneyCard } from "@/components/reading-journey-card";
 import { BallDisplay } from "@/components/ball-display";
+import { AboutAppSection } from "@/components/about-app-section";
 import {
   User,
   BookOpen,
@@ -42,13 +43,13 @@ function MenuRow({
   return (
     <Link
       href={href}
-      className="flex items-center justify-between px-5 py-4 text-sm transition-colors hover:bg-muted/50"
+      className="flex items-center justify-between px-5 py-5 text-base transition-colors hover:bg-muted/50"
     >
       <span className="flex items-center gap-4 text-foreground">
         <span className="text-muted-foreground">{icon}</span>
         {label}
       </span>
-      <ChevronRight size={18} className="text-muted-foreground" />
+      <ChevronRight size={20} className="text-muted-foreground shrink-0" />
     </Link>
   );
 }
@@ -205,37 +206,13 @@ export default async function ProfilePage() {
       </div>
 
       {/* Ilova haqida */}
-      <div className="rounded-2xl border border-border bg-card shadow-sm px-4 py-4">
-        <h2 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
-          <BookOpen size={14} className="text-primary" /> Ilova haqida
-        </h2>
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-muted-foreground">Kitoblar soni</span>
-            <span className="text-sm font-semibold text-foreground">{allBooksCount} ta</span>
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-muted-foreground">Foydalanuvchilar</span>
-            <span className="text-sm font-semibold text-foreground">{totalUsers} nafar</span>
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-muted-foreground">Mualliflar</span>
-            <span className="text-sm font-semibold text-foreground">{totalAuthors} nafar</span>
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-muted-foreground">Kategoriyalar</span>
-            <span className="text-sm font-semibold text-foreground">{totalCategories} ta</span>
-          </div>
-          <div className="pt-2 border-t border-border">
-            <p className="text-xs text-muted-foreground text-center">
-              MBSI Library — bilimga yo'l oching
-            </p>
-            <p className="text-xs text-muted-foreground text-center mt-1">
-              Versiya 1.0.0
-            </p>
-          </div>
-        </div>
-      </div>
+      <AboutAppSection
+        allBooksCount={allBooksCount}
+        totalUsers={totalUsers}
+        totalAuthors={totalAuthors}
+        totalCategories={totalCategories}
+        t={t}
+      />
 
       {/* Menu items */}
       <nav className="rounded-2xl border border-border bg-card shadow-sm flex flex-col divide-y divide-border/50 overflow-hidden">

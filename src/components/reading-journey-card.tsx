@@ -1,6 +1,7 @@
 "use client";
 
 import { BookOpen, Flame, Clock } from "lucide-react";
+import { useLanguage } from "@/lib/i18n/language-provider";
 
 interface Props {
   booksCompleted: number;
@@ -15,11 +16,13 @@ export function ReadingJourneyCard({
   monthHours,
   monthMinutes,
 }: Props) {
+  const { t } = useLanguage();
+
   return (
     <section className="rounded-2xl border border-border bg-card p-5 shadow-sm">
       <h2 className="text-base font-semibold text-foreground mb-4 flex items-center gap-2">
         <BookOpen size={18} className="text-primary" />
-        Your reading journey
+        {t.profile.stats}
       </h2>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -30,7 +33,7 @@ export function ReadingJourneyCard({
           </div>
           <div>
             <p className="text-2xl font-bold text-foreground">{booksCompleted}</p>
-            <p className="text-xs text-muted-foreground">books completed</p>
+            <p className="text-xs text-muted-foreground">{t.profile.finished}</p>
           </div>
         </div>
 
@@ -41,7 +44,7 @@ export function ReadingJourneyCard({
           </div>
           <div>
             <p className="text-2xl font-bold text-foreground">{streak}</p>
-            <p className="text-xs text-muted-foreground">day streak</p>
+            <p className="text-xs text-muted-foreground">{t.profile.streak}</p>
           </div>
         </div>
 
@@ -54,7 +57,7 @@ export function ReadingJourneyCard({
             <p className="text-2xl font-bold text-foreground">
               {monthHours > 0 ? `${monthHours}h` : ""} {monthMinutes}m
             </p>
-            <p className="text-xs text-muted-foreground">this month</p>
+            <p className="text-xs text-muted-foreground">{t.profile.time} (oy)</p>
           </div>
         </div>
       </div>

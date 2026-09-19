@@ -12,6 +12,9 @@ import {
   Sparkles,
   Trophy,
   Gem,
+  Target,
+  Clock,
+  ChevronRight,
 } from "lucide-react";
 import { CategoryIcon } from "@/components/category-icon";
 import { computeStreak } from "@/lib/server/reading";
@@ -42,15 +45,15 @@ export default async function HomePage() {
 
   const mostRecentProgress = readingProgress[0] ?? null;
 
-  // ── Yangi kitoblar (newest 10)
+  // ── Yangi kitoblar (newest 10) — faqat PDF si borlar
   const yangiKitoblar = await prisma.book.findMany({
-    where: { isPublished: true },
+    where: { isPublished: true, pdfUrl: { not: null } },
     include: { author: true, ratings: { select: { rating: true } } },
     orderBy: { createdAt: "desc" },
     take: 10,
   });
 
-  // ── Top 10 talik (eng ko'p o'qilgan)
+  // ── Top 10 talik (eng ko'p o'qilgan) — faqat PDF si borlar
   const topIds = await prisma.readingSession.groupBy({
     by: ["bookId"],
     _count: { bookId: true },
@@ -60,7 +63,7 @@ export default async function HomePage() {
   const top10Books =
     topIds.length > 0
       ? await prisma.book.findMany({
-          where: { id: { in: topIds.map((t) => t.bookId) }, isPublished: true },
+          where: { id: { in: topIds.map((t) => t.bookId) }, isPublished: true, pdfUrl: { not: null } },
           include: { author: true, ratings: { select: { rating: true } } },
         })
       : [];
@@ -81,7 +84,7 @@ export default async function HomePage() {
   if (ratedGroups.length > 0) {
     const ids = ratedGroups.map((g) => g.bookId);
     const books = await prisma.book.findMany({
-      where: { id: { in: ids }, isPublished: true },
+      where: { id: { in: ids }, isPublished: true, pdfUrl: { not: null } },
       include: { author: true, ratings: { select: { rating: true } } },
     });
     engZorlari = ratedGroups
@@ -90,7 +93,7 @@ export default async function HomePage() {
   }
   if (engZorlari.length < 4) {
     const fallback = await prisma.book.findMany({
-      where: { isPublished: true },
+      where: { isPublished: true, pdfUrl: { not: null } },
       include: { author: true, ratings: { select: { rating: true } } },
       orderBy: { createdAt: "desc" },
       take: 10,
@@ -99,14 +102,14 @@ export default async function HomePage() {
     for (const b of fallback) if (!seen.has(b.id) && engZorlari.length < 10) engZorlari.push(b);
   }
 
-  // ── Categories with book counts (only categories that actually have published books)
+  // ── Categories with book counts (only categories that actually have published books with PDFs)
   const allCategories = await prisma.category.findMany({
     orderBy: { name: "asc" },
     where: {
-      books: { some: { isPublished: true } },
+      books: { some: { isPublished: true, pdfUrl: { not: null } } },
     },
     include: {
-      _count: { select: { books: { where: { isPublished: true } } } },
+      _count: { select: { books: { where: { isPublished: true, pdfUrl: { not: null } } } } },
     },
   });
   const categories = allCategories.slice(0, 8);
@@ -129,7 +132,7 @@ export default async function HomePage() {
       const topCat = Object.entries(catCount).sort((a, b) => b[1] - a[1])[0]?.[0];
       if (topCat) {
         sizgaMos = await prisma.book.findMany({
-          where: { categoryId: topCat, isPublished: true, id: { notIn: readIds } },
+          where: { categoryId: topCat, isPublished: true, pdfUrl: { not: null }, id: { notIn: readIds } },
           include: { author: true, ratings: { select: { rating: true } } },
           take: 10,
         });
@@ -138,7 +141,7 @@ export default async function HomePage() {
   }
   if (sizgaMos.length === 0) {
     sizgaMos = await prisma.book.findMany({
-      where: { isPublished: true },
+      where: { isPublished: true, pdfUrl: { not: null } },
       include: { author: true, ratings: { select: { rating: true } } },
       orderBy: { createdAt: "desc" },
       take: 10,
@@ -151,6 +154,36 @@ export default async function HomePage() {
     ? await prisma.readingSession.findMany({ where: { userId }, select: { startedAt: true } })
     : [];
   const streak = computeStreak(streakSessions.map((s) => s.startedAt));
+
+  // Reading goals for the current user — with computed current values
+  const userGoalsRaw = userId
+    ? await prisma.readingGoal.findMany({ where: { userId } })
+    : [];
+
+  const now = new Date();
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+  const [completedThisMonth, todaySessions] = await Promise.all([
+    userId
+      ? prisma.readingProgress.count({
+          where: { userId, completedAt: { gte: monthStart } },
+        })
+      : 0,
+    userId
+      ? prisma.readingSession.findMany({
+          where: { userId, startedAt: { gte: todayStart } },
+          select: { duration: true },
+        })
+      : [],
+  ]);
+
+  const minutesToday = Math.round(todaySessions.reduce((sum, s) => sum + (s.duration ?? 0), 0) / 60);
+
+  const userGoals = userGoalsRaw.map((goal) => ({
+    ...goal,
+    current: goal.type === "BOOKS_PER_MONTH" ? completedThisMonth : minutesToday,
+  }));
 
   return (
     <div className="space-y-6 md:space-y-8 animate-fade-in pb-28 md:pb-6 max-w-2xl mx-auto md:max-w-4xl lg:max-w-5xl">
@@ -195,6 +228,61 @@ export default async function HomePage() {
         )}
       </div>
 
+      {/* ═══ MENI PLANLARIM — foydalanuvchi maqsadlari ═══ */}
+      <section className="rounded-2xl border border-border bg-card p-4 shadow-sm">
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-[15px] md:text-lg font-semibold text-foreground flex items-center gap-2">
+            <Target size={16} className="text-primary" />
+            {t.plan.myPlans}
+          </h2>
+          <Link
+            href="/plan"
+            className="flex items-center gap-1 text-[13px] font-medium text-primary hover:underline"
+          >
+            {t.plan.viewAllPlans} <ArrowRight size={14} />
+          </Link>
+        </div>
+        {userGoals.length > 0 ? (
+          <div className="space-y-2">
+            {userGoals.slice(0, 3).map((goal) => {
+              const current = goal.current ?? 0;
+              const pct = goal.target > 0 ? Math.min(Math.round((current / goal.target) * 100), 100) : 0;
+              return (
+                <Link
+                  key={goal.id}
+                  href="/plan"
+                  className="flex items-center justify-between rounded-xl bg-muted/30 p-3 hover:bg-muted/50 transition-colors"
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+                      {goal.type === "BOOKS_PER_MONTH" ? <Target size={16} /> : <Clock size={16} />}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-foreground truncate">
+                        {goal.type === "BOOKS_PER_MONTH" ? `${goal.target} ${t.plan.booksPerMonth}` : `${goal.target} ${t.plan.minutesPerDay}`}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {current} / {goal.target} · {pct}%
+                      </p>
+                    </div>
+                  </div>
+                  <ChevronRight size={16} className="text-muted-foreground shrink-0 ml-2" />
+                </Link>
+              );
+            })}
+          </div>
+        ) : (
+          <Link
+            href="/plan"
+            className="flex flex-col items-center justify-center py-4 text-center rounded-xl bg-muted/30 hover:bg-muted/50 transition-colors"
+          >
+            <Target size={24} className="text-muted-foreground mb-2" />
+            <p className="text-sm text-muted-foreground">{t.plan.noPlansYet}</p>
+            <p className="text-xs text-primary font-medium mt-1">{t.plan.createFirstPlan}</p>
+          </Link>
+        )}
+      </section>
+
       {/* ═══ CATEGORIES — ixcham pills/chips, gorizontal scroll ═══ */}
       <section>
           <div className="flex items-center justify-between mb-2.5">
@@ -209,16 +297,14 @@ export default async function HomePage() {
               {t.home.all} <ArrowRight size={14} />
             </Link>
           </div>
-          <div className="relative">
-          <div className="flex gap-2 overflow-x-auto pb-1 -mx-4 px-4 scrollbar-hide snap-x md:mx-0 md:px-0 md:flex-wrap md:snap-none">
-            {/* right fade hint — shows there is more to scroll */}
-            <div aria-hidden className="pointer-events-none absolute inset-y-0 right-0 w-10 bg-gradient-to-l from-background to-transparent md:hidden" />
+          <div className="relative -mx-4 md:mx-0">
+          <div className="flex gap-2 overflow-x-auto pb-1 px-4 md:px-0 scrollbar-hide snap-x md:flex-wrap md:snap-none">
             {categories.slice(0, 8).map((cat) => {
               return (
                 <Link
                   key={cat.id}
                   href={`/books?categoryId=${cat.id}`}
-                  className="inline-flex shrink-0 snap-start items-center gap-1.5 rounded-full border border-border bg-card px-3 py-2 text-[13px] font-medium text-foreground shadow-sm transition-all hover:border-primary/40 hover:shadow-md hover:-translate-y-px active:scale-95 whitespace-nowrap"
+                  className="inline-flex shrink-0 snap-start items-center gap-1.5 rounded-full border border-border bg-card px-3 py-2 text-[13px] font-medium text-foreground transition-all duration-200 hover:border-primary/40 active:scale-95 whitespace-nowrap"
                 >
                   <span className="text-primary">
                     <CategoryIcon slug={cat.slug} name={cat.name} size={16} />
@@ -231,6 +317,9 @@ export default async function HomePage() {
               );
             })}
           </div>
+          {/* Fade hints for scroll on mobile */}
+          <div aria-hidden className="pointer-events-none absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-background to-transparent md:hidden" />
+          <div aria-hidden className="pointer-events-none absolute inset-y-0 left-0 w-8 bg-gradient-to-r from-background to-transparent md:hidden" />
           </div>
       </section>
 
@@ -250,7 +339,7 @@ export default async function HomePage() {
         </div>
 
         {yangiKitoblar.length > 0 ? (
-          <div className="flex gap-3 overflow-x-auto pb-3 -mx-4 px-4 scrollbar-thin snap-x snap-mandatory md:mx-0 md:px-0 md:overflow-visible md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-5">
+          <div className="flex gap-4 overflow-x-auto pb-3 -mx-4 px-4 scrollbar-thin snap-x snap-mandatory md:mx-0 md:px-0 md:overflow-visible md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-6">
             {yangiKitoblar.map((book) => {
               const avgRating =
                 (book as any).ratings?.length > 0
@@ -331,7 +420,7 @@ export default async function HomePage() {
           </Link>
         </div>
         {top10Ordered.length > 0 ? (
-          <div className="flex gap-3 overflow-x-auto pb-3 -mx-4 px-4 scrollbar-thin snap-x snap-mandatory md:mx-0 md:px-0 md:overflow-visible md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-5">
+          <div className="flex gap-4 overflow-x-auto pb-3 -mx-4 px-4 scrollbar-thin snap-x snap-mandatory md:mx-0 md:px-0 md:overflow-visible md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-6">
             {top10Ordered.map((book, idx) => {
               const avgRating =
                 (book as any).ratings?.length > 0
@@ -407,7 +496,7 @@ export default async function HomePage() {
               {t.home.all} <ArrowRight size={14} />
           </Link>
         </div>
-          <div className="flex gap-3 overflow-x-auto pb-3 -mx-4 px-4 scrollbar-thin snap-x snap-mandatory md:mx-0 md:px-0 md:overflow-visible md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-5">
+          <div className="flex gap-4 overflow-x-auto pb-3 -mx-4 px-4 scrollbar-thin snap-x snap-mandatory md:mx-0 md:px-0 md:overflow-visible md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-6">
           {engZorlari.map((book) => {
             const avgRating =
               (book as any).ratings?.length > 0
@@ -471,7 +560,7 @@ export default async function HomePage() {
               {t.home.all} <ArrowRight size={14} />
           </Link>
         </div>
-        <div className="flex gap-3 overflow-x-auto pb-3 -mx-4 px-4 scrollbar-thin snap-x snap-mandatory md:mx-0 md:px-0 md:overflow-visible md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-5">
+        <div className="flex gap-4 overflow-x-auto pb-3 -mx-4 px-4 scrollbar-thin snap-x snap-mandatory md:mx-0 md:px-0 md:overflow-visible md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-6">
           {sizgaMos.map((book) => {
             const avgRating =
               (book as any).ratings?.length > 0

@@ -13,7 +13,8 @@
     "db:reset": "prisma migrate reset --force && node prisma/seed.mjs",
     "db:studio": "prisma studio",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "postinstall": "node scripts/copy-pdf-worker.mjs"
   },
   "prisma": {
     "seed": "node prisma/seed.mjs"

@@ -65,6 +65,7 @@ export function TextReader({ bookId, title, totalPages, pdfUrl }: Props) {
 
   // ─── State ──────────────────────────────────────────────
   const [currentPage, setCurrentPage] = useState(1);
+  const currentPageRef = useRef(1);
   const [totalTextPages, setTotalTextPages] = useState(0);
   const [pageCache, setPageCache] = useState<Map<number, string>>(new Map());
   const [loadingPage, setLoadingPage] = useState<number | null>(1);
@@ -182,6 +183,7 @@ export function TextReader({ bookId, title, totalPages, pdfUrl }: Props) {
       const clamped = Math.max(1, Math.min(page, totalTextPages || 1));
       if (clamped === currentPage) return;
       setCurrentPage(clamped);
+      currentPageRef.current = clamped;
       loadPage(clamped);
       prefetchAhead(clamped);
       // Scroll to top
@@ -212,17 +214,51 @@ export function TextReader({ bookId, title, totalPages, pdfUrl }: Props) {
       .catch(() => {});
   }, [bookId, sessionStarted]);
 
+  // Hard navigation / tab yopishda React cleanup ishlamaydi —
+  // pagehide'da keepalive beacon bilan sessiyani yakunlaymiz.
   useEffect(() => {
-    return () => {
+    const handlePageHide = () => {
       if (sessionRef.current) {
-        api
-          .post("/api/reading/session/end", {
-            sessionId: sessionRef.current,
-            endPage: currentPage,
-          })
-          .catch(() => {});
+        const m = document.cookie.match(/(?:^|;\s*)mbsi_csrf=([^;]*)/);
+        const csrf = m ? decodeURIComponent(m[1]) : "";
+        try {
+          void fetch("/api/reading/session/end", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "x-csrf-token": csrf },
+            body: JSON.stringify({ sessionId: sessionRef.current, endPage: currentPageRef.current }),
+            keepalive: true,
+          }).catch(() => {});
+        } catch {
+          /* ignore */
+        }
+        sessionRef.current = null;
       }
     };
+    window.addEventListener("pagehide", handlePageHide);
+    return () => window.removeEventListener("pagehide", handlePageHide);
+  }, []);
+
+  useEffect(() => {
+    // Oxirgi sahifani ref'da saqlash — cleanup closure'dagi eski qiymat
+    // o'rniga haqiqiy oxirgi ko'rilgan sahifani ishlatadi.
+    return () => {
+      if (sessionRef.current) {
+        const m = document.cookie.match(/(?:^|;\s*)mbsi_csrf=([^;]*)/);
+        const csrf = m ? decodeURIComponent(m[1]) : "";
+        try {
+          void fetch("/api/reading/session/end", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "x-csrf-token": csrf },
+            body: JSON.stringify({ sessionId: sessionRef.current, endPage: currentPageRef.current }),
+            keepalive: true,
+          }).catch(() => {});
+        } catch {
+          /* ignore */
+        }
+        sessionRef.current = null;
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // ─── Save progress on page change ────────────────────────

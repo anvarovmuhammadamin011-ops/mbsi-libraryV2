@@ -107,6 +107,9 @@ export async function startBook(
   return toApiProgress(created);
 }
 
+// 12 soat (43200 soniya) — kitobni hisoblash uchun eng kam o'qish vaqti
+const MIN_READING_SECONDS = 12 * 60 * 60;
+
 export async function upsertProgress(
   userId: string,
   bookId: string,
@@ -117,11 +120,31 @@ export async function upsertProgress(
 
   const clamped = Math.max(0, Math.min(page, book.totalPages));
   const progress = computeProgress(clamped, book.totalPages);
-  const completed = clamped >= book.totalPages;
+  const reachedEnd = clamped >= book.totalPages;
 
   const existing = await prisma.readingProgress.findUnique({
     where: { userId_bookId: { userId, bookId } },
   });
+
+  // 12 soatlik chegarani tekshirish: faqat yetarli vaqt o'qigan bo'lsa tamomlangan hisoblanadi
+  let meetsTimeRequirement = false;
+  if (reachedEnd) {
+    const totalSessions = await prisma.readingSession.aggregate({
+      where: { userId, bookId },
+      _sum: { duration: true },
+    });
+    const totalDuration = totalSessions._sum.duration ?? 0;
+    // Agar session yo'q bo'lsa, startedAt dan hisoblaymiz
+    if (totalDuration > 0) {
+      meetsTimeRequirement = totalDuration >= MIN_READING_SECONDS;
+    } else if (existing) {
+      // Session bo'lmasa, startedAt dan endigacha vaqtni tekshirish
+      const elapsed = Math.floor((Date.now() - existing.startedAt.getTime()) / 1000);
+      meetsTimeRequirement = elapsed >= MIN_READING_SECONDS;
+    }
+  }
+
+  const completed = reachedEnd && meetsTimeRequirement;
 
   if (existing) {
     const shouldAward = completed && !existing.completedAt;
@@ -135,7 +158,6 @@ export async function upsertProgress(
       },
     });
     if (shouldAward) {
-      // Ball reward for book completion
       const { awardBookRead } = await import("./balls");
       await awardBookRead(userId, bookId);
     }
@@ -160,7 +182,6 @@ export async function upsertProgress(
     },
   });
   if (completed) {
-    // Ball reward for book completion
     const { awardBookRead } = await import("./balls");
     await awardBookRead(userId, bookId);
   }

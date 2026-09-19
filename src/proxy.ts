@@ -9,13 +9,17 @@ import {
 } from "./lib/server/security";
 
 // ============================================================
-// MBSI Library — Auth + Security Proxy
+// MBSI Library — Auth + Security Proxy (Next.js 16 `proxy.ts`)
 // ============================================================
 // 1. Page routes: lightweight session-presence check (real
 //    signature verification happens server-side in layouts).
-// 2. /api routes: centralized rate limiting (per IP+path) and
-//    CSRF double-submit enforcement for every mutation endpoint,
-//    regardless of whether the handler uses `route()`.
+//
+// NOTE: /api/* ATAYIN matcher'dan chiqarilgan — Next.js 16.3.2
+// proxy/middleware API route'larga POST body'ni to'g'ri uzatmaydi
+// (~30B dan katta body'lar yo'qoladi). Rate-limit + CSRF himoyasi
+// endi src/lib/server/handler.ts dagi `route()` wrapper'ida.
+// Agar Next.js yangi versiyasida bu tuziladi — matcher'ga
+// "/api/:path*" ni qaytarish kifoya.
 
 const protectedPaths = [
   "/home",
@@ -107,7 +111,7 @@ function getClientIpForLog(req: NextRequest): string {
   return clientIp(req);
 }
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const method = request.method.toUpperCase();
 
@@ -169,6 +173,5 @@ export const config = {
     "/admin/:path*",
     "/manager/:path*",
     "/registrar/:path*",
-    "/api/:path*",
   ],
 };

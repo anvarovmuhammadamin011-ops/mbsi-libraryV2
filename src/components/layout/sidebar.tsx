@@ -61,19 +61,26 @@ export function StudentSidebar() {
     <>
       {/* â•â•â• TABLET SIDEBAR (md to lg) â€” icon only â•â•â• */}
       <aside className="hidden md:flex lg:hidden flex-col border-r border-border bg-card w-[72px]">
-        {/* Logo */}
-        <div className="flex h-16 items-center justify-center border-b border-border">
+        {/* Logo with theme toggle */}
+        <div className="flex h-16 items-center justify-between border-b border-border px-2">
           <Link href="/home" className="flex items-center justify-center">
             <Image
               src="/logo/school-logoV2.svg"
               alt="MBSI Logo"
-              width={36}
-              height={36}
+              width={40}
+              height={40}
               className="rounded-lg"
               loading="eager"
               priority
             />
           </Link>
+          <button
+            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+            className="flex h-10 w-10 items-center justify-center rounded-xl text-muted-foreground hover:bg-muted hover:text-foreground transition-all"
+            aria-label={t.header.themeToggle}
+          >
+            {mounted && theme === "dark" ? <Sun size={20} /> : <Moon size={20} />}
+          </button>
         </div>
 
         {/* Navigation â€” icon only, larger touch targets */}
@@ -104,17 +111,6 @@ export function StudentSidebar() {
             );
           })}
         </nav>
-
-        {/* Theme toggle */}
-        <div className="px-1.5 pb-2">
-          <button
-            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-            className="flex h-12 w-12 items-center justify-center rounded-xl text-muted-foreground hover:bg-muted hover:text-foreground transition-all"
-            aria-label={t.header.themeToggle}
-          >
-            {mounted && theme === "dark" ? <Sun size={22} /> : <Moon size={22} />}
-          </button>
-        </div>
 
         {/* Admin link (if admin) */}
         {isAdmin && (
@@ -148,15 +144,17 @@ export function StudentSidebar() {
         <div className="flex h-16 items-center justify-between px-4 border-b border-border">
           {!collapsed && (
             <Link href="/home" className="flex items-center gap-2.5">
-              <Image
-                src="/logo/school-logoV2.svg"
-                alt="MBSI Logo"
-                width={32}
-                height={32}
-                className="rounded-lg"
-                loading="eager"
-                priority
-              />
+              <div className="flex items-center justify-center p-1">
+                <Image
+                  src="/logo/school-logoV2.svg"
+                  alt="MBSI Logo"
+                  width={36}
+                  height={36}
+                  className="rounded-lg"
+                  loading="eager"
+                  priority
+                />
+              </div>
               <div className="flex flex-col">
                 <span className="text-sm font-bold tracking-tight text-foreground leading-none">
                   MBSI
@@ -167,15 +165,24 @@ export function StudentSidebar() {
               </div>
             </Link>
           )}
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setCollapsed(!collapsed)}
-            className="h-7 w-7 shrink-0 text-muted-foreground hover:text-foreground"
-            aria-label={collapsed ? "Kengaytirish" : "Kichraytirish"}
-          >
-            {collapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
-          </Button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+              className="flex h-10 w-10 items-center justify-center rounded-xl text-muted-foreground hover:bg-muted hover:text-foreground transition-all"
+              aria-label={t.header.themeToggle}
+            >
+              {mounted && theme === "dark" ? <Sun size={20} /> : <Moon size={20} />}
+            </button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setCollapsed(!collapsed)}
+              className="h-7 w-7 shrink-0 text-muted-foreground hover:text-foreground"
+              aria-label={collapsed ? "Kengaytirish" : "Kichraytirish"}
+            >
+              {collapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
+            </Button>
+          </div>
         </div>
 
         {/* Navigation */}
@@ -208,23 +215,6 @@ export function StudentSidebar() {
             })}
           </nav>
         </ScrollArea>
-
-        {/* Theme toggle */}
-        <div className="px-2 pb-2">
-          <button
-            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-            className={cn(
-              "flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition-all duration-150 w-full",
-              "text-muted-foreground hover:bg-muted hover:text-foreground"
-            )}
-            aria-label={t.header.themeToggle}
-          >
-            {mounted && theme === "dark" ? <Sun size={18} className="shrink-0" /> : <Moon size={18} className="shrink-0" />}
-            {!collapsed && <span className="flex-1 text-left">
-              {mounted ? (theme === "dark" ? t.sidebar.themeLight : t.sidebar.themeDark) : t.sidebar.theme}
-            </span>}
-          </button>
-        </div>
 
         {/* Admin link (if admin) */}
         {isAdmin && !collapsed && (

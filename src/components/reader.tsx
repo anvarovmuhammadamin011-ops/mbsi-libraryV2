@@ -48,6 +48,24 @@ export function Reader({ bookId, title, totalPages, pdfUrl, initialPage }: Props
   const touchStartRef = useRef<{ x: number; y: number } | null>(null);
   const pinchRef = useRef<{ dist: number; zoom: number } | null>(null);
 
+  // Sessiyani yakunlash: keepalive bilan — hard navigation / tab yopilganda
+  // ham so'rov bekor qilinmaydi. Oxirgi ko'rilgan sahifa ref'dan olinadi
+  // (cleanup closure'dagi eski `page` emas).
+  const endSessionBeacon = useCallback((sessionId: string, endPage: number) => {
+    const m = document.cookie.match(/(?:^|;\s*)mbsi_csrf=([^;]*)/);
+    const csrf = m ? decodeURIComponent(m[1]) : "";
+    try {
+      void fetch("/api/reading/session/end", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-csrf-token": csrf },
+        body: JSON.stringify({ sessionId, endPage }),
+        keepalive: true,
+      }).catch(() => {});
+    } catch {
+      /* ignore */
+    }
+  }, []);
+
   // ─── Load PDF ───────────────────────────────────────────────
   useEffect(() => {
     let cancelled = false;
@@ -163,19 +181,27 @@ export function Reader({ bookId, title, totalPages, pdfUrl, initialPage }: Props
         if (active) sessionRef.current = r.sessionId;
       })
       .catch(() => {});
+
+    // Hard navigation / tab yopishda React cleanup ishga tushmaydi —
+    // shuning uchun pagehide'da ham sessiyani yakunlaymiz (keepalive bilan).
+    const handlePageHide = () => {
+      if (sessionRef.current) {
+        endSessionBeacon(sessionRef.current, lastSavePageRef.current);
+        sessionRef.current = null;
+      }
+    };
+    window.addEventListener("pagehide", handlePageHide);
+
     return () => {
       active = false;
+      window.removeEventListener("pagehide", handlePageHide);
       if (sessionRef.current) {
-        api
-          .post("/api/reading/session/end", {
-            sessionId: sessionRef.current,
-            endPage: page,
-          })
-          .catch(() => {});
+        endSessionBeacon(sessionRef.current, lastSavePageRef.current);
+        sessionRef.current = null;
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [endSessionBeacon]);
 
   const saveProgress = useCallback(
     (p: number) => {

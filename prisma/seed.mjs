@@ -117,11 +117,39 @@ const OLD_AUTHOR_IDS = [
   "author-cal-newport",
 ];
 
-const READING_PROGRESS = [];
-const BOOKMARKS = [];
-const FAVORITES = [];
+// Demo user (user-1) uchun o'qish progressi va sessiyalari - yutuqlar uchun
+const DEMO_BOOK_IDS = [
+  "book-uz-1", "book-uz-2", "book-uz-3", "book-uz-4", "book-uz-5",
+  "book-uz-6", "book-uz-7", "book-uz-8", "book-uz-9", "book-uz-10"
+];
 
-// ── Boshlang'ich reytinglar: bosh sahifadagi "—" muammosini yechish uchun.
+const READING_PROGRESS = DEMO_BOOK_IDS.map((bookId, i) => ({
+  userId: "user-1",
+  bookId,
+  currentPage: i < 3 ? 100 : (i < 6 ? 50 : 10),
+  progress: i < 3 ? 100 : (i < 6 ? 50 : 10),
+  startedAt: new Date(Date.now() - (10 - i) * 24 * 60 * 60 * 1000).toISOString(),
+  lastReadAt: new Date(Date.now() - (5 - i) * 24 * 60 * 60 * 1000).toISOString(),
+  completedAt: i < 3 ? new Date(Date.now() - (3 - i) * 24 * 60 * 60 * 1000).toISOString() : null,
+}));
+
+const BOOKMARKS = [];
+const FAVORITES = DEMO_BOOK_IDS.slice(0, 3).map((bookId, i) => ({
+  userId: "user-1",
+  bookId,
+  createdAt: new Date(Date.now() - (10 - i) * 24 * 60 * 60 * 1000).toISOString(),
+}));
+
+// Sessiyalar - streak uchun (so'nggi 7 kun)
+const SESSIONS_DATA = Array.from({ length: 7 }, (_, i) => ({
+  userId: "user-1",
+  bookId: DEMO_BOOK_IDS[i % DEMO_BOOK_IDS.length],
+  startPage: i * 10 + 1,
+  endPage: i * 10 + 15,
+  pagesRead: 15,
+  duration: 1800, // 30 daqiqa
+  startedAt: new Date(Date.now() - (6 - i) * 24 * 60 * 60 * 1000).toISOString(),
+}));
 // ── Har bir asosiy kitobda kamida 2-3 baho bo'ladi, averages real ko'rinadi.
 const RATING_USERS = ["user-1", "user-2", "user-3", "user-4", "user-5"];
 const RATINGS = [];

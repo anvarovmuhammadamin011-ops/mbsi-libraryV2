@@ -9,7 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Loader2, Star, TrendingUp, TrendingDown, Minus } from "lucide-react";
+import { Loader2, Star, TrendingUp, TrendingDown, Minus, Info, ChevronRight } from "lucide-react";
 
 interface BallData {
   balls: number;
@@ -81,18 +81,21 @@ export function BallDisplay({ initialBalls = 0, showDetails = true }: Props) {
     <>
       <button
         onClick={() => setOpen(true)}
-        className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-yellow-500/10 to-orange-500/10 px-3 py-2 hover:from-yellow-500/20 hover:to-orange-500/20 transition-all cursor-pointer"
+        className="flex items-center justify-between gap-2 rounded-xl bg-gradient-to-r from-yellow-500/10 to-orange-500/10 px-3 py-2 hover:from-yellow-500/20 hover:to-orange-500/20 transition-all cursor-pointer w-full"
       >
-        <div className="relative">
-          <Star size={20} className="fill-yellow-500 text-yellow-500" />
-          <div className="absolute -top-1 -right-1 w-3 h-3 bg-yellow-500 rounded-full animate-pulse" />
+        <div className="flex items-center gap-2 min-w-0">
+          <div className="relative">
+            <Star size={20} className="fill-yellow-500 text-yellow-500" />
+            <div className="absolute -top-1 -right-1 w-3 h-3 bg-yellow-500 rounded-full animate-pulse" />
+          </div>
+          <div className="text-left min-w-0">
+            <p className="text-xs text-muted-foreground truncate">Joriy ball</p>
+            <p className="text-sm font-bold text-yellow-600 truncate">
+              {balls.toFixed(1)} / {maxBalls}
+            </p>
+          </div>
         </div>
-        <div className="text-left">
-          <p className="text-xs text-muted-foreground">Ballar</p>
-          <p className="text-sm font-bold text-yellow-600">
-            {balls.toFixed(1)} / {maxBalls}
-          </p>
-        </div>
+        <Info size={16} className="text-muted-foreground shrink-0 ml-2" />
       </button>
 
       <Dialog open={open} onOpenChange={setOpen}>
@@ -100,7 +103,7 @@ export function BallDisplay({ initialBalls = 0, showDetails = true }: Props) {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Star size={18} className="fill-yellow-500 text-yellow-500" />
-              Ball tizimi
+              Joriy ball
             </DialogTitle>
           </DialogHeader>
 
@@ -132,7 +135,10 @@ export function BallDisplay({ initialBalls = 0, showDetails = true }: Props) {
 
               {/* Info */}
               <div className="rounded-xl bg-muted/50 p-4 space-y-2">
-                <h4 className="text-sm font-medium">Qanday ball olish mumkin?</h4>
+                <h4 className="text-sm font-medium flex items-center gap-1">
+                  <Info size={14} className="text-primary" />
+                  Qanday ball olish mumkin?
+                </h4>
                 <ul className="text-xs text-muted-foreground space-y-1">
                   <li className="flex items-center gap-2">
                     <TrendingUp size={12} className="text-green-500" />

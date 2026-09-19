@@ -119,10 +119,10 @@ export async function listBooks(
 
   const baseWhere: Prisma.BookWhereInput = {};
   if (publishedOnly && !opts?.includeUnpublished) {
-    // Student-facing: faqat nashr etilgan va ACTIVE holatdagi kitoblar ko'rinadi
-    // (HIDDEN — yashirilgan, DRAFT — hali tayyor emas)
+    // Student-facing: faqat nashr etilgan, ACTIVE holatdagi va PDF si bor kitoblar ko'rinadi
     baseWhere.isPublished = true;
     baseWhere.status = "ACTIVE";
+    baseWhere.pdfUrl = { not: null };
   }
   if (language) baseWhere.language = language;
   if (categoryId) baseWhere.categoryId = categoryId;

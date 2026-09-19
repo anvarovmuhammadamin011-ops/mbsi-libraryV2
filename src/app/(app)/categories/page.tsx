@@ -68,7 +68,7 @@ export default async function CategoriesPage() {
               <Link
                 key={cat.id}
                 href={`/books?categoryId=${cat.id}`}
-                className="group rounded-2xl border border-border bg-card p-4 hover:shadow-md hover:bg-muted/30 transition-all"
+                className="group rounded-2xl border border-border bg-card p-4 hover:bg-muted/30 transition-all duration-200"
               >
                 <div className="flex items-start justify-between mb-3">
                   <div className={`flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br ${c.bg} text-primary shadow-sm`}>

@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { BookOpen, Heart, CheckCircle2, Star } from "lucide-react";
+import { useLanguage } from "@/lib/i18n/language-provider";
 
 export type LibraryBook = {
   id: string;
@@ -33,12 +34,6 @@ export type FinishedItem = {
 
 type TabId = "reading" | "saved" | "finished";
 
-const TABS: { id: TabId; label: string }[] = [
-  { id: "reading", label: "Reading" },
-  { id: "saved", label: "Saved" },
-  { id: "finished", label: "Finished" },
-];
-
 function Cover({ book }: { book: LibraryBook }) {
   return (
     <div className="relative h-20 w-14 shrink-0 overflow-hidden rounded-lg bg-muted dark:bg-[#0E1629]">
@@ -59,7 +54,7 @@ function Cover({ book }: { book: LibraryBook }) {
   );
 }
 
-function ReadingRow({ item }: { item: ReadingItem }) {
+function ReadingRow({ item, t }: { item: ReadingItem; t: any }) {
   const pct = Math.round(item.progress);
   return (
     <Link
@@ -77,7 +72,7 @@ function ReadingRow({ item }: { item: ReadingItem }) {
           </p>
         )}
         <div className="mt-2">
-          <p className="text-xs text-muted-foreground">{pct}% completed</p>
+          <p className="text-xs text-muted-foreground">{pct}% {t.library.continueReading}</p>
           <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-muted dark:bg-white/10">
             <div
               className="h-full rounded-full bg-primary transition-all dark:shadow-[0_0_6px_rgba(96,165,250,0.4)]"
@@ -114,7 +109,7 @@ function SavedRow({ item }: { item: SavedItem }) {
   );
 }
 
-function FinishedRow({ item }: { item: FinishedItem }) {
+function FinishedRow({ item, t }: { item: FinishedItem; t: any }) {
   return (
     <Link
       href={`/books/${item.book.slug}`}
@@ -132,7 +127,7 @@ function FinishedRow({ item }: { item: FinishedItem }) {
         )}
         <div className="mt-2 flex items-center gap-1.5">
           <CheckCircle2 size={14} className="shrink-0 text-green-600" />
-          <span className="text-xs font-medium text-green-600">100% · Completed</span>
+          <span className="text-xs font-medium text-green-600">100% · {t.library.finished}</span>
         </div>
       </div>
     </Link>
@@ -143,10 +138,12 @@ function Empty({
   icon,
   title,
   description,
+  t,
 }: {
   icon: React.ReactNode;
   title: string;
   description: string;
+  t: any;
 }) {
   return (
     <div className="flex flex-col items-center justify-center py-12 text-center">
@@ -161,7 +158,7 @@ function Empty({
         href="/books"
         className="mt-4 inline-flex h-9 items-center justify-center rounded-full border border-border bg-card px-5 text-xs font-medium text-foreground hover:bg-muted transition-colors"
       >
-        Browse books
+        {t.library.browseBooks}
       </Link>
     </div>
   );
@@ -176,25 +173,33 @@ export function LibraryTabs({
   saved: SavedItem[];
   finished: FinishedItem[];
 }) {
+  const { t } = useLanguage();
   const [active, setActive] = useState<TabId>("reading");
+
+  const TABS: { id: TabId; label: string; icon: React.ReactNode }[] = [
+    { id: "reading", label: t.library.reading, icon: <BookOpen size={14} /> },
+    { id: "saved", label: t.library.saved, icon: <Heart size={14} /> },
+    { id: "finished", label: t.library.finished, icon: <CheckCircle2 size={14} /> },
+  ];
 
   return (
     <div className="space-y-4">
-      {/* Pill tabs */}
+      {/* Pill tabs with icons */}
       <div className="inline-flex gap-1 rounded-full bg-muted p-1">
-        {TABS.map((t) => {
-          const isActive = active === t.id;
+        {TABS.map((tab) => {
+          const isActive = active === tab.id;
           return (
             <button
-              key={t.id}
-              onClick={() => setActive(t.id)}
+              key={tab.id}
+              onClick={() => setActive(tab.id)}
               className={
                 isActive
-                  ? "rounded-full bg-primary px-5 py-1.5 text-sm font-medium text-primary-foreground shadow-sm transition-colors"
-                  : "rounded-full px-5 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                  ? "rounded-full bg-primary px-5 py-1.5 text-sm font-medium text-primary-foreground shadow-sm transition-colors flex items-center gap-1.5"
+                  : "rounded-full px-5 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5"
               }
             >
-              {t.label}
+              <span className="shrink-0">{tab.icon}</span>
+              {tab.label}
             </button>
           );
         })}
@@ -207,15 +212,16 @@ export function LibraryTabs({
             {reading.length === 0 ? (
               <Empty
                 icon={<BookOpen size={20} />}
-                title="No books in progress"
-                description="Start reading a book and it will appear here. Your progress is tracked automatically."
+                title={t.library.noBooksInProgress}
+                description={t.library.noBooksInProgressSub}
+                t={t}
               />
             ) : (
               <>
-                <p className="text-sm font-medium text-muted-foreground">Continue reading</p>
+                <p className="text-sm font-medium text-muted-foreground">{t.library.continueReading}</p>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {reading.map((item) => (
-                    <ReadingRow key={item.id} item={item} />
+                    <ReadingRow key={item.id} item={item} t={t} />
                   ))}
                 </div>
               </>
@@ -228,8 +234,9 @@ export function LibraryTabs({
             {saved.length === 0 ? (
               <Empty
                 icon={<Heart size={20} />}
-                title="No saved books"
-                description="Tap the heart on any book to save it for later. Your saved books will appear here."
+                title={t.library.noSavedBooks}
+                description={t.library.noSavedBooksSub}
+                t={t}
               />
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -246,13 +253,14 @@ export function LibraryTabs({
             {finished.length === 0 ? (
               <Empty
                 icon={<CheckCircle2 size={20} />}
-                title="No finished books yet"
-                description="Complete a book to see it here. Keep reading — you're doing great!"
+                title={t.library.noFinishedBooks}
+                description={t.library.noFinishedBooksSub}
+                t={t}
               />
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {finished.map((item) => (
-                  <FinishedRow key={item.id} item={item} />
+                  <FinishedRow key={item.id} item={item} t={t} />
                 ))}
               </div>
             )}

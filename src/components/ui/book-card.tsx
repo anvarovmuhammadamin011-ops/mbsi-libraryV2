@@ -29,8 +29,8 @@ export function BookCard({
     <div
       className={cn(
         "group relative flex flex-col overflow-hidden rounded-2xl border border-border bg-card transition-all duration-300",
-        "hover:shadow-xl hover:shadow-primary/10 hover:-translate-y-1",
-        "dark:hover:shadow-primary/15 dark:shadow-lg dark:shadow-black/20",
+        "hover:shadow-lg hover:-translate-y-0.5",
+        "dark:hover:shadow-primary/5",
         className
       )}
     >
@@ -102,11 +102,11 @@ export function BookCard({
       </div>
 
       {/* Info — fixed-height blocks so every card is the same size */}
-      <div className="flex flex-1 flex-col p-3">
+      <div className="flex flex-1 flex-col p-4">
         <h3 className="line-clamp-2 h-10 text-sm font-bold leading-snug text-foreground">
           {book.title}
         </h3>
-        <p className="mt-0.5 h-5 truncate text-xs text-muted-foreground">
+        <p className="mt-1 h-5 truncate text-xs text-muted-foreground">
           {book.author?.name ?? "Noma'lum muallif"}
         </p>
 
