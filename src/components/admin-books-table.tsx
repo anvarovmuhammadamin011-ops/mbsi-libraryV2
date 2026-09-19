@@ -187,7 +187,7 @@ export function AdminBooksTable({ books, categories }: Props) {
 
       const r = await new Promise<Response>((resolve, reject) => {
         const xhr = new XMLHttpRequest();
-        xhr.open("POST", "/api/admin/upload");
+        xhr.open("POST", "/api/manager/books");
         xhr.upload.onprogress = (e) => {
           if (e.lengthComputable) setUploadProgress(Math.round((e.loaded / e.total) * 100));
         };

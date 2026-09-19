@@ -8,8 +8,6 @@ import { Button } from "@/components/ui/button";
 import { Loader2, AlertCircle, KeyRound, GraduationCap, BookOpen } from "lucide-react";
 
 const DEMO_ACCOUNTS = [
-  { login: "student", role: "O'quvchi", icon: GraduationCap, description: "Kitob o'qish va baholash" },
-  { login: "teacher", role: "O'qituvchi", icon: BookOpen, description: "O'quvchilar statistikasi" },
   { login: "bookmanager", role: "Kitob menejeri", icon: BookOpen, description: "Kitoblar va kategoriyalar" },
   { login: "registrar", role: "Ro'yxatga oluvchi", icon: GraduationCap, description: "O'quvchi qo'shish" },
   { login: "admin", role: "Administrator", icon: KeyRound, description: "To'liq boshqaruv" },
