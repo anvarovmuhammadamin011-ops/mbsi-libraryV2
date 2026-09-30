@@ -1,0 +1,15 @@
+# PDF va xususiy fayllar — ular GitHub Release'da (tag: pdfs-v1)
+# saqlanadi va /api/pdf/[id] orqali stream qilinadi. Vercel'ga
+# 2+ GB yuklanishini oldini oladi.
+storage/
+
+# scratch / import skriptlari; faqat postinstall uchun kerakligi istisno
+scripts/*
+!scripts/copy-pdf-worker.mjs
+
+# locale, test, kesh
+.env*
+tests/
+.freebuff/
+cnt.cjs
+dev-server.log

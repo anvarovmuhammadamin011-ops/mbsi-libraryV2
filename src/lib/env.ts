@@ -7,9 +7,17 @@ function str(name: string, fallback: string): string {
   return v && v.length > 0 ? v : fallback;
 }
 
-// Production uchun APP_SECRET majburiy — fail-fast
+// Production uchun APP_SECRET majburiy — fail-fast (faqat runtime'da).
+// Vercel'da Sensitive env qiymatlari build jarayoniga yuborilmaydi, shuning
+// uchun `next build` davrida (NEXT_PHASE=phase-production-build) tekshiruvni
+// o'tkazib yuboramiz — aks holda deploy build'da yiqiladi.
+const isBuildPhase = process.env.NEXT_PHASE === "phase-production-build";
 const appSecret = str("APP_SECRET", "");
-if (process.env.NODE_ENV === "production" && (!appSecret || appSecret.length < 32)) {
+if (
+  process.env.NODE_ENV === "production" &&
+  !isBuildPhase &&
+  (!appSecret || appSecret.length < 32)
+) {
   throw new Error(
     "❌ APP_SECRET production'da MAJBURIY va kamida 32 belgidan iborat bo'lishi kerak. " +
       "Uni .env faylida o'rnating (masalan: APP_SECRET=<uzun tasodifiy satr>). " +
