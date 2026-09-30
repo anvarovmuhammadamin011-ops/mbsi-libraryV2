@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "public/**",
     "prisma/**",
     "cnt.cjs",
+    "scripts/**",
+    "storage/**",
   ]),
   ...nextVitals,
   ...nextTs,

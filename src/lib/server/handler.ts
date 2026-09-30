@@ -8,10 +8,15 @@ import {
   CSRF_HEADER,
   isMutationMethod,
 } from "./security";
+import { validateCsrfToken } from "./csrf";
+
+// Route params: [id], [...key] — Next orqali string/string[] keladi.
+// `any` (lint'da off) contravariance jihatidan ikkala holatga ham mos.
+type AnyParams = Record<string, any>;
 
 type Handler = (
   req: NextRequest,
-  ctx: { params: Promise<Record<string, string>> }
+  ctx: { params: Promise<AnyParams> }
 ) => Promise<Response>;
 
 // ─── API guard (ex-middleware, route darajasida) ─────────────
@@ -61,7 +66,13 @@ function csrfBlocked(req: NextRequest, pathname: string): boolean {
 
   // Double-submit: header cookie bilan mos bo'lishi shart.
   const header = req.headers.get(CSRF_HEADER);
-  return !header || header !== csrfCookie;
+  if (!header || header !== csrfCookie) return true;
+
+  // Token sessiya qiymatiga HMAC bilan bog'langan bo'lishi ham shart —
+  // o'g'irlangan cookie boshqa sessiya bilan ishlatilmasin.
+  if (!validateCsrfToken(header, session)) return true;
+
+  return false;
 }
 
 function guard(req: NextRequest, pathname: string): NextResponse | null {

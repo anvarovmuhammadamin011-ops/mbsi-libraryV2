@@ -1,17 +1,15 @@
-import { NextResponse } from "next/server";
+import { route, json } from "@/lib/server/handler";
 import { requireBookManager } from "@/lib/server/auth";
 import { prisma } from "@/lib/db";
+import { ApiError, ERROR_CODES } from "@/lib/server/errors";
 
 // GET /api/admin/books/[id]/stats — Kitob Menejeri: bitta kitob statistikasi
-export async function GET(
-  _req: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export const GET = route(async (_req, ctx) => {
   const admin = await requireBookManager();
   if (!admin) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    throw new ApiError(ERROR_CODES.FORBIDDEN, "Ruxsat yo'q", 403);
   }
-  const { id } = await params;
+  const { id } = await ctx.params;
 
   const book = await prisma.book.findUnique({
     where: { id },
@@ -23,7 +21,7 @@ export async function GET(
     },
   });
   if (!book) {
-    return NextResponse.json({ error: "Not found" }, { status: 404 });
+    throw new ApiError(ERROR_CODES.NOT_FOUND, "Kitob topilmadi", 404);
   }
 
   const now = new Date();
@@ -64,7 +62,7 @@ export async function GET(
     if (i !== undefined) days[i].views++;
   }
 
-  return NextResponse.json({
+  return json({
     book,
     viewsTotal,
     viewsMonth,
@@ -73,4 +71,4 @@ export async function GET(
     ratingCount: ratingAgg._count,
     trend: days,
   });
-}
+});

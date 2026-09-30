@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
+import { route } from "@/lib/server/handler";
 import { prisma } from "@/lib/db";
-import { sanitizeKey, usesS3 } from "@/lib/server/storage";
+import { sanitizeKey, usesS3, usesLocalFile } from "@/lib/server/storage";
 
 function mimeFromKey(key: string): string {
   if (key.endsWith(".svg")) return "image/svg+xml";
@@ -14,16 +15,16 @@ function mimeFromKey(key: string): string {
 // Serves public files (covers, images) stored in the database or S3.
 // Private PDFs are NOT exposed here — they go through the signed
 // /api/pdf/[id] route instead.
-export async function GET(_req: NextRequest, ctx: { params: Promise<{ key: string[] }> }) {
-  const { key } = await ctx.params;
+export const GET = route(async (req, ctx) => {
+  const { key } = (await ctx.params) as { key: string[] };
   const raw = (key ?? []).join("/");
   const safe = sanitizeKey(decodeURIComponent(raw));
   if (safe.startsWith("pdfs/") || !safe.includes("/")) {
     return new Response("Not found", { status: 404 });
   }
 
-  // S3 driver yoqilgan bo'lsa — avval S3 dan o'qib ko'ramiz
-  if (usesS3()) {
+  // S3/local driver yoqilgan bo'lsa — avval o'sha manbadan o'qib ko'ramiz
+  if (usesS3() || usesLocalFile()) {
     const { readPrivate } = await import("@/lib/server/storage");
     try {
       const buf = await readPrivate(safe);
@@ -50,4 +51,4 @@ export async function GET(_req: NextRequest, ctx: { params: Promise<{ key: strin
       "Cache-Control": "public, max-age=31536000, immutable",
     },
   });
-}
+});

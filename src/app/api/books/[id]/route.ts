@@ -93,8 +93,3 @@ export const DELETE = route(async (req, ctx) => {
   if (existing?.pdfUrl) await deletePrivate(existing.pdfUrl);
   return json({ success: true, data: { id } });
 });
-
-async function runExtractionBackground(bookId: string, pdfKey: string) {
-  const { processBookExtraction } = await import("@/lib/server/book-processor");
-  await processBookExtraction(bookId, pdfKey);
-}

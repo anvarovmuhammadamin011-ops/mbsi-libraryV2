@@ -107,8 +107,13 @@ export async function startBook(
   return toApiProgress(created);
 }
 
-// 12 soat (43200 soniya) — kitobni hisoblash uchun eng kam o'qish vaqti
-const MIN_READING_SECONDS = 12 * 60 * 60;
+// Kitobni "tamomlangan" hisoblash uchun eng kam o'qish vaqti (soniya).
+// Default: 12 soat (43200). Sozlash: MIN_READING_SECONDS=<soniya> env orqali.
+// 12 soat odat shunday, chunki o'quvchilar kitobni shoshib yakunlamasin.
+const MIN_READING_SECONDS = Math.max(
+  1,
+  Number(process.env.MIN_READING_SECONDS || 12 * 60 * 60) || 12 * 60 * 60
+);
 
 export async function upsertProgress(
   userId: string,
@@ -241,12 +246,8 @@ export async function endSession(
     data: { endPage, pagesRead, duration, endedAt: new Date() },
   });
 
-  // Award balls for reading pages (0.01 per page, max 0.5 per session)
-  if (pagesRead > 0) {
-    const { awardBookRead } = await import("./balls");
-    await awardBookRead(userId, book.id);
-  }
-
+  // Ball FAQAT kitob TUGALLANGANDA beriladi (upsertProgress ichida) —
+  // har sessiya oxirida berish ball fermerligiga olib kelardi.
   const prog = await upsertProgress(userId, book.id, finalMax);
 
   return { pagesRead: updated.pagesRead, progress: prog, duration: updated.duration };
@@ -420,54 +421,6 @@ export async function getUserRating(
 }
 
 // ─── Ranking ────────────────────────────────────────────────
-type RankAgg = {
-  userId: string;
-  pages: number;
-  time: number;
-  books: number;
-};
-
-async function buildRankData(role: string): Promise<RankAgg[]> {
-  const users = await prisma.user.findMany({
-    where: { role, isActive: true },
-    select: { id: true },
-  });
-  const ids = users.map((u) => u.id);
-  if (ids.length === 0) return [];
-
-  const [sess, prog] = await Promise.all([
-    prisma.readingSession.groupBy({
-      by: ["userId"],
-      where: { userId: { in: ids } },
-      _sum: { pagesRead: true, duration: true },
-    }),
-    prisma.readingProgress.groupBy({
-      by: ["userId", "bookId"],
-      where: { userId: { in: ids } },
-      _count: { _all: true },
-    }),
-  ]);
-
-  const sumMap = new Map<string, { pages: number; time: number }>();
-  for (const s of sess) {
-    sumMap.set(s.userId, {
-      pages: s._sum.pagesRead ?? 0,
-      time: s._sum.duration ?? 0,
-    });
-  }
-  const bookCount = new Map<string, number>();
-  for (const p of prog) {
-    bookCount.set(p.userId, (bookCount.get(p.userId) ?? 0) + 1);
-  }
-
-  return ids.map((userId) => ({
-    userId,
-    pages: sumMap.get(userId)?.pages ?? 0,
-    time: sumMap.get(userId)?.time ?? 0,
-    books: bookCount.get(userId) ?? 0,
-  }));
-}
-
 export async function getRanking(role: "STUDENT" | "TEACHER") {
   // Reyting endi ballar (0-12) bo'yicha hisoblanadi
   const users = await prisma.user.findMany({

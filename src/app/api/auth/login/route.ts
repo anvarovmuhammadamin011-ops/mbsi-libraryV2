@@ -8,25 +8,38 @@ import { verifyPassword } from "@/lib/server/password";
 import type { User } from "@/types";
 
 // ─── Rate limiting (in-memory, per-IP) ──────────────────────
+// Faqat MUVAFFAQIYATSIZ urinishlar hisobga olinadi — muvaffaqiyatli
+// login IP'ni bloklamaydi. Xotira chegarasidan oshganda eski yozuvlar tozalanadi.
 const loginAttempts = new Map<string, { count: number; resetAt: number }>();
 const MAX_ATTEMPTS = 10;
 const WINDOW_MS = 5 * 60 * 1000; // 5 minutes
 
-function checkRateLimit(ip: string): boolean {
+function isLoginBlocked(ip: string): boolean {
+  const now = Date.now();
+  cleanupLoginMap(now);
+  const entry = loginAttempts.get(ip);
+  return !!entry && now <= entry.resetAt && entry.count >= MAX_ATTEMPTS;
+}
+
+function recordLoginFailure(ip: string): void {
   const now = Date.now();
   const entry = loginAttempts.get(ip);
-  
   if (!entry || now > entry.resetAt) {
     loginAttempts.set(ip, { count: 1, resetAt: now + WINDOW_MS });
-    return true;
+  } else {
+    entry.count++;
   }
-  
-  if (entry.count >= MAX_ATTEMPTS) {
-    return false;
+}
+
+function clearLoginFailures(ip: string): void {
+  loginAttempts.delete(ip);
+}
+
+function cleanupLoginMap(now: number): void {
+  if (loginAttempts.size < 10000) return;
+  for (const [k, v] of loginAttempts) {
+    if (now > v.resetAt) loginAttempts.delete(k);
   }
-  
-  entry.count++;
-  return true;
 }
 
 function toUser(u: {
@@ -59,7 +72,7 @@ export const POST = route(async (req) => {
   const ip = forwarded?.split(",")[0]?.trim() || "unknown";
   
   // Check rate limit
-  if (!checkRateLimit(ip)) {
+  if (isLoginBlocked(ip)) {
     return json(
       { success: false, error: { code: ERROR_CODES.VALIDATION, message: "Juda ko'p urinish. 5 daqiqadan keyin qayta urinib ko'ring." } },
       429
@@ -81,11 +94,14 @@ export const POST = route(async (req) => {
 
   // Parol noto'g'ri bo'lsa ham xuddi shu xabarni qaytaramiz (username enumeration oldini olish)
   if (!user || !user.isActive || !verifyPassword(parsed.data.password, user.passwordHash)) {
+    recordLoginFailure(ip);
     return json(
       { success: false, error: { code: ERROR_CODES.UNAUTHORIZED, message: "Login yoki parol noto'g'ri" } },
       401
     );
   }
+
+  clearLoginFailures(ip);
 
   const res = json({ success: true, data: toUser(user) });
   const sessionVersion = (user as unknown as { sessionVersion?: number }).sessionVersion ?? 0;

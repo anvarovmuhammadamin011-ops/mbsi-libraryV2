@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { ImportLibraryButton } from "@/components/import-library-button";
 import {
   Dialog,
   DialogContent,
@@ -188,6 +189,8 @@ export function AdminBooksTable({ books, categories }: Props) {
       const r = await new Promise<Response>((resolve, reject) => {
         const xhr = new XMLHttpRequest();
         xhr.open("POST", "/api/manager/books");
+        const csrf = document.cookie.match(/(?:^|;\s*)mbsi_csrf=([^;]*)/)?.[1];
+        if (csrf) xhr.setRequestHeader("x-csrf-token", decodeURIComponent(csrf));
         xhr.upload.onprogress = (e) => {
           if (e.lengthComputable) setUploadProgress(Math.round((e.loaded / e.total) * 100));
         };
@@ -302,10 +305,12 @@ export function AdminBooksTable({ books, categories }: Props) {
             MBSI kutubxonasi kitoblarini boshqarish · Jami {books.length}
           </p>
         </div>
-        <Dialog open={addOpen} onOpenChange={setAddOpen}>
-          <DialogTrigger render={<Button className="gap-2" />}>
-            <Plus size={16} /> Kitob qo&apos;shish
-          </DialogTrigger>
+        <div className="flex items-center gap-2">
+          <ImportLibraryButton />
+          <Dialog open={addOpen} onOpenChange={setAddOpen}>
+            <DialogTrigger render={<Button className="gap-2" />}>
+              <Plus size={16} /> Kitob qo&apos;shish
+            </DialogTrigger>
           <DialogContent className="max-h-[90vh] overflow-y-auto max-w-3xl">
             <DialogHeader>
               <DialogTitle>Yangi kitob qo&apos;shish</DialogTitle>
@@ -471,7 +476,8 @@ export function AdminBooksTable({ books, categories }: Props) {
               </Button>
             </form>
           </DialogContent>
-        </Dialog>
+          </Dialog>
+        </div>
       </div>
 
       {/* Search + Filters */}

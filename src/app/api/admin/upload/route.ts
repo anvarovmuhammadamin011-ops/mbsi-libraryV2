@@ -1,4 +1,5 @@
 import { NextRequest } from "next/server";
+import { route } from "@/lib/server/handler";
 import { requireBookManager } from "@/lib/server/auth";
 import { prisma } from "@/lib/db";
 import { savePdf, saveCover } from "@/lib/server/storage";
@@ -27,7 +28,7 @@ async function detectPageCount(buf: Buffer, fallback: number): Promise<number> {
   }
 }
 
-export async function POST(req: NextRequest) {
+export const POST = route(async (req) => {
   const user = await requireBookManager();
   if (!user) throw new ApiError(ERROR_CODES.FORBIDDEN, "Ruxsat yo'q", 403);
 
@@ -135,4 +136,4 @@ export async function POST(req: NextRequest) {
   });
 
   return success(book, 201);
-}
+});

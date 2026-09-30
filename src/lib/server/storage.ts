@@ -6,10 +6,14 @@ import { env } from "@/lib/env";
 import { logger } from "./log";
 
 // ──── Storage abstraction ────
-// Driver tanlash: STORAGE_DRIVER="s3" (yoki "auto": S3 sozlangan bo'lsa) →
-// fayllar S3/R2/MinIO bucket-iga yoziladi. Aks holda DB (StoredFile) ichida
-// saqlanadi (serverless uchun ishonchli).
-// "auto" — S3 konfiguratsiyasi to'liq bo'lsa S3, aks holda DB.
+// Driver tanlash (STORAGE_DRIVER):
+//   "s3"    → fayllar S3/R2/MinIO bucket-iga yoziladi (DB'da faqat key saqlanadi)
+//   "local" → fayllar server diskiga (storage/private/...) yoziladi (DB'da faqat key)
+//   "db"    → fayllar Postgres StoredFile (BYTEA) ichida saqlanadi
+//   "auto"  → S3 to'liq sozlangan bo'lsa S3, aks holda DB
+// Agar "local" tanlansa kitob PDF'lari va muqovalar endi Postgres BYTEA'da
+// emas, diskda saqlanadi — DB yengil bo'lib, fayl xizmati to'g'ridan-to'g'ri
+// API (signed /api/pdf/[id]) orqali o'qiladi.
 
 export type SavedFile = {
   // Public URL ("/api/files/<key>") or a private key ("pdfs/x.pdf").
@@ -26,6 +30,11 @@ export function usesS3(): boolean {
   if (env.storageDriver === "s3") return isS3Configured();
   // auto — S3 to'liq sozlangan bo'lsa
   return isS3Configured();
+}
+
+/** "local" driver: fayllar server diskiga yoziladi (Postgres BYTEA emas). */
+export function usesLocalFile(): boolean {
+  return env.storageDriver === "local" && !usesS3();
 }
 
 function isS3Configured(): boolean {
@@ -97,6 +106,18 @@ async function ensureDir(dir: string) {
   await fs.mkdir(dir, { recursive: true });
 }
 
+async function putLocalFile(prefix: string, ext: string, buf: Buffer): Promise<string> {
+  const key = `${prefix}/${crypto.randomBytes(12).toString("hex")}.${ext}`;
+  const full = path.join(PRIVATE_ROOT, key);
+  await fs.mkdir(path.dirname(full), { recursive: true });
+  await fs.writeFile(full, buf);
+  logger.info("storage.local.write", "Saved file to disk", {
+    key,
+    size: buf.length,
+  });
+  return key;
+}
+
 async function putDbFile(
   prefix: string,
   ext: string,
@@ -104,6 +125,9 @@ async function putDbFile(
   buf: Buffer
 ): Promise<string> {
   const key = `${prefix}/${crypto.randomBytes(12).toString("hex")}.${ext}`;
+  if (usesLocalFile()) {
+    return putLocalFile(prefix, ext, buf);
+  }
   if (usesS3()) {
     await s3Put(key, mime, buf);
     logger.info("storage.s3.upload", "Uploaded object to S3", {
@@ -129,7 +153,7 @@ const COVER_TYPES: Record<string, string> = {
   png: "image/png",
   webp: "image/webp",
   gif: "image/gif",
-  svg: "image/svg+xml",
+  // svg ataylab yo'q — muqova orqali stored-XSS xavfini oldini olish
 };
 
 export async function saveCover(file: File): Promise<SavedFile> {
@@ -157,6 +181,11 @@ export function sanitizeKey(key: string): string {
 /** O'qilgan Buffer. Manbalar tartibi: disk → S3 → DB → Error */
 export async function readPrivate(key: string): Promise<Buffer> {
   if (key.startsWith("http://") || key.startsWith("https://")) {
+    // Faqat https — SSRF xavfini pasaytiradi (http/internal tarmoqqa
+    // yo'naltirilgan so'rovlar bloklanadi).
+    if (!key.startsWith("https://")) {
+      throw new Error("HTTP_FETCH_NOT_ALLOWED");
+    }
     const res = await fetch(key, {
       headers: {
         "User-Agent": "MBSI-Library/1.0",

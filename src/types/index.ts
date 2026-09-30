@@ -406,6 +406,3 @@ export interface PaginatedResponse<T> {
   pageSize: number;
   totalPages: number;
 }
-
-// ─── Active Book Limit ──────────────────────────────────────
-export const MAX_ACTIVE_BOOKS = 3;

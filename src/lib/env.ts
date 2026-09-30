@@ -7,12 +7,14 @@ function str(name: string, fallback: string): string {
   return v && v.length > 0 ? v : fallback;
 }
 
-// Production uchun APP_SECRET majburiy
+// Production uchun APP_SECRET majburiy — fail-fast
 const appSecret = str("APP_SECRET", "");
-if (process.env.NODE_ENV === "production" && !appSecret) {
-  console.error("❌ CRITICAL: APP_SECRET is not set in production!");
-  console.error("   This will cause security vulnerabilities. Set a strong secret in .env");
-  // Production'da xatolik chiqaramiz, lekin build buzilmasin
+if (process.env.NODE_ENV === "production" && (!appSecret || appSecret.length < 32)) {
+  throw new Error(
+    "❌ APP_SECRET production'da MAJBURIY va kamida 32 belgidan iborat bo'lishi kerak. " +
+      "Uni .env faylida o'rnating (masalan: APP_SECRET=<uzun tasodifiy satr>). " +
+      "Xuddi shu kalit davr mobaynida sessiya/CSRF imzolarini tekshiradi."
+  );
 }
 
 export const env = {
@@ -23,6 +25,11 @@ export const env = {
   meiliHost: process.env.MEILI_HOST || "",
   meiliApiKey: process.env.MEILI_API_KEY || "",
   storageDriver: str("STORAGE_DRIVER", "auto"),
+  // Lokal diskda yo'q bo'lgan PDF kalitlari uchun zaxira manba.
+  // Masalan: https://github.com/<owner>/<repo>/releases/download/pdfs-v1
+  // (Vercel funksiyasi 4.5 MB dan katta javob bera olmaydi, shuning uchun
+  //  bu URL dan stream qilinadi — ko'rish uchun /api/pdf/[id]).
+  pdfPublicBase: str("PDF_PUBLIC_BASE", ""),
   s3: {
     bucket: process.env.S3_BUCKET || "",
     region: process.env.S3_REGION || "",

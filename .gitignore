@@ -40,8 +40,11 @@ prisma/dev.db
 prisma/dev.db-journal
 
 # generated files
-# NOTE: seeded PDFs under storage/private/pdfs are committed so the
-# deployed app can serve them. New admin uploads still stay local.
+# PDF va xususiy muqovalar repo'ga KIRMAYDI — ular GitHub Release'da
+# (tag: pdfs-v1) saqlanadi va /api/pdf/[id] orqali stream qilinadi.
+# Ko'rish: scripts/upload-pdf-release.mjs
+# Ommaviy muqovalar public/covers/ da SAQLANADI (Vercel static).
+storage/private/
 
 # freebuff
 .freebuff/
@@ -50,8 +53,10 @@ cnt.cjs
 # tests
 tests/
 
-# scripts
-scripts/
+# scripts (scratch/import qo'llanmalari); postinstall uchun kerakligi istisno
+scripts/*
+!scripts/copy-pdf-worker.mjs
+
 
 # dev logs
 dev-server.log
