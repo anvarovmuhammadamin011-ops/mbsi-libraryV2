@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useCallback } from "react";
-import { api } from "@/lib/api-client";
+import { api, ApiClientError } from "@/lib/api-client";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -180,7 +180,13 @@ export function Reader({ bookId, title, totalPages, pdfUrl, initialPage }: Props
       .then((r) => {
         if (active) sessionRef.current = r.sessionId;
       })
-      .catch(() => {});
+      .catch((e) => {
+        if (e instanceof ApiClientError && e.code === "BOOK_LIMIT_REACHED") {
+          toast.error("Faol kitoblar limiti to'lgan", {
+            description: "O'qish davom etadi, lekin progress saqlanmaydi. Davom etish uchun 'Kutubxonam' dan bir kitobni tugating.",
+          });
+        }
+      });
 
     // Hard navigation / tab yopishda React cleanup ishga tushmaydi —
     // shuning uchun pagehide'da ham sessiyani yakunlaymiz (keepalive bilan).
@@ -212,7 +218,13 @@ export function Reader({ bookId, title, totalPages, pdfUrl, initialPage }: Props
       saveTimer.current = setTimeout(() => {
         api
           .post("/api/reading/progress", { bookId, page: p })
-          .catch(() => {})
+          .catch((e) => {
+            if (e instanceof ApiClientError && e.code === "BOOK_LIMIT_REACHED") {
+              toast.error("Progress saqlanmadi — faol kitoblar limiti to'lgan", {
+                description: "Kitobni tugatish uchun 'Kutubxonam' dan boshqa kitobni yoping.",
+              });
+            }
+          })
           .finally(() => setSaving(false));
       }, 800);
     },

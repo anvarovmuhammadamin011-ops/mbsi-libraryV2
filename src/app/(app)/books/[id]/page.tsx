@@ -154,7 +154,7 @@ export default async function BookDetailPage({
             {/* Action buttons */}
             <div className="mt-6 flex flex-col gap-3 max-w-[280px]">
               <Link
-                href={`/reader/${book.slug}/text`}
+                href={`/reader/${book.slug}`}
                 className="flex h-12 w-full items-center justify-center rounded-full bg-primary px-6 text-sm font-semibold tracking-wide text-primary-foreground shadow-lg shadow-primary/25 hover:bg-primary/90 hover:shadow-xl hover:shadow-primary/30 transition-all duration-300 dark:shadow-primary/40 dark:hover:shadow-primary/50"
               >
                 O'QISH
@@ -298,7 +298,7 @@ function MobileBookDetail({
         </div>          {/* Buttons stacked full width */}
         <div className="mt-6 w-full space-y-3">
           <Link
-            href={`/reader/${book.slug}/text`}
+            href={`/reader/${book.slug}`}
             className="flex h-12 w-full items-center justify-center rounded-full bg-primary px-6 text-sm font-semibold tracking-wide text-primary-foreground shadow-lg shadow-primary/25 hover:bg-primary/90 hover:shadow-xl hover:shadow-primary/30 transition-all duration-300 dark:shadow-primary/40 dark:hover:shadow-primary/50"
           >
             O'QISH
