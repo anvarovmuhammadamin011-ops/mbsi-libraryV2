@@ -1,0 +1,102 @@
+[
+  {
+    "id": "book-1",
+    "file": "book-1.pdf",
+    "title": "Atomic Habits"
+  },
+  {
+    "id": "book-2",
+    "file": "book-2.pdf",
+    "title": "O'tkan Kunlar"
+  },
+  {
+    "id": "book-3",
+    "file": "book-3.pdf",
+    "title": "Fizika 9-sinf"
+  },
+  {
+    "id": "book-4",
+    "file": "book-4.pdf",
+    "title": "Jismoniy tarbiya 8-sinf"
+  },
+  {
+    "id": "book-5",
+    "file": "book-5.pdf",
+    "title": "A Brief History of Time"
+  },
+  {
+    "id": "book-6",
+    "file": "book-6.pdf",
+    "title": "The Monk Who Sold His Ferrari"
+  },
+  {
+    "id": "book-7",
+    "file": "book-7.pdf",
+    "title": "How to Win Friends and Influence People"
+  },
+  {
+    "id": "book-8",
+    "file": "book-8.pdf",
+    "title": "Word Power Made Easy"
+  },
+  {
+    "id": "book-9",
+    "file": "book-9.pdf",
+    "title": "The Alchemist"
+  },
+  {
+    "id": "book-10",
+    "file": "book-10.pdf",
+    "title": "Matematika 7-sinf"
+  },
+  {
+    "id": "book-11",
+    "file": "book-11.pdf",
+    "title": "Jannatda Ikki Boshli Qush"
+  },
+  {
+    "id": "book-12",
+    "file": "book-12.pdf",
+    "title": "Dunyoning Ishlari"
+  },
+  {
+    "id": "book-13",
+    "file": "book-13.pdf",
+    "title": "Fizika 8-sinf"
+  },
+  {
+    "id": "book-14",
+    "file": "book-14.pdf",
+    "title": "Matematika 9-sinf"
+  },
+  {
+    "id": "book-15",
+    "file": "book-15.pdf",
+    "title": "Ingliz tili 5-sinf"
+  },
+  {
+    "id": "book-16",
+    "file": "book-16.pdf",
+    "title": "Deep Work"
+  },
+  {
+    "id": "book-17",
+    "file": "book-17.pdf",
+    "title": "O'zbekiston Tarixi"
+  },
+  {
+    "id": "book-18",
+    "file": "book-18.pdf",
+    "title": "Think and Grow Rich"
+  },
+  {
+    "id": "book-19",
+    "file": "book-19.pdf",
+    "title": "Rus tili 6-sinf"
+  },
+  {
+    "id": "book-20",
+    "file": "book-20.pdf",
+    "title": "Biologiya 7-sinf"
+  }
+]

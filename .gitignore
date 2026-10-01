@@ -50,12 +50,8 @@ storage/private/
 .freebuff/
 cnt.cjs
 
-# tests
-tests/
-
-# scripts (scratch/import qo'llanmalari); postinstall uchun kerakligi istisno
-scripts/*
-!scripts/copy-pdf-worker.mjs
+# scripts keshi (import holatlari/indekslar — qayta yaratiladi)
+scripts/cache/
 
 
 # dev logs

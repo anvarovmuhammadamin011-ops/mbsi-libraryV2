@@ -1,0 +1,10 @@
+import { PrismaClient } from "@prisma/client";
+const p = new PrismaClient();
+const slugs = ["alkimyogar", "jimjitlik", "uch-ogayni-botirlar"];
+const admin = await p.user.findFirst({ where: { role: "ADMIN", isActive: true } });
+const books = await p.book.findMany({ where: { slug: { in: slugs } } });
+const ids = books.map((b) => b.id);
+const s1 = await p.readingSession.deleteMany({ where: { userId: admin.id, bookId: { in: ids } } });
+const s2 = await p.readingProgress.deleteMany({ where: { userId: admin.id, bookId: { in: ids } } });
+console.log("Tozalandi: sessions=" + s1.count + ", progress=" + s2.count);
+await p.$disconnect();
