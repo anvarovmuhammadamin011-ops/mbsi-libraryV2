@@ -15,6 +15,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useAuthStore } from "@/lib/auth-store";
+import { useLogout } from "@/lib/use-logout";
 import { useState } from "react";
 
 interface NavItem {
@@ -42,7 +43,8 @@ function isNavActive(pathname: string, item: NavItem): boolean {
 
 export function ManagerSidebar() {
   const pathname = usePathname();
-  const { user, logout } = useAuthStore();
+  const { user } = useAuthStore();
+  const doLogout = useLogout();
   const [collapsed, setCollapsed] = useState(false);
 
   if (!user) return null;
@@ -65,7 +67,7 @@ export function ManagerSidebar() {
             </span>
           </Link>
           <button
-            onClick={logout}
+            onClick={doLogout}
             className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground hover:text-destructive transition-colors"
             aria-label="Chiqish"
           >
@@ -181,7 +183,7 @@ export function ManagerSidebar() {
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={logout}
+                  onClick={doLogout}
                   className="h-7 w-7 shrink-0 text-muted-foreground hover:text-destructive"
                   aria-label="Chiqish"
                 >

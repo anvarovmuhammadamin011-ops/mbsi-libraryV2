@@ -23,6 +23,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useAuthStore } from "@/lib/auth-store";
+import { useLogout } from "@/lib/use-logout";
 import { useLanguage } from "@/lib/i18n/language-provider";
 import { useState, useEffect } from "react";
 
@@ -34,7 +35,8 @@ interface NavItem {
 
 export function StudentSidebar() {
   const pathname = usePathname();
-  const { user, logout } = useAuthStore();
+  const { user } = useAuthStore();
+  const doLogout = useLogout();
   const { t } = useLanguage();
   const { theme, setTheme } = useTheme();
   const [collapsed, setCollapsed] = useState(false);
@@ -248,7 +250,7 @@ export function StudentSidebar() {
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={logout}
+                  onClick={doLogout}
                   className="h-7 w-7 shrink-0 text-muted-foreground hover:text-destructive"
                   aria-label={t.sidebar.logout}
                 >
