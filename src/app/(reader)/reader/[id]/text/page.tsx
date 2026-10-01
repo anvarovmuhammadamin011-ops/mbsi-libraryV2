@@ -31,6 +31,7 @@ export default async function TextReaderPage({
       title={book.title}
       totalPages={book.totalPages}
       pdfUrl={pdfUrl}
+      slug={book.slug}
     />
   );
 }

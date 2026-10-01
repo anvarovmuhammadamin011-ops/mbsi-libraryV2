@@ -103,7 +103,8 @@ export function PendingStudentsTable({ items }: { items: PendingRow[] }) {
     <div className="overflow-hidden rounded-2xl border border-border bg-card">
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
-          <thead className="border-b border-border bg-muted/30">              <tr>
+          <thead className="border-b border-border bg-muted/30">
+            <tr>
                 <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground">
                   Ism Familya
                 </th>

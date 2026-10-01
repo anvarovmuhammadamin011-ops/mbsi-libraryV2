@@ -11,6 +11,8 @@
  */
 
 import { useEffect, useRef, useState, useCallback, useMemo } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { api } from "@/lib/api-client";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -52,6 +54,7 @@ interface Props {
   title: string;
   totalPages: number;
   pdfUrl?: string;
+  slug?: string;
 }
 
 interface PageData {
@@ -59,9 +62,10 @@ interface PageData {
   loaded: boolean;
 }
 
-export function TextReader({ bookId, title, totalPages, pdfUrl }: Props) {
+export function TextReader({ bookId, title, totalPages, pdfUrl, slug }: Props) {
   const { theme, setTheme } = useTheme();
   const isDark = theme === "dark";
+  const router = useRouter();
 
   // ─── State ──────────────────────────────────────────────
   const [currentPage, setCurrentPage] = useState(1);
@@ -75,6 +79,9 @@ export function TextReader({ bookId, title, totalPages, pdfUrl }: Props) {
   const [showSettings, setShowSettings] = useState(false);
   const [showSidebar, setShowSidebar] = useState(false);
   const [sessionStarted, setSessionStarted] = useState(false);
+  // PDF'ning matn qatlami yo'q (skan) — faqat grafik rejimda o'qiladi
+  const [needsOcr, setNeedsOcr] = useState(false);
+  const graphicHref = slug ? `/reader/${slug}` : "/library";
 
   const fontSize = FONT_SIZES[fontSizeIdx].value;
   const lineHeight = LINE_HEIGHTS[lineHeightIdx].value;
@@ -94,6 +101,10 @@ export function TextReader({ bookId, title, totalPages, pdfUrl }: Props) {
         );
         const data = await res.json();
         if (data.success) {
+          if (data.data.status === "needs_ocr") {
+            setNeedsOcr(true);
+            return null;
+          }
           if (data.data.totalPages > 0 && totalTextPages === 0) {
             setTotalTextPages(data.data.totalPages);
           }
@@ -211,8 +222,16 @@ export function TextReader({ bookId, title, totalPages, pdfUrl }: Props) {
         sessionRef.current = r.sessionId;
         setSessionStarted(true);
       })
-      .catch(() => {});
-  }, [bookId, sessionStarted]);
+      .catch((e: any) => {
+        if (e?.code === "BOOK_LIMIT_REACHED") {
+          toast.error("Maksimal 3 ta kitob bir vaqtda o'qilishi mumkin", {
+            description:
+              "Kutubxonangizda faol kitoblar limiti to'lgan. Birini tugatib yoki 'Kutubxonam' sahifasidan boshqasiga o'ting.",
+            action: { label: "Kutubxonam", onClick: () => router.push("/library") },
+          });
+        }
+      });
+  }, [bookId, sessionStarted, router]);
 
   // Hard navigation / tab yopishda React cleanup ishlamaydi —
   // pagehide'da keepalive beacon bilan sessiyani yakunlaymiz.
@@ -258,7 +277,7 @@ export function TextReader({ bookId, title, totalPages, pdfUrl }: Props) {
         sessionRef.current = null;
       }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, []);
 
   // ─── Save progress on page change ────────────────────────
@@ -463,6 +482,24 @@ export function TextReader({ bookId, title, totalPages, pdfUrl }: Props) {
               <div className="flex flex-col items-center justify-center py-20">
                 <Loader2 className="size-6 animate-spin text-primary mb-3" />
                 <p className={`text-sm ${mutedClass}`}>Sahifa yuklanmoqda...</p>
+              </div>
+            ) : needsOcr ? (
+              <div className="flex flex-col items-center justify-center py-16 text-center gap-4">
+                <BookOpen className="size-10 text-muted-foreground" />
+                <p className="text-base font-semibold text-foreground">
+                  Bu kitobda matn qatlami yo&apos;q
+                </p>
+                <p className={`text-sm ${mutedClass} max-w-md`}>
+                  Kitob skan (rasm) ko&apos;rinishida saqlangan, shuning uchun
+                  matn rejimida o&apos;qib bo&apos;lmaydi. Grafik rejimda
+                  o&apos;qing.
+                </p>
+                <Link href={graphicHref} className="mt-2">
+                  <Button className="gap-2">
+                    <BookOpen className="size-4" />
+                    Grafik rejimda o&apos;qish
+                  </Button>
+                </Link>
               </div>
             ) : paragraphs.length > 0 ? (
               <>

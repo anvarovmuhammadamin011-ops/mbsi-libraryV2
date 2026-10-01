@@ -211,7 +211,7 @@ export default async function ProfilePage() {
         totalUsers={totalUsers}
         totalAuthors={totalAuthors}
         totalCategories={totalCategories}
-        t={t}
+        t={t.profile}
       />
 
       {/* Menu items */}
