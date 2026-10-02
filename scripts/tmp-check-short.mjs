@@ -1,0 +1,10 @@
+import { PrismaClient } from "@prisma/client";
+const prisma = new PrismaClient();
+const books = await prisma.book.findMany({ select: { slug: true, title: true } });
+const short = books.filter((b) => b.slug.length <= 5);
+console.log(`Jami kitob: ${books.length}`);
+console.log(`Slug uzunligi <= 5 bo'lgan: ${short.length}`);
+short.forEach((b) => console.log(`  "${b.slug}" (${b.slug.length}) - ${b.title}`));
+const len = books.map((b) => b.slug.length).sort((a, b) => a - b);
+console.log(`Eng qisqa sluglar: ${len.slice(0, 5).join(", ")} belgi`);
+await prisma.$disconnect();
