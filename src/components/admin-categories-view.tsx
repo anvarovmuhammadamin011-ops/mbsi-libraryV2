@@ -135,7 +135,7 @@ export function AdminCategoriesView({ categories }: { categories: CategoryItem[]
                     <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{c.description}</p>
                   )}
                 </div>
-                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="flex items-center gap-1 opacity-100 transition-opacity md:opacity-0 md:group-hover:opacity-100">
                   <Button
                     variant="ghost"
                     size="icon"

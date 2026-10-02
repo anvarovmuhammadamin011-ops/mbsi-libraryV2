@@ -61,7 +61,7 @@ export function BookCard({
               onFavorite();
             }}
             className={cn(
-              "absolute right-2.5 top-2.5 rounded-full p-1.5 shadow-md transition-all duration-200",
+              "absolute right-2.5 top-2.5 flex h-10 w-10 items-center justify-center rounded-full shadow-md transition-all duration-200 md:h-auto md:w-auto md:p-1.5",
               "bg-white/95 hover:bg-white hover:scale-110",
               "dark:bg-black/60 dark:hover:bg-black/80 dark:backdrop-blur-sm",
               "active:scale-95"
@@ -85,15 +85,16 @@ export function BookCard({
           </Badge>
         </div>
 
-        {/* Read button overlay */}
-        <div className="absolute inset-x-0 bottom-0 flex justify-center pb-3 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+        {/* Read button overlay — telefonlarda hover yo'q, shuning uchun
+            mobil'da doim ko'rinadi; faqat katta ekranda hover bilan chiqadi. */}
+        <div className="absolute inset-x-0 bottom-0 flex justify-center pb-3 opacity-100 transition-opacity duration-300 md:opacity-0 md:group-hover:opacity-100">
           <Button
             size="sm"
             onClick={(e) => {
               e.stopPropagation();
               onRead?.();
             }}
-            className="gap-1.5 shadow-lg h-8 text-xs backdrop-blur-sm bg-primary/90 hover:bg-primary dark:bg-primary/95 dark:hover:bg-primary"
+            className="gap-1.5 shadow-lg h-11! text-xs backdrop-blur-sm bg-primary/90 hover:bg-primary dark:bg-primary/95 dark:hover:bg-primary md:h-8!"
           >
             <BookOpen size={13} />
             {progress ? "Davom ettirish" : "O'qish"}

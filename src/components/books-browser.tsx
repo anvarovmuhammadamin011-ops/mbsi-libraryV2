@@ -640,7 +640,7 @@ export function BooksBrowser({ categories, authors, initial }: Props) {
             size="sm"
             disabled={page <= 1}
             onClick={() => setPage((p) => Math.max(1, p - 1))}
-            className="gap-1"
+            className="h-11! gap-1 sm:h-8!"
           >
             <ChevronLeft size={14} /> {t.booksBrowser.prev}
           </Button>
@@ -652,7 +652,7 @@ export function BooksBrowser({ categories, authors, initial }: Props) {
             size="sm"
             disabled={page >= totalPages}
             onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-            className="gap-1"
+            className="h-11! gap-1 sm:h-8!"
           >
             {t.booksBrowser.next} <ChevronRight size={14} />
           </Button>
