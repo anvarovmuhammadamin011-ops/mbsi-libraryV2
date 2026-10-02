@@ -320,6 +320,7 @@ export async function createBookmark(
   page: number,
   note?: string
 ): Promise<Bookmark> {
+  await assertBookExists(bookId);
   try {
     const r = await prisma.bookmark.create({
       data: { userId, bookId, page, note: note ?? null },
@@ -369,7 +370,23 @@ export async function listFavorites(userId: string) {
   );
 }
 
+/**
+ * Yazuvchi amallardan oldin kitob mavjudligini tekshiradi.
+ * Aks holda Prisma foreign key xatosi (P2003) yuzaga kelib,
+ * mijozga 500 "Kutilmagan xatolik" qaytadi — bu noto'g'ri.
+ */
+async function assertBookExists(bookId: string): Promise<void> {
+  const book = await prisma.book.findUnique({
+    where: { id: bookId },
+    select: { id: true },
+  });
+  if (!book) {
+    throw new ApiError(ERROR_CODES.NOT_FOUND, "Kitob topilmadi", 404);
+  }
+}
+
 export async function addFavorite(userId: string, bookId: string): Promise<void> {
+  await assertBookExists(bookId);
   await prisma.favorite.upsert({
     where: { userId_bookId: { userId, bookId } },
     create: { userId, bookId },
@@ -394,6 +411,7 @@ export async function upsertRating(
   bookId: string,
   rating: number
 ): Promise<{ average: number; count: number }> {
+  await assertBookExists(bookId);
   await prisma.rating.upsert({
     where: { userId_bookId: { userId, bookId } },
     create: { userId, bookId, rating },
