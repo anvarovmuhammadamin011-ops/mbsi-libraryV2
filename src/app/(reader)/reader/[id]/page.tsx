@@ -1,7 +1,6 @@
 import { notFound } from "next/navigation";
 import { getSessionUser } from "@/lib/server/auth";
 import { getBookBySlug } from "@/lib/server/books";
-import { prisma } from "@/lib/db";
 import { signPdfAccess } from "@/lib/server/storage";
 import { Reader } from "@/components/reader";
 
@@ -27,10 +26,9 @@ export default async function ReaderPage({
     (book.status === "HIDDEN" || book.status === "DRAFT");
   if (!canSeeHidden && isHiddenOrDraft) notFound();
 
-  const progress = await prisma.readingProgress.findUnique({
-    where: { userId_bookId: { userId: user.id, bookId: book.id } },
-  });
-  const initialPage = sp.page ? Number(sp.page) : progress?.currentPage ?? 1;
+  // Kitob har doim 1-sahifadan boshlanadi. ?page=N orqali aniq sahifaga
+  // o'tish mumkin (deep link / testlar uchun).
+  const initialPage = sp.page ? Math.max(1, Number(sp.page) || 1) : 1;
   const pdfUrl = signPdfAccess(book.id, 7200);
 
   return (

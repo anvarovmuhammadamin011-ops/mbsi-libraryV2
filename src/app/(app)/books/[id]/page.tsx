@@ -101,7 +101,7 @@ export default async function BookDetailPage({
         <div className="flex items-center justify-between py-3">
           <Link
             href="/books"
-            className="inline-flex h-9 w-9 items-center justify-center rounded-full hover:bg-muted transition-colors"
+            className="inline-flex h-11 w-11 md:h-9 md:w-9 items-center justify-center rounded-full hover:bg-muted transition-colors"
             aria-label="Back"
           >
             <ArrowLeft size={20} />
@@ -254,7 +254,7 @@ function MobileBookDetail({
       <div className="flex items-center justify-between py-3">
         <Link
           href="/books"
-          className="inline-flex h-9 w-9 items-center justify-center rounded-full hover:bg-muted transition-colors"
+          className="inline-flex h-11 w-11 md:h-9 md:w-9 items-center justify-center rounded-full hover:bg-muted transition-colors"
           aria-label="Back"
         >
           <ArrowLeft size={20} />

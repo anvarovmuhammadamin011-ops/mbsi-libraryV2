@@ -184,8 +184,8 @@ export function LibraryTabs({
 
   return (
     <div className="space-y-4">
-      {/* Pill tabs with icons */}
-      <div className="inline-flex gap-1 rounded-full bg-muted p-1">
+      {/* Pill tabs with icons — mobil ekranda sig'sin, kerak bo'lsa siljitiladi */}
+      <div className="flex w-full gap-1 overflow-x-auto rounded-full bg-muted p-1 sm:w-auto sm:overflow-x-visible">
         {TABS.map((tab) => {
           const isActive = active === tab.id;
           return (
@@ -194,8 +194,8 @@ export function LibraryTabs({
               onClick={() => setActive(tab.id)}
               className={
                 isActive
-                  ? "rounded-full bg-primary px-5 py-1.5 text-sm font-medium text-primary-foreground shadow-sm transition-colors flex items-center gap-1.5"
-                  : "rounded-full px-5 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5"
+                  ? "shrink-0 whitespace-nowrap rounded-full bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground shadow-sm transition-colors flex items-center gap-1.5 sm:px-5 sm:py-1.5"
+                  : "shrink-0 whitespace-nowrap rounded-full px-4 py-2.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5 sm:px-5 sm:py-1.5"
               }
             >
               <span className="shrink-0">{tab.icon}</span>

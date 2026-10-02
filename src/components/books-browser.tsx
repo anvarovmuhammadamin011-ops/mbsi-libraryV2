@@ -102,7 +102,7 @@ function FilterSelect({
 
   return (
     <Select value={value || "all"} onValueChange={onValueChange}>
-      <SelectTrigger className="h-9 w-auto px-3 text-xs">
+      <SelectTrigger className="h-11! w-auto px-3 text-xs sm:h-9!">
         <span className="truncate max-w-[120px]">{selectedName}</span>
       </SelectTrigger>
       <SelectContent>
@@ -344,7 +344,7 @@ export function BooksBrowser({ categories, authors, initial }: Props) {
                         variant="outline"
                         size="sm"
                         onClick={() => setShowNewCategory(true)}
-                        className="shrink-0"
+                        className="h-11! shrink-0 sm:h-8!"
                       >
                         {t.booksBrowser.newCategory}
                       </Button>
@@ -365,7 +365,7 @@ export function BooksBrowser({ categories, authors, initial }: Props) {
                           setShowNewCategory(false);
                           setNewCategory("");
                         }}
-                        className="shrink-0"
+                        className="h-11! shrink-0 sm:h-8!"
                       >
                         {t.booksBrowser.cancel}
                       </Button>

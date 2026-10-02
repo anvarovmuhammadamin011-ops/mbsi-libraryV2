@@ -257,6 +257,23 @@ html, body {
   }
 }
 
+/* ─── Reader: doimiy to'liq ekran ─────────────────────────────
+   inset: 0 o'rniga dynamic viewport height (100dvh): telefonda
+   brauzer manzil paneli ko'rinib turganda ham sahifa ekranni
+   to'liq to'ldiradi, panel yashirilsa kengayadi. */
+.reader-root {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100vh;
+}
+@supports (height: 100dvh) {
+  .reader-root {
+    height: 100dvh;
+  }
+}
+
 /* ─── Dark Mode Component Improvements ──────────────────────── */
 .dark .border-border {
   border-color: rgba(255, 255, 255, 0.12);

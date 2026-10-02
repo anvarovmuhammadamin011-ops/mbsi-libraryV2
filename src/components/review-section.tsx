@@ -143,7 +143,7 @@ export function ReviewSection({
                 onMouseEnter={() => setHoverRating(n)}
                 onMouseLeave={() => setHoverRating(0)}
                 onClick={() => handleRating(n)}
-                className="p-1"
+                className="flex h-10 w-10 items-center justify-center md:h-8 md:w-8"
                 aria-label={`${n} yulduz`}
               >
                 <Star
@@ -178,7 +178,7 @@ export function ReviewSection({
               rows={3}
               maxLength={2000}
             />
-            <Button onClick={handleSubmitReview} disabled={submitting} className="gap-2">
+            <Button onClick={handleSubmitReview} disabled={submitting} className="h-11 gap-2 sm:h-9">
               <Send size={14} />
               {submitting ? "Yuborilmoqda..." : initialUserReview ? "Yangilash" : "Yuborish"}
             </Button>
@@ -202,7 +202,7 @@ export function ReviewSection({
                   <div className="space-y-3">
                     <div className="flex gap-1">
                       {[1, 2, 3, 4, 5].map((n) => (
-                        <button key={n} onClick={() => setEditRating(n)} className="p-1">
+                        <button key={n} onClick={() => setEditRating(n)} className="flex h-10 w-10 items-center justify-center md:h-8 md:w-8">
                           <Star size={20} className={n <= editRating ? "fill-yellow-400 text-yellow-400" : "text-muted-foreground/30"} />
                         </button>
                       ))}

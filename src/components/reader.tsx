@@ -37,6 +37,9 @@ export function Reader({ bookId, title, totalPages, pdfUrl, initialPage }: Props
   const [docReady, setDocReady] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const contentRef = useRef<HTMLDivElement>(null);
+  // Canvas haqiqiy egallaydigan quti — shu qutidan o'lcham olinadi,
+  // aks holda fitScale kattalashib, sahifa ekranni to'liq to'ldirmaydi.
+  const canvasAreaRef = useRef<HTMLDivElement>(null);
   const renderTaskRef = useRef<{ cancel: () => void } | null>(null);
   const [fitScale, setFitScale] = useState(1);
   const [zoom, setZoom] = useState(1);
@@ -98,13 +101,13 @@ export function Reader({ bookId, title, totalPages, pdfUrl, initialPage }: Props
   // ─── Fit scale ──────────────────────────────────────────────
   const recomputeFit = useCallback(async () => {
     const doc = pdfDocRef.current;
-    const el = contentRef.current;
+    const el = canvasAreaRef.current;
     if (!doc || !el) return;
     try {
       const pg = await doc.getPage(Math.min(Math.max(page, 1), totalPdfPages));
       const vp = pg.getViewport({ scale: 1 });
-      const w = el.clientWidth - 32;
-      const h = el.clientHeight - 32;
+      const w = el.clientWidth;
+      const h = el.clientHeight;
       if (w > 0 && h > 0) {
         setFitScale(Math.min(w / vp.width, h / vp.height));
       }
@@ -328,7 +331,7 @@ export function Reader({ bookId, title, totalPages, pdfUrl, initialPage }: Props
 
   return (
     <div
-      className={`fixed inset-0 z-50 flex flex-col overflow-hidden select-none ${bgClass} ${textClass}`}
+      className={`reader-root z-50 flex flex-col overflow-hidden select-none pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] ${bgClass} ${textClass}`}
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
@@ -371,15 +374,15 @@ export function Reader({ bookId, title, totalPages, pdfUrl, initialPage }: Props
       {/* ═══ Content area ═══ */}
       <div
         ref={contentRef}
-        className={`flex-1 relative overflow-hidden flex flex-col items-center ${canvasWrapBg}`}
+        className={`flex-1 min-h-0 relative overflow-hidden flex flex-col ${canvasWrapBg}`}
       >
         {/* centered reader card */}
-        <div className="w-full max-w-2xl md:max-w-[720px] flex-1 flex flex-col items-center px-3 sm:px-6 py-4 sm:py-6 overflow-hidden">
-          {/* chapter title */}
-          <p className={`text-sm font-medium tracking-wide mb-3 ${mutedClass}`}>Chapter {page}</p>
-
+        <div className="w-full max-w-2xl md:max-w-[720px] min-h-0 flex-1 flex flex-col items-center overflow-hidden sm:px-6 sm:py-6">
           {/* canvas / text area */}
-          <div className="flex-1 w-full flex items-center justify-center relative overflow-hidden rounded-lg">
+          <div
+            ref={canvasAreaRef}
+            className="flex-1 min-h-0 w-full flex items-center justify-center relative overflow-hidden rounded-lg"
+          >
             {/* placeholder while no pdf */}
             {!docReady && !loading && (
               <div className={`w-full h-full flex items-center justify-center p-8 text-center text-sm ${mutedClass}`}>
@@ -410,17 +413,16 @@ export function Reader({ bookId, title, totalPages, pdfUrl, initialPage }: Props
               </div>
             )}
           </div>
-
-          {/* divider line */}
-          <div className={`w-full h-px mt-4 ${isDark ? "bg-slate-700/50" : "bg-slate-200"}`} />
-
-          {/* saving indicator */}
-          {saving && (
-            <div className={`flex items-center gap-1 mt-2 text-xs ${mutedClass}`}>
-              <Loader2 className="size-3 animate-spin" /> Saqlanmoqda...
-            </div>
-          )}
         </div>
+
+        {/* saving indicator (overlay — joy egallamaydi) */}
+        {saving && (
+          <div
+            className={`pointer-events-none absolute bottom-2 right-3 flex items-center gap-1 rounded-full px-2 py-1 text-xs backdrop-blur ${mutedClass} ${headerBg}`}
+          >
+            <Loader2 className="size-3 animate-spin" /> Saqlanmoqda...
+          </div>
+        )}
       </div>
 
       {/* ═══ Desktop nav buttons (visible only on md+) ═══ */}

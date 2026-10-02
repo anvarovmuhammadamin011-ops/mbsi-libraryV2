@@ -273,7 +273,7 @@ function SearchPageInner() {
           <button
             onClick={() => router.back()}
             aria-label={t.search.back}
-            className="inline-flex h-9 w-9 items-center justify-center rounded-full hover:bg-muted transition-colors shrink-0"
+            className="inline-flex h-11 w-11 md:h-9 md:w-9 items-center justify-center rounded-full hover:bg-muted transition-colors shrink-0"
           >
             <ArrowLeft size={20} className="text-foreground" />
           </button>
@@ -363,7 +363,7 @@ function SearchPageInner() {
                 <button
                   onClick={closeOverlay}
                   aria-label={t.search.back}
-                  className="inline-flex h-9 w-9 items-center justify-center rounded-full hover:bg-muted transition-colors shrink-0"
+                  className="inline-flex h-11 w-11 md:h-9 md:w-9 items-center justify-center rounded-full hover:bg-muted transition-colors shrink-0"
                 >
                   <ArrowLeft size={20} className="text-foreground" />
                 </button>

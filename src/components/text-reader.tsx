@@ -335,7 +335,7 @@ export function TextReader({ bookId, title, totalPages, pdfUrl, slug }: Props) {
 
 
   return (
-    <div className={`fixed inset-0 z-50 flex flex-col overflow-hidden select-none ${bgClass}`}>
+    <div className={`reader-root z-50 flex flex-col overflow-hidden select-none ${bgClass}`}>
       {/* ═══ Top bar ═══ */}
       <header
         className={`flex items-center h-12 shrink-0 border-b ${headerBorder} ${headerBg} px-2 sm:px-3 z-20`}

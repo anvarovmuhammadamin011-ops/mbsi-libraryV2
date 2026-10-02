@@ -237,7 +237,7 @@ export default async function HomePage() {
           </h2>
           <Link
             href="/plan"
-            className="flex items-center gap-1 text-[13px] font-medium text-primary hover:underline"
+            className="flex min-h-11 items-center gap-1 px-2 text-[13px] font-medium text-primary hover:underline md:min-h-0 md:px-0"
           >
             {t.plan.viewAllPlans} <ArrowRight size={14} />
           </Link>
@@ -292,7 +292,7 @@ export default async function HomePage() {
             </h2>
             <Link
               href="/categories"
-              className="flex items-center gap-1 text-[13px] font-medium text-primary hover:underline"
+className="flex min-h-11 items-center gap-1 px-2 text-[13px] font-medium text-primary hover:underline md:min-h-0 md:px-0"
             >
               {t.home.all} <ArrowRight size={14} />
             </Link>
@@ -304,7 +304,7 @@ export default async function HomePage() {
                 <Link
                   key={cat.id}
                   href={`/books?categoryId=${cat.id}`}
-                  className="inline-flex shrink-0 snap-start items-center gap-1.5 rounded-full border border-border bg-card px-3 py-2 text-[13px] font-medium text-foreground transition-all duration-200 hover:border-primary/40 active:scale-95 whitespace-nowrap"
+                  className="inline-flex shrink-0 snap-start items-center gap-1.5 rounded-full border border-border bg-card px-3.5 py-2.5 text-[13px] font-medium text-foreground transition-all duration-200 hover:border-primary/40 active:scale-95 whitespace-nowrap md:py-2"
                 >
                   <span className="text-primary">
                     <CategoryIcon slug={cat.slug} name={cat.name} size={16} />
@@ -332,7 +332,7 @@ export default async function HomePage() {
           </h2>
           <Link
             href="/books"
-            className="flex items-center gap-1 text-sm font-medium text-primary hover:underline"
+            className="flex min-h-10 items-center gap-1 px-2 text-sm font-medium text-primary hover:underline md:min-h-0 md:px-0"
           >
               {t.home.all} <ArrowRight size={14} />
           </Link>
@@ -414,7 +414,7 @@ export default async function HomePage() {
           </h2>
           <Link
             href="/books?sort=popular"
-            className="flex items-center gap-1 text-sm font-medium text-primary hover:underline"
+            className="flex min-h-10 items-center gap-1 px-2 text-sm font-medium text-primary hover:underline md:min-h-0 md:px-0"
           >
               {t.home.all} <ArrowRight size={14} />
           </Link>
@@ -491,7 +491,7 @@ export default async function HomePage() {
           </h2>
           <Link
             href="/books?sort=rating"
-            className="flex items-center gap-1 text-sm font-medium text-primary hover:underline"
+            className="flex min-h-10 items-center gap-1 px-2 text-sm font-medium text-primary hover:underline md:min-h-0 md:px-0"
           >
               {t.home.all} <ArrowRight size={14} />
           </Link>
@@ -555,7 +555,7 @@ export default async function HomePage() {
           </h2>
           <Link
             href="/books"
-            className="flex items-center gap-1 text-sm font-medium text-primary hover:underline"
+            className="flex min-h-10 items-center gap-1 px-2 text-sm font-medium text-primary hover:underline md:min-h-0 md:px-0"
           >
               {t.home.all} <ArrowRight size={14} />
           </Link>
