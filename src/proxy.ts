@@ -33,6 +33,20 @@ const protectedPaths = [
   "/admin",
   "/manager",
   "/registrar",
+  // ── (app) guruhining qolgan sahifalari ──
+  // Bu yerda server guard (guardPage) bor, lekin proxy'da
+  // tekshirilmasa redirect() streaming paytida URL'ni o'zgartirmaydi
+  // (foydalanuvchi /library da turib login ekranini ko'radi).
+  "/library",
+  "/search",
+  "/settings",
+  "/statistics",
+  "/plan",
+  "/notifications",
+  "/categories",
+  "/achievements",
+  "/missions",
+  "/history",
 ];
 
 // ── Rate limiting config (Edge-safe, read from process.env) ──
@@ -173,5 +187,15 @@ export const config = {
     "/admin/:path*",
     "/manager/:path*",
     "/registrar/:path*",
+    "/library/:path*",
+    "/search/:path*",
+    "/settings/:path*",
+    "/statistics/:path*",
+    "/plan/:path*",
+    "/notifications/:path*",
+    "/categories/:path*",
+    "/achievements/:path*",
+    "/missions/:path*",
+    "/history/:path*",
   ],
 };
