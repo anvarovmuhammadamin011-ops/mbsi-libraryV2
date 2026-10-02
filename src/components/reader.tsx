@@ -13,6 +13,8 @@ import {
   Moon,
   Sun,
   Type,
+  Maximize2,
+  Minimize2,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 
@@ -43,6 +45,16 @@ export function Reader({ bookId, title, totalPages, pdfUrl, initialPage }: Props
   const renderTaskRef = useRef<{ cancel: () => void } | null>(null);
   const [fitScale, setFitScale] = useState(1);
   const [zoom, setZoom] = useState(1);
+  /**
+   * false — "butun sahifa" rejimi (matn to'liq ko'rinadi, telefon
+   *         ekranining ~53-73% egallanadi).
+   * true  — "to'ldirish" rejimi: sahifa balandlik bo'yicha ekranni
+   *         to'liq egallaydi, matn KESILMAYDI, lekin chap/o'ngdan
+   *         surish kerak bo'ladi.
+   */
+  const [fillMode, setFillMode] = useState(false);
+  // Canvas'ning ko'rinadigan (CSS px) o'lchami — render'dan keyin yoziladi
+  const [cssSize, setCssSize] = useState<{ w: number; h: number } | null>(null);
   const [rendering, setRendering] = useState(true);
 
   const sessionRef = useRef<string | null>(null);
@@ -99,6 +111,9 @@ export function Reader({ bookId, title, totalPages, pdfUrl, initialPage }: Props
   }, [pdfUrl]);
 
   // ─── Fit scale ──────────────────────────────────────────────
+  // Butun sahifa rejimida ikkala o'lcham ham sig'adi (contain).
+  // To'ldirish rejimida balandlik bo'yicha sig'adi (matn kesilmaydi),
+  // kenglikda skroll paydo bo'ladi.
   const recomputeFit = useCallback(async () => {
     const doc = pdfDocRef.current;
     const el = canvasAreaRef.current;
@@ -109,12 +124,14 @@ export function Reader({ bookId, title, totalPages, pdfUrl, initialPage }: Props
       const w = el.clientWidth;
       const h = el.clientHeight;
       if (w > 0 && h > 0) {
-        setFitScale(Math.min(w / vp.width, h / vp.height));
+        const wScale = w / vp.width;
+        const hScale = h / vp.height;
+        setFitScale(fillMode ? hScale : Math.min(wScale, hScale));
       }
     } catch {
       /* ignore */
     }
-  }, [page, totalPdfPages]);
+  }, [page, totalPdfPages, fillMode]);
 
   useEffect(() => {
     if (!docReady) return;
@@ -122,6 +139,16 @@ export function Reader({ bookId, title, totalPages, pdfUrl, initialPage }: Props
     window.addEventListener("resize", recomputeFit);
     return () => window.removeEventListener("resize", recomputeFit);
   }, [docReady, recomputeFit]);
+
+  // Sahifa yoki rejim o'zgarganda skrollni boshiga qaytaramiz —
+  // aks holda keyingi sahifa o'rnidan siljigan holda ko'rinadi.
+  useEffect(() => {
+    const el = canvasAreaRef.current;
+    if (el) {
+      el.scrollLeft = 0;
+      el.scrollTop = 0;
+    }
+  }, [page, fillMode]);
 
   // ─── Render single page ─────────────────────────────────────
   useEffect(() => {
@@ -146,6 +173,13 @@ export function Reader({ bookId, title, totalPages, pdfUrl, initialPage }: Props
         const viewport = pg.getViewport({ scale });
         canvas.width = Math.floor(viewport.width);
         canvas.height = Math.floor(viewport.height);
+        // CSS o'lcham: backing store / dpr. Aniq px beriladi, chunki
+        // "to'ldirish" rejimida canvas konteynerdan kengroq bo'lishi
+        // kerak (kesimmaslik uchun) va max-w-full uni qisqartirib yuborardi.
+        setCssSize({
+          w: Math.round(viewport.width / dpr),
+          h: Math.round(viewport.height / dpr),
+        });
         const ctx = canvas.getContext("2d");
         if (!ctx) return;
         ctx.fillStyle = "#ffffff";
@@ -308,6 +342,14 @@ export function Reader({ bookId, title, totalPages, pdfUrl, initialPage }: Props
         return;
       }
       if (!touchStartRef.current) return;
+      // "To'ldirish" rejimida sahifa ekrandan kengroq bo'ladi —
+      // gorizontal surish sahifani ko'chirish uchun kerak, shuning
+      // uchun o'zgarish bu yerda o'chiriladi (sahifa tugmalar/klaviatura
+      // orqali almashtiriladi).
+      if (fillMode) {
+        touchStartRef.current = null;
+        return;
+      }
       const dx = e.changedTouches[0].clientX - touchStartRef.current.x;
       const dy = e.changedTouches[0].clientY - touchStartRef.current.y;
       const absDx = Math.abs(dx);
@@ -318,7 +360,7 @@ export function Reader({ bookId, title, totalPages, pdfUrl, initialPage }: Props
       }
       touchStartRef.current = null;
     },
-    [page]
+    [page, fillMode]
   );
 
   // ─── Colors ─────────────────────────────────────────────────
@@ -359,7 +401,19 @@ export function Reader({ bookId, title, totalPages, pdfUrl, initialPage }: Props
           </h1>
         </div>
 
-        {/* right: theme toggle */}
+        {/* right: fill-mode toggle */}
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => setFillMode((v) => !v)}
+          className="h-8 w-8 shrink-0"
+          aria-label={fillMode ? "Butun sahifani ko'rsatish" : "Ekranni to'ldirish"}
+          title={fillMode ? "Butun sahifa" : "Ekranni to'ldirish"}
+        >
+          {fillMode ? <Minimize2 className="size-5" /> : <Maximize2 className="size-5" />}
+        </Button>
+
+        {/* theme toggle */}
         <Button
           variant="ghost"
           size="icon"
@@ -381,7 +435,8 @@ export function Reader({ bookId, title, totalPages, pdfUrl, initialPage }: Props
           {/* canvas / text area */}
           <div
             ref={canvasAreaRef}
-            className="flex-1 min-h-0 w-full flex items-center justify-center relative overflow-hidden rounded-lg"
+            className="flex-1 min-h-0 w-full flex relative overflow-auto rounded-lg scrollbar-thin"
+            data-fill={fillMode ? "on" : "off"}
           >
             {/* placeholder while no pdf */}
             {!docReady && !loading && (
@@ -390,16 +445,22 @@ export function Reader({ bookId, title, totalPages, pdfUrl, initialPage }: Props
               </div>
             )}
 
-            <canvas
-              ref={canvasRef}
-              className="max-w-full max-h-full object-contain rounded-md shadow-sm"
-              style={{
-                background: "#ffffff",
-                display: docReady ? "block" : "none",
-                // Dark mode: invert the white page to dark (hue-rotate keeps colors natural)
-                filter: isDark ? "invert(1) hue-rotate(180deg)" : "none",
-              }}
-            />
+            {/* m-auto: canvas konteynerdan keng bo'lganda ham chap/o'ng
+                chekkasi kesilmaydi (justify-center bug'ini oldi oladi) */}
+            <div className="m-auto shrink-0">
+              <canvas
+                ref={canvasRef}
+                className="block rounded-md shadow-sm"
+                style={{
+                  background: "#ffffff",
+                  display: docReady ? "block" : "none",
+                  width: cssSize ? `${cssSize.w}px` : undefined,
+                  height: cssSize ? `${cssSize.h}px` : undefined,
+                  // Dark mode: invert the white page to dark (hue-rotate keeps colors natural)
+                  filter: isDark ? "invert(1) hue-rotate(180deg)" : "none",
+                }}
+              />
+            </div>
 
             {(rendering || !docReady) && loading && (
               <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
