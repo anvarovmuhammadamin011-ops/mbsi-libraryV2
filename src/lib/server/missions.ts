@@ -97,5 +97,19 @@ export async function claimMission(userId: string, missionId: string) {
   const difficulty = (mission as any).difficulty ?? "MEDIUM";
   const newBallBalance = await awardMissionComplete(userId, missionId, mission.title, difficulty);
 
+  // Bildirishnoma (xato bo'lsa topshiriq natijasi buzilmaydi)
+  try {
+    const { notifyUser } = await import("./push");
+    await notifyUser({
+      userId,
+      type: "mission",
+      title: "Topshiriq bajarildi!",
+      body: `"${mission.title}" topshirigini oldingiz. Bonus ball: +${difficulty === "HARD" ? 3 : difficulty === "EASY" ? 1 : 2}`,
+      url: "/missions",
+    });
+  } catch (e) {
+    console.error("[mission] bildirishnoma yuborilmadi:", (e as Error).message);
+  }
+
   return { ballBalance: newBallBalance };
 }

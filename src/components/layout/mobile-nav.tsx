@@ -5,8 +5,16 @@ import { usePathname } from "next/navigation";
 import { useTheme } from "next-themes";
 import { Home, Search, Library, User, Sun, Moon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { NotificationsBell } from "@/components/layout/notifications-bell";
 import { useLanguage } from "@/lib/i18n/language-provider";
 import { useState, useEffect } from "react";
+
+type NavIcon = React.ComponentType<{
+  size?: number;
+  strokeWidth?: number;
+  className?: string;
+  withBadge?: boolean;
+}>;
 
 export function MobileNav() {
   const pathname = usePathname();
@@ -20,27 +28,34 @@ export function MobileNav() {
     { label: t.nav.home, href: "/home", icon: Home },
     { label: t.nav.search, href: "/search", icon: Search },
     { label: t.nav.library, href: "/library", icon: Library },
+    { label: t.nav.notifications, href: "/notifications", icon: NotificationsBell },
     { label: t.nav.profile, href: "/profile", icon: User },
   ];
 
-  const renderItem = (item: { label: string; href: string; icon: typeof Home }) => {
+  const renderItem = (item: { label: string; href: string; icon: NavIcon }) => {
     const isActive =
       pathname === item.href ||
       (item.href !== "/home" && pathname.startsWith(item.href));
     const Icon = item.icon;
+    const isBell = item.href === "/notifications";
     return (
       <Link
         key={item.href}
         href={item.href}
         aria-current={isActive ? "page" : undefined}
         className={cn(
-          "flex min-w-[56px] flex-col items-center gap-1 rounded-2xl px-3 py-2 text-[11px] font-medium transition-colors",
+          "relative flex min-w-[44px] flex-col items-center gap-1 rounded-2xl px-1.5 py-2 text-[10px] font-medium transition-colors sm:min-w-[56px] sm:px-3 sm:text-[11px]",
           isActive
             ? "bg-primary/10 text-primary"
             : "text-muted-foreground hover:text-foreground"
         )}
       >
-        <Icon size={22} strokeWidth={isActive ? 2.25 : 2} />
+        <Icon
+          size={22}
+          strokeWidth={isActive ? 2.25 : 2}
+          className={isActive ? "text-primary" : undefined}
+          {...(isBell ? { withBadge: true } : {})}
+        />
         <span>{item.label}</span>
       </Link>
     );

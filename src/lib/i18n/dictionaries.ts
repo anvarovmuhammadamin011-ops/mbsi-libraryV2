@@ -20,6 +20,7 @@ const uz = {
     library: "Kutubxona",
     plan: "Shaxsiy reja",
     profile: "Profil",
+    notifications: "Bildirishnomalar",
   },
   header: {
     searchPlaceholder: "Kitob, muallif qidiring...",
@@ -291,6 +292,7 @@ const ru: Dictionary = {
     library: "Библиотека",
     plan: "Мой план",
     profile: "Профиль",
+    notifications: "Уведомления",
   },
   header: {
     searchPlaceholder: "Искать книги, авторов...",

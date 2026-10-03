@@ -23,7 +23,7 @@ importScripts(
 );
 
 var FIREBASE_CONFIG = ${JSON.stringify(cfg)};
-var CACHE = "mbsi-sw-v1";
+var CACHE = "mbsi-sw-v2";
 
 self.addEventListener("install", function (e) {
   e.waitUntil(self.skipWaiting());
@@ -37,21 +37,37 @@ self.addEventListener("activate", function (e) {
   );
 });
 
-// O'z sahifa resurslarini keshlash (offline)
+// Faqat statik resurslar keshlanadi.
+// Navigatsiya (/...), /api/... va /sw.js HECH QACHON keshdan berilmaydi —
+// aks holda yangi deploy'dan keyin eski sahifa yoki eski API javobi ko'rinadi.
 self.addEventListener("fetch", function (e) {
   var req = e.request;
   if (req.method !== "GET") return;
-  if (new URL(req.url).origin !== self.location.origin) return;
+  var url = new URL(req.url);
+  if (url.origin !== self.location.origin) return;
+
+  var isStaticAsset =
+    url.pathname.indexOf("/_next/static/") === 0 ||
+    url.pathname.indexOf("/static/") === 0 ||
+    url.pathname.indexOf("/icons/") === 0 ||
+    url.pathname.indexOf("/logo/") === 0 ||
+    url.pathname.indexOf("/covers/") === 0 ||
+    url.pathname.indexOf("/fonts/") === 0;
+  if (!isStaticAsset) return;
+
+  // Cache-first + fonda yangilash (stale-while-revalidate)
   e.respondWith(
     caches.match(req).then(function (cached) {
-      if (cached) return cached;
-      return fetch(req).then(function (res) {
-        if (res.ok && res.type === "basic") {
-          var copy = res.clone();
-          caches.open(CACHE).then(function (c) { c.put(req, copy); });
-        }
-        return res;
-      }).catch(function () { return cached; });
+      var network = fetch(req)
+        .then(function (res) {
+          if (res && res.ok && res.type === "basic") {
+            var copy = res.clone();
+            caches.open(CACHE).then(function (c) { c.put(req, copy); });
+          }
+          return res;
+        })
+        .catch(function () { return cached; });
+      return cached || network;
     })
   );
 });

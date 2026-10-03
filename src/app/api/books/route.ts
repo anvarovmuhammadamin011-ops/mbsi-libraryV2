@@ -82,8 +82,26 @@ export const POST = route(async (req) => {
     pdfUrl: pdf.urlOrKey,
     totalPages,
     fileSize: pdf.size,
-    userId: admin.id,
+userId: admin.id,
   });
+
+  // Yangi kitob haqida o'quvchilarga xabar berish (xato bo'lsa kitob yaratilishi buzilmaydi)
+  if (isPublished) {
+    try {
+      const { getNotifiableUserIds, notifyUsers } = await import("@/lib/server/push");
+      const userIds = await getNotifiableUserIds(admin.id);
+      if (userIds.length) {
+        await notifyUsers(userIds, {
+          type: "book",
+          title: "Kutubxonaga yangi kitob qo'shildi",
+          body: book.title,
+          url: `/books/${(book as { slug?: string }).slug ?? ""}`,
+        });
+      }
+    } catch (e) {
+      console.error("[books] bildirishnoma yuborilmadi:", (e as Error).message);
+    }
+  }
 
   return json({ success: true, data: book }, 201);
 });

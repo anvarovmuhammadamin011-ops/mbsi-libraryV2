@@ -20,6 +20,7 @@ import {
   Moon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { NotificationsBell } from "@/components/layout/notifications-bell";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useAuthStore } from "@/lib/auth-store";
@@ -30,7 +31,11 @@ import { useState, useEffect } from "react";
 interface NavItem {
   label: string;
   href: string;
-  icon: React.ComponentType<{ size?: number; className?: string }>;
+  icon: React.ComponentType<{
+    size?: number;
+    className?: string;
+    withBadge?: boolean;
+  }>;
 }
 
 export function StudentSidebar() {
@@ -52,6 +57,7 @@ export function StudentSidebar() {
     { label: t.nav.books, href: "/books", icon: BookMarked },
     { label: t.nav.myLibrary, href: "/library", icon: Library },
     { label: t.nav.plan, href: "/plan", icon: Target },
+    { label: t.nav.notifications, href: "/notifications", icon: NotificationsBell },
     { label: t.nav.profile, href: "/profile", icon: User },
   ];
 

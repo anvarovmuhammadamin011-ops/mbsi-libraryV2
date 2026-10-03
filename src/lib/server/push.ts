@@ -122,3 +122,43 @@ export async function markRead(userId: string, ids?: string[]) {
   const r = await prisma.notification.updateMany({ where, data: { readAt: new Date() } });
   return r.count;
 }
+
+/**
+ * Bir xil xabarni ko'p foydalanuvchiga yuboradi (parthalar bo'lib).
+ * Bitta foydalanuvchining xatosi boshqalarini to'xtatmaydi.
+ */
+export async function notifyUsers(
+  userIds: string[],
+  input: Omit<NotifyInput, "userId">
+) {
+  const unique = [...new Set(userIds.filter(Boolean))];
+  const BATCH = 25;
+  let created = 0;
+  let pushed = 0;
+
+  for (let i = 0; i < unique.length; i += BATCH) {
+    const batch = unique.slice(i, i + BATCH);
+    const results = await Promise.allSettled(
+      batch.map((id) => notifyUser({ ...input, userId: id }))
+    );
+    results.forEach((r) => {
+      if (r.status === "fulfilled") {
+        created += 1;
+        pushed += r.value.pushed;
+      }
+    });
+  }
+
+  return { recipients: unique.length, created, pushed };
+}
+
+/** Bildirishnoma oladigan foydalanuvchilar (o'quvchilar + o'qituvchilar). */
+export async function getNotifiableUserIds(excludeUserId?: string) {
+  const users = await prisma.user.findMany({
+    where: { isActive: true, ...(excludeUserId ? { id: { not: excludeUserId } } : {}) },
+    select: { id: true, role: true },
+  });
+  return users
+    .filter((u) => u.role === "STUDENT" || u.role === "TEACHER")
+    .map((u) => u.id);
+}
