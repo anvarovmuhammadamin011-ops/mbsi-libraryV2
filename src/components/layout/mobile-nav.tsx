@@ -54,7 +54,7 @@ export function MobileNav() {
         </div>
         <button
           onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-          className="flex h-10 w-10 items-center justify-center rounded-xl text-muted-foreground hover:bg-muted hover:text-foreground transition-all ml-2"
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-muted-foreground hover:bg-muted hover:text-foreground transition-all ml-2"
           aria-label={t.header.themeToggle}
         >
           {mounted && theme === "dark" ? <Sun size={20} /> : <Moon size={20} />}

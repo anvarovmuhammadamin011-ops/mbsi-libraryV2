@@ -115,6 +115,28 @@ const MIN_READING_SECONDS = Math.max(
   Number(process.env.MIN_READING_SECONDS || 12 * 60 * 60) || 12 * 60 * 60
 );
 
+// Kitob tugatilganda bildirishnoma yozish (FCM push ham yuboriladi).
+// Xato yuz kelsa o'qish jarayoni buzilmasligi uchun `catch` bilan
+// yutiladi.
+async function notifyBookCompleted(
+  userId: string,
+  title: string,
+  slug: string
+): Promise<void> {
+  try {
+    const { notifyUser } = await import("./push");
+    await notifyUser({
+      userId,
+      type: "book",
+      title: "Kitob tugatildi",
+      body: `Tabriklaymiz! "${title}" kitobini oxirigacha o'qib tugatdingiz`,
+      url: `/reader/${slug}`,
+    });
+  } catch (e) {
+    console.error("[notification] yozilmadi:", (e as Error).message);
+  }
+}
+
 export async function upsertProgress(
   userId: string,
   bookId: string,
@@ -165,6 +187,7 @@ export async function upsertProgress(
     if (shouldAward) {
       const { awardBookRead } = await import("./balls");
       await awardBookRead(userId, bookId);
+      await notifyBookCompleted(userId, book.title, book.slug);
     }
     return toApiProgress(updated, book);
   }
@@ -189,6 +212,7 @@ export async function upsertProgress(
   if (completed) {
     const { awardBookRead } = await import("./balls");
     await awardBookRead(userId, bookId);
+    await notifyBookCompleted(userId, book.title, book.slug);
   }
   return toApiProgress(created, book);
 }

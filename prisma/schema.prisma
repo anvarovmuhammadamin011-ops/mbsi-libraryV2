@@ -70,10 +70,48 @@ model User {
   ballTransactions  BallTransaction[]
   searchLogs        SearchLog[]
   submittedRequests PendingStudent[] @relation("PendingStudentSubmitter")
+  pushSubscriptions PushSubscription[]
+  notifications     Notification[]
 
   @@index([role])
   @@index([isActive])
   @@map("users")
+}
+
+// FCM/Web Push obunasi — bitta qurilma uchun bitta qator.
+model PushSubscription {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  endpoint  String   @unique // FCM token yoki Web Push endpoint
+  p256dh    String? // faqat brauzer Web Push API (service worker orqali)
+  auth      String?
+  userAgent String?  @map("user_agent")
+  createdAt DateTime @default(now()) @map("created_at")
+  lastUsedAt DateTime @default(now()) @map("last_used_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("push_subscriptions")
+}
+
+// Foydalanuvchi bildirishnomalari (ichki + push orqali yuboriladigan).
+model Notification {
+  id        String    @id @default(cuid())
+  userId    String    @map("user_id")
+  type      String    @default("system") // mission | book | rank | system | achievement
+  title     String
+  body      String
+  url       String?   // bosilganda ochiladigan sahifa
+  icon      String?
+  readAt    DateTime? @map("read_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([userId, readAt])
+  @@map("notifications")
 }
 
 model Author {
