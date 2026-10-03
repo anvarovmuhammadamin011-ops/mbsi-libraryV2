@@ -12,6 +12,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { api } from "@/lib/api-client";
+import { firebaseConfigured } from "@/lib/firebase";
 import { usePush } from "@/lib/use-push";
 
 type Notification = {
@@ -162,7 +163,9 @@ export default function NotificationsPage() {
             </p>
             <p className="text-xs text-muted-foreground mt-0.5">
               {push.state === "unsupported"
-                ? "Bu brauzer bildirishnomalarni qo'llab-quvvatlamaydi"
+                ? firebaseConfigured
+                  ? "Bu brauzer bildirishnomalarni qo'llab-quvvatlamaydi"
+                  : "Bildirishnomalar hali sozlanmagan (Firebase konfiguratsiyasi kerak)"
                 : push.state === "denied"
                   ? "Ruxsat brauzer sozlamalarida yopilgan"
                   : "Yangi topshiriq, reyting va xabardorliklarni telefoningizga oling"}
