@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { ProfileLogoutButton } from "@/components/profile-logout-button";
+import { ProfileThemeCard } from "@/components/profile-theme-card";
 import { getLang } from "@/lib/i18n/get-lang";
 import { getDict, type Dictionary } from "@/lib/i18n/dictionaries";
 
@@ -213,6 +214,9 @@ export default async function ProfilePage() {
         totalCategories={totalCategories}
         t={t.profile}
       />
+
+      {/* Mavzu (dark/light/system) — mobil footer'dan shu yerga ko'chirildi */}
+      <ProfileThemeCard />
 
       {/* Menu items */}
       <nav className="rounded-2xl border border-border bg-card shadow-sm flex flex-col divide-y divide-border/50 overflow-hidden">

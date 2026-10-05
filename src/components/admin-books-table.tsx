@@ -188,7 +188,7 @@ export function AdminBooksTable({ books, categories }: Props) {
 
       const r = await new Promise<Response>((resolve, reject) => {
         const xhr = new XMLHttpRequest();
-        xhr.open("POST", "/api/manager/books");
+        xhr.open("POST", "/api/books-v2");
         const csrf = document.cookie.match(/(?:^|;\s*)mbsi_csrf=([^;]*)/)?.[1];
         if (csrf) xhr.setRequestHeader("x-csrf-token", decodeURIComponent(csrf));
         xhr.upload.onprogress = (e) => {

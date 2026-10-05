@@ -157,7 +157,7 @@ export function BooksBrowser({ categories, authors, initial }: Props) {
     if (authorId && authorId !== "all") params.set("authorId", authorId);
     if (sort) params.set("sort", sort);
     params.set("page", String(page));
-    fetch(`/api/books?${params.toString()}`)
+    fetch(`/api/books-v2?${params.toString()}`)
       .then((r) => r.json())
       .then((json: any) => {
         if (cancelled) return;
@@ -221,7 +221,7 @@ export function BooksBrowser({ categories, authors, initial }: Props) {
       }
       if (form.cover && form.cover.size > 0) fd.append("cover", form.cover);
 
-      const r = await fetch("/api/admin/upload", {
+      const r = await fetch("/api/books-v2", {
         method: "POST",
         body: fd,
         headers: { "x-csrf-token": getCsrfCookie() },

@@ -195,7 +195,7 @@ function SearchPageInner() {
       return;
     }
     setDefaultLoading(true);
-    fetch("/api/books?pageSize=20&sort=newest")
+    fetch("/api/books-v2?pageSize=20&sort=newest")
       .then((r) => r.json())
       .then((json: any) => setDefaultBooks(json.data ?? []))
       .catch(() => setDefaultBooks([]))
