@@ -109,9 +109,6 @@ export default function LoginPage() {
                     <span className="font-semibold text-foreground">{a.role}</span>
                     <span className="text-xs text-muted-foreground">{a.description}</span>
                   </span>
-                  <span className="ml-auto font-mono text-xs text-primary">
-                    {a.login}
-                  </span>
                 </span>
               </Button>
             );
