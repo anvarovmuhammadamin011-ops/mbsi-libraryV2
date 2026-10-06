@@ -55,6 +55,7 @@ interface Props {
   totalPages: number;
   pdfUrl?: string;
   slug?: string;
+  initialPage?: number;
 }
 
 interface PageData {
@@ -62,17 +63,24 @@ interface PageData {
   loaded: boolean;
 }
 
-export function TextReader({ bookId, title, totalPages, pdfUrl, slug }: Props) {
+export function TextReader({
+  bookId,
+  title,
+  totalPages,
+  pdfUrl,
+  slug,
+  initialPage = 1,
+}: Props) {
   const { theme, setTheme } = useTheme();
   const isDark = theme === "dark";
   const router = useRouter();
 
   // ─── State ──────────────────────────────────────────────
-  const [currentPage, setCurrentPage] = useState(1);
-  const currentPageRef = useRef(1);
+  const [currentPage, setCurrentPage] = useState(initialPage);
+  const currentPageRef = useRef(initialPage);
   const [totalTextPages, setTotalTextPages] = useState(0);
   const [pageCache, setPageCache] = useState<Map<number, string>>(new Map());
-  const [loadingPage, setLoadingPage] = useState<number | null>(1);
+  const [loadingPage, setLoadingPage] = useState<number | null>(initialPage);
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
   const [fontSizeIdx, setFontSizeIdx] = useState(1);
   const [lineHeightIdx, setLineHeightIdx] = useState(2);
@@ -90,6 +98,9 @@ export function TextReader({ bookId, title, totalPages, pdfUrl, slug }: Props) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const fetchAbortRef = useRef<Map<number, AbortController>>(new Map());
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Birinchi renderda (va matn sahifalariga siqilganda) saqlangan progressni
+  // o'zimiz yozib yubormaslik uchun — aks holda saqlangan joy yo'qoladi.
+  const skipSaveRef = useRef(true);
 
   // ─── Fetch a single page ─────────────────────────────────
   const fetchPage = useCallback(
@@ -191,7 +202,11 @@ export function TextReader({ bookId, title, totalPages, pdfUrl, slug }: Props) {
   // ─── Navigate to page ────────────────────────────────────
   const gotoPage = useCallback(
     (page: number) => {
-      const clamped = Math.max(1, Math.min(page, totalTextPages || 1));
+      // totalTextPages hali ma'lum bo'lmasa (birinchi yuklanish), sahifa
+      // 1 ga klamplanmasligi kerak — aks holda saqlangan joyga qaytish
+      // birinchi yuklanishda yo'qoladi.
+      const max = totalTextPages > 0 ? totalTextPages : Math.max(page, 1);
+      const clamped = Math.max(1, Math.min(page, max));
       if (clamped === currentPage) return;
       setCurrentPage(clamped);
       currentPageRef.current = clamped;
@@ -205,10 +220,22 @@ export function TextReader({ bookId, title, totalPages, pdfUrl, slug }: Props) {
 
   // ─── Initial load ────────────────────────────────────────
   useEffect(() => {
-    loadPage(1);
-    prefetchAhead(1);
+    loadPage(initialPage);
+    prefetchAhead(initialPage);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Matn sahifalari PDF sahifalaridan kam bo'lishi mumkin — saqlangan
+  // sahifa matn indeksidan katta bo'lsa oxirgi sahifaga siqiladi.
+  useEffect(() => {
+    if (totalTextPages > 0 && currentPage > totalTextPages) {
+      skipSaveRef.current = true;
+      setCurrentPage(totalTextPages);
+      currentPageRef.current = totalTextPages;
+      loadPage(totalTextPages);
+      prefetchAhead(totalTextPages);
+    }
+  }, [totalTextPages, currentPage, loadPage, prefetchAhead]);
 
   // ─── Reading session ─────────────────────────────────────
   useEffect(() => {
@@ -216,7 +243,7 @@ export function TextReader({ bookId, title, totalPages, pdfUrl, slug }: Props) {
     api
       .post<{ sessionId: string }>("/api/reading/session/start", {
         bookId,
-        startPage: 1,
+        startPage: initialPage,
       })
       .then((r) => {
         sessionRef.current = r.sessionId;
@@ -231,7 +258,7 @@ export function TextReader({ bookId, title, totalPages, pdfUrl, slug }: Props) {
           });
         }
       });
-  }, [bookId, sessionStarted, router]);
+  }, [bookId, sessionStarted, router, initialPage]);
 
   // Hard navigation / tab yopishda React cleanup ishlamaydi —
   // pagehide'da keepalive beacon bilan sessiyani yakunlaymiz.
@@ -282,6 +309,11 @@ export function TextReader({ bookId, title, totalPages, pdfUrl, slug }: Props) {
 
   // ─── Save progress on page change ────────────────────────
   useEffect(() => {
+    // Ochilishda saqlangan joy o'zimiz tomonidan resetlanmasin.
+    if (skipSaveRef.current) {
+      skipSaveRef.current = false;
+      return;
+    }
     if (saveTimer.current) clearTimeout(saveTimer.current);
     saveTimer.current = setTimeout(() => {
       api

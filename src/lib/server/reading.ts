@@ -107,6 +107,23 @@ export async function startBook(
   return toApiProgress(created);
 }
 
+// Foydalanuvchining shu kitobdagi SAQLangan o'qish joyi — reader shu sahifadan
+// davom ettiradi. Yo'q bo'lsa null.
+export async function getProgress(
+  userId: string,
+  bookId: string
+): Promise<ReadingProgress | null> {
+  const row = await prisma.readingProgress.findUnique({
+    where: { userId_bookId: { userId, bookId } },
+  });
+  if (!row) return null;
+  const book = await prisma.book.findUnique({
+    where: { id: bookId },
+    include: bookInclude,
+  });
+  return toApiProgress(row, book ?? undefined);
+}
+
 // Kitobni "tamomlangan" hisoblash uchun eng kam o'qish vaqti (soniya).
 // Default: 12 soat (43200). Sozlash: MIN_READING_SECONDS=<soniya> env orqali.
 // 12 soat odat shunday, chunki o'quvchilar kitobni shoshib yakunlamasin.
