@@ -4,14 +4,12 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Home, Search, Library, User } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { NotificationsBell } from "@/components/layout/notifications-bell";
 import { useLanguage } from "@/lib/i18n/language-provider";
 
 type NavIcon = React.ComponentType<{
   size?: number;
   strokeWidth?: number;
   className?: string;
-  withBadge?: boolean;
 }>;
 
 export function MobileNav() {
@@ -22,7 +20,6 @@ export function MobileNav() {
     { label: t.nav.home, href: "/home", icon: Home },
     { label: t.nav.search, href: "/search", icon: Search },
     { label: t.nav.library, href: "/library", icon: Library },
-    { label: t.nav.notifications, href: "/notifications", icon: NotificationsBell },
     { label: t.nav.profile, href: "/profile", icon: User },
   ];
 
@@ -31,7 +28,6 @@ export function MobileNav() {
       pathname === item.href ||
       (item.href !== "/home" && pathname.startsWith(item.href));
     const Icon = item.icon;
-    const isBell = item.href === "/notifications";
     return (
       <Link
         key={item.href}
@@ -48,7 +44,6 @@ export function MobileNav() {
           size={22}
           strokeWidth={isActive ? 2.25 : 2}
           className={isActive ? "text-primary" : undefined}
-          {...(isBell ? { withBadge: true } : {})}
         />
         <span>{item.label}</span>
       </Link>
