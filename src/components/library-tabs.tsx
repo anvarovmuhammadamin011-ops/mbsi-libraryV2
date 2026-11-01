@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { BookOpen, Heart, CheckCircle2, Star } from "lucide-react";
+import { BookCover } from "@/components/book-cover";
 import { useLanguage } from "@/lib/i18n/language-provider";
 
 export type LibraryBook = {
@@ -37,19 +37,13 @@ type TabId = "reading" | "saved" | "finished";
 function Cover({ book }: { book: LibraryBook }) {
   return (
     <div className="relative h-20 w-14 shrink-0 overflow-hidden rounded-lg bg-muted dark:bg-[#0E1629]">
-      {book.coverUrl ? (
-        <Image
-          src={book.coverUrl}
-          alt={book.title}
-          fill
-          className="object-cover"
-          sizes="56px"
-        />
-      ) : (
-        <div className="flex h-full w-full items-center justify-center bg-muted dark:bg-[#0E1629] text-muted-foreground">
-          <BookOpen size={16} />
-        </div>
-      )}
+      <BookCover
+        title={book.title}
+        author={book.authorName}
+        coverUrl={book.coverUrl}
+        compact
+        sizes="56px"
+      />
     </div>
   );
 }

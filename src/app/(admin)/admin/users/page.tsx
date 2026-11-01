@@ -13,7 +13,7 @@ export default async function AdminUsersPage() {
         <div>
           <h1 className="text-2xl font-bold text-foreground">Foydalanuvchilar</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            O&apos;quvchilar, o&apos;qituvchilar va xodimlarni boshqarish
+            O&apos;quvchilar va xodimlarni boshqarish
           </p>
         </div>
       </div>

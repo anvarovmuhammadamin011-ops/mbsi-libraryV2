@@ -12,6 +12,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ImportLibraryButton } from "@/components/import-library-button";
+import { formatReadingEstimate } from "@/lib/reading-estimate";
 import {
   Dialog,
   DialogContent,
@@ -416,6 +417,11 @@ export function AdminBooksTable({ books, categories }: Props) {
                   onChange={(e) => setForm({ ...form, totalPages: e.target.value })}
                   placeholder="avtomatik aniqlanadi"
                 />
+                <p className="text-[11px] text-muted-foreground">
+                  {form.totalPages
+                    ? `Taxminiy tugatish: ${formatReadingEstimate(Number(form.totalPages))}`
+                    : "PDF yuklanganda sahifalar soni va tugatish vaqti avtomatik aniqlanadi"}
+                </p>
               </div>
               <div className="space-y-1.5 sm:col-span-2">
                 <Label>Tavsif</Label>
@@ -480,6 +486,30 @@ export function AdminBooksTable({ books, categories }: Props) {
         </div>
       </div>
 
+      {/* Kitoblar bo'yicha umumiy statistika */}
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <SummaryTile label="Jami kitoblar" value={books.length.toLocaleString()} />
+        <SummaryTile
+          label="Nashr etilgan"
+          value={books.filter((b) => b.isPublished).length.toLocaleString()}
+        />
+        <SummaryTile
+          label="Jami o'quvchilar"
+          value={books.reduce((s, b) => s + b.readerCount, 0).toLocaleString()}
+        />
+        <SummaryTile
+          label="O'rtacha reyting"
+          value={
+            books.some((b) => b.averageRating)
+              ? (
+                  books.reduce((s, b) => s + (b.averageRating ?? 0), 0) /
+                  books.filter((b) => b.averageRating).length
+                ).toFixed(1)
+              : "—"
+          }
+        />
+      </div>
+
       {/* Search + Filters */}
       <div className="rounded-2xl border border-border bg-card p-4">
         <div className="flex flex-wrap items-center gap-2">
@@ -540,13 +570,14 @@ export function AdminBooksTable({ books, categories }: Props) {
       ) : (
         <div className="rounded-2xl border border-border bg-card overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="w-full min-w-[640px] text-sm">
               <thead className="border-b border-border bg-muted/30">
                 <tr>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground">Kitob</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground hidden md:table-cell">Kategoriya</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground hidden lg:table-cell">Til</th>
                   <th className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground">Sahifalar</th>
+                  <th className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground hidden lg:table-cell">Tugatish vaqti</th>
                   <th className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground hidden sm:table-cell">O&apos;quvchilar</th>
                   <th className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground hidden md:table-cell">Reyting</th>
                   <th className="px-4 py-3 text-center text-xs font-semibold text-muted-foreground">Holat</th>
@@ -580,6 +611,9 @@ export function AdminBooksTable({ books, categories }: Props) {
                       <Badge variant="secondary" className="text-[10px]">{b.language}</Badge>
                     </td>
                     <td className="px-4 py-3 text-right text-xs text-muted-foreground">{b.totalPages}</td>
+                    <td className="px-4 py-3 text-right text-xs text-muted-foreground hidden lg:table-cell">
+                      {formatReadingEstimate(b.totalPages)}
+                    </td>
                     <td className="px-4 py-3 text-right text-xs text-muted-foreground hidden sm:table-cell">{b.readerCount}</td>
                     <td className="px-4 py-3 text-right text-xs text-muted-foreground hidden md:table-cell">
                       {b.averageRating ? b.averageRating.toFixed(1) : "—"}
@@ -770,6 +804,9 @@ export function AdminBooksTable({ books, categories }: Props) {
                     value={editing.totalPages}
                     onChange={(e) => setEditing({ ...editing, totalPages: Number(e.target.value) })}
                   />
+                  <p className="text-[11px] text-muted-foreground">
+                    Taxminiy tugatish: {formatReadingEstimate(editing.totalPages)}
+                  </p>
                 </div>
               </div>
               <div className="space-y-1.5 sm:col-span-2">
@@ -854,6 +891,15 @@ export function AdminBooksTable({ books, categories }: Props) {
           )}
         </DialogContent>
       </Dialog>
+    </div>
+  );
+}
+
+function SummaryTile({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-2xl border border-border bg-card p-4">
+      <p className="text-[11px] font-medium text-muted-foreground">{label}</p>
+      <p className="mt-1 text-xl font-bold tabular-nums">{value}</p>
     </div>
   );
 }

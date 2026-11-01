@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db";
 import { getSessionUser } from "@/lib/server/auth";
+import { computeStreak } from "@/lib/server/reading";
 import {
   BookOpen,
   Clock,
@@ -16,14 +17,6 @@ export const dynamic = "force-dynamic";
 export default async function StatisticsPage() {
   const sessionUser = await getSessionUser();
   const userId = sessionUser?.id;
-
-  // Total pages
-  const pagesAgg = userId
-    ? await prisma.readingProgress.aggregate({
-        where: { userId },
-        _sum: { currentPage: true },
-      })
-    : { _sum: { currentPage: 0 } };
 
   // Completed books
   const completedBooks = userId
@@ -48,26 +41,25 @@ export default async function StatisticsPage() {
       })
     : [];
 
+  // O'qilgan sahifalar — haqiqiy sessiyalardagi pagesRead yig'indisi
+  // (avval `currentPage` yig'ilardi: u o'qilgan sahifa emas, oxirgi
+  // ochilgan sahifa raqami edi).
+  const totalPages = sessions.reduce((sum, s) => sum + s.pagesRead, 0);
+
   // Calculate reading time (minutes) — from actual session duration
   const totalSeconds = sessions.reduce((sum, s) => sum + (s.duration ?? 0), 0);
   const totalMinutes = Math.round(totalSeconds / 60);
 
-  // Streak
-  let streakDays = 0;
-  if (sessions.length > 0) {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const sessionDates = [...new Set(sessions.map((s) => new Date(s.startedAt).toDateString()))];
-    for (let i = 0; i < 365; i++) {
-      const d = new Date(today);
-      d.setDate(d.getDate() - i);
-      if (sessionDates.includes(d.toDateString())) {
-        streakDays++;
-      } else if (i > 0) {
-        break;
-      }
-    }
-  }
+  // Ketma-ketlik — serverdagi bilan bir xil hisob
+  const streakDays = computeStreak(sessions.map((s) => new Date(s.startedAt)));
+
+  // Joriy oy
+  const monthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+  const monthSessions = sessions.filter((s) => new Date(s.startedAt) >= monthStart);
+  const monthPages = monthSessions.reduce((sum, s) => sum + s.pagesRead, 0);
+  const monthMinutes = Math.round(
+    monthSessions.reduce((sum, s) => sum + (s.duration ?? 0), 0) / 60
+  );
 
   // Pages per day for chart (last 7 days)
   const daysData: { label: string; pages: number }[] = [];
@@ -101,8 +93,6 @@ export default async function StatisticsPage() {
         take: 5,
       })
     : [];
-
-  const totalPages = pagesAgg._sum.currentPage ?? 0;
 
   return (
     <div className="space-y-6 animate-fade-in pb-28 md:pb-0 max-w-2xl md:max-w-4xl lg:max-w-5xl mx-auto">
@@ -223,26 +213,26 @@ export default async function StatisticsPage() {
           <Calendar size={16} className="text-primary" />
           <h2 className="text-sm font-semibold text-foreground">Oylik xulosa</h2>
         </div>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
           <div>
-            <p className="text-xs text-muted-foreground">Jami sessiyalar</p>
-            <p className="text-lg font-bold text-foreground">{sessions.length}</p>
+            <p className="text-xs text-muted-foreground">Sessiyalar (oy)</p>
+            <p className="text-lg font-bold text-foreground">{monthSessions.length}</p>
           </div>
           <div>
-            <p className="text-xs text-muted-foreground">O&apos;rtacha sahifa/sessiya</p>
+            <p className="text-xs text-muted-foreground">Sahifa (oy)</p>
+            <p className="text-lg font-bold text-foreground">{monthPages.toLocaleString()}</p>
+          </div>
+          <div>
+            <p className="text-xs text-muted-foreground">O&apos;qish vaqti (oy)</p>
             <p className="text-lg font-bold text-foreground">
-              {sessions.length > 0
-                ? Math.round(totalPages / sessions.length)
-                : 0}
+              {monthMinutes >= 60
+                ? `${Math.floor(monthMinutes / 60)} soat ${monthMinutes % 60} daq`
+                : `${monthMinutes} daq`}
             </p>
           </div>
           <div>
             <p className="text-xs text-muted-foreground">Hozir o&apos;qilayotgan</p>
             <p className="text-lg font-bold text-foreground">{currentlyReading}</p>
-          </div>
-          <div>
-            <p className="text-xs text-muted-foreground">Tugatilgan</p>
-            <p className="text-lg font-bold text-foreground">{completedBooks}</p>
           </div>
         </div>
       </div>

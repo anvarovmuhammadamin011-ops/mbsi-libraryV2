@@ -119,12 +119,12 @@ export default async function AdminDashboard() {
       href: "/admin/users?tab=students",
     },
     {
-      label: "O'qituvchilar",
-      value: stats.totals.teachers,
-      sub: `${stats.comparison.teacher.activeUsers} faol (30 kun)`,
+      label: "Xodimlar",
+      value: stats.totals.teachers + stats.totals.staff,
+      sub: `${stats.comparison.staff.activeUsers} faol (30 kun)`,
       icon: Star,
       color: "text-violet-600",
-      href: "/admin/users?tab=teachers",
+      href: "/admin/users?tab=staff",
     },
     {
       label: "Faol foydalanuvchilar",
@@ -234,7 +234,7 @@ export default async function AdminDashboard() {
         <div className="rounded-2xl border border-border bg-card p-5">
           <div className="mb-4 flex items-center gap-2">
             <Swords size={16} className="text-primary" />
-            <h2 className="text-base font-semibold">Battle — O&apos;quvchilar vs O&apos;qituvchilar</h2>
+            <h2 className="text-base font-semibold">Battle — O&apos;quvchilar vs Xodimlar</h2>
           </div>
           <BattleMini stats={stats.comparison} />
           <Link
@@ -266,20 +266,20 @@ export default async function AdminDashboard() {
         <div className="rounded-2xl border border-border bg-card p-5">
           <div className="mb-3 flex items-center gap-2">
             <Briefcase size={16} className="text-primary" />
-            <h2 className="text-sm font-semibold">O&apos;qituvchilar</h2>
+            <h2 className="text-sm font-semibold">Xodimlar</h2>
           </div>
           <div className="space-y-2 text-sm">
-            <Row label="O'qish soni" value={`${stats.comparison.teacher.totalReads} ta sessiya`} />
-            <Row label="O'rtacha o'qishlar" value={stats.comparison.teacher.avgReads.toFixed(1)} />
-            <Row label="O'qilgan sahifalar" value={stats.comparison.teacher.totalPagesRead.toLocaleString()} />
-            <Row label="Tugatilgan" value={String(stats.comparison.teacher.totalCompleted)} />
-            {stats.comparison.teacher.top && (
+            <Row label="O'qish soni" value={`${stats.comparison.staff.totalReads} ta sessiya`} />
+            <Row label="O'rtacha o'qishlar" value={stats.comparison.staff.avgReads.toFixed(1)} />
+            <Row label="O'qilgan sahifalar" value={stats.comparison.staff.totalPagesRead.toLocaleString()} />
+            <Row label="Tugatilgan" value={String(stats.comparison.staff.totalCompleted)} />
+            {stats.comparison.staff.top && (
               <Row
                 label="Eng faol"
                 value={
-                  stats.comparison.teacher.top.position
-                    ? `${stats.comparison.teacher.top.name} (${stats.comparison.teacher.top.position})`
-                    : stats.comparison.teacher.top.name
+                  stats.comparison.staff.top.position
+                    ? `${stats.comparison.staff.top.name} (${stats.comparison.staff.top.position})`
+                    : stats.comparison.staff.top.name
                 }
               />
             )}
@@ -381,7 +381,7 @@ export default async function AdminDashboard() {
         <div className="rounded-2xl border border-border bg-card p-5">
           <div className="mb-3 flex items-center gap-2">
             <Crown size={16} className="text-violet-500" />
-            <h2 className="text-sm font-semibold">Eng kuchli o&apos;qituvchilar</h2>
+            <h2 className="text-sm font-semibold">Eng kuchli xodimlar</h2>
           </div>
           <LeaderList items={topTeacherAgg} userMap={userMap} position />
         </div>
@@ -395,7 +395,7 @@ export default async function AdminDashboard() {
         <div className="rounded-2xl border border-border bg-card p-5">
           <div className="mb-3 flex items-center gap-2">
             <TrendingDown size={16} className="text-red-500" />
-            <h2 className="text-sm font-semibold">Eng zaif o&apos;qituvchilar</h2>
+            <h2 className="text-sm font-semibold">Eng zaif xodimlar</h2>
           </div>
           <LeaderList items={bottomTeacherAgg} userMap={userMap} weak position />
         </div>
@@ -462,8 +462,8 @@ function BattleMini({
   stats: AdminStats["comparison"];
 }) {
   const student = stats.student;
-  const teacher = stats.teacher;
-  const totalScore = student.totalPagesRead + teacher.totalPagesRead || 1;
+  const staff = stats.staff;
+  const totalScore = student.totalPagesRead + staff.totalPagesRead || 1;
   const sPct = Math.round((student.totalPagesRead / totalScore) * 100);
   const tPct = 100 - sPct;
   return (
@@ -482,7 +482,7 @@ function BattleMini({
       </div>
       <div>
         <div className="flex items-center justify-between text-xs">
-          <span className="font-semibold text-primary">TEACHERS</span>
+          <span className="font-semibold text-primary">STAFF</span>
           <span className="font-semibold tabular-nums">{tPct}%</span>
         </div>
         <div className="mt-1 h-3 w-full overflow-hidden rounded-full bg-muted">
@@ -494,7 +494,7 @@ function BattleMini({
       </div>
       <div className="flex justify-between text-xs text-muted-foreground">
         <span>{student.totalPagesRead.toLocaleString()} bet</span>
-        <span>{teacher.totalPagesRead.toLocaleString()} bet</span>
+        <span>{staff.totalPagesRead.toLocaleString()} bet</span>
       </div>
     </div>
   );

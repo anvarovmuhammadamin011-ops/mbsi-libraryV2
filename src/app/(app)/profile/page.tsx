@@ -13,9 +13,7 @@ import {
   ChevronRight,
   History,
   Settings,
-  Clock,
   Award,
-  TrendingUp,
   Target,
 } from "lucide-react";
 import Link from "next/link";
@@ -94,14 +92,12 @@ export default async function ProfilePage() {
   const avgRating = avgRatingRaw === 0 ? 0 : Math.round(avgRatingRaw * 10) / 10;
   const booksStarted = personalStats.totalBooks;
   const pagesRead = personalStats.totalPages;
-  const readingTimeHours = Math.floor(personalStats.readingTime / 60);
-  const readingTimeMins = personalStats.readingTime % 60;
   const monthSeconds = monthSessions.reduce((sum, s) => sum + (s.duration ?? 0), 0);
   const monthHours = Math.floor(monthSeconds / 3600);
   const monthMinutes = Math.floor((monthSeconds % 3600) / 60);
 
   return (
-    <div className="max-w-md md:max-w-lg lg:max-w-xl mx-auto animate-fade-in space-y-4 pb-28 md:pb-0">
+    <div className="mx-auto max-w-md animate-fade-in space-y-4 pb-28 sm:max-w-xl md:max-w-3xl md:pb-0 lg:max-w-4xl">
       {/* Hero Card */}
       <div className="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
         <div className="flex flex-col items-center px-6 py-8 text-center">
@@ -140,7 +136,14 @@ export default async function ProfilePage() {
       </div>
 
       {/* Reading Journey */}
-      <ReadingJourneyCard booksCompleted={totalBooks} streak={streak} monthHours={monthHours} monthMinutes={monthMinutes} />
+      <ReadingJourneyCard
+        booksCompleted={totalBooks}
+        booksStarted={booksStarted}
+        pagesRead={pagesRead}
+        streak={streak}
+        monthHours={monthHours}
+        monthMinutes={monthMinutes}
+      />
 
       {/* Achievements */}
       <div className="rounded-2xl border border-border bg-card shadow-sm px-4 py-4">
@@ -173,37 +176,6 @@ export default async function ProfilePage() {
             <p className="text-xs text-muted-foreground mt-1">{t.profile.noAchievementsSub}</p>
           </div>
         )}
-      </div>
-
-      {/* Reading Statistics */}
-      <div className="rounded-2xl border border-border bg-card shadow-sm px-4 py-4">
-        <h2 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
-          <TrendingUp size={14} className="text-primary" /> {t.profile.stats}
-        </h2>
-        <div className="grid grid-cols-2 gap-3">
-          <div className="rounded-xl bg-muted/50 p-3 text-center">
-            <BookOpen size={16} className="mx-auto text-primary mb-1" />
-            <p className="text-lg font-bold text-foreground">{booksStarted}</p>
-            <p className="text-xs text-muted-foreground">{t.profile.started}</p>
-          </div>
-          <div className="rounded-xl bg-muted/50 p-3 text-center">
-            <Award size={16} className="mx-auto text-green-600 mb-1" />
-            <p className="text-lg font-bold text-foreground">{totalBooks}</p>
-            <p className="text-xs text-muted-foreground">{t.profile.finished}</p>
-          </div>
-          <div className="rounded-xl bg-muted/50 p-3 text-center">
-            <TrendingUp size={16} className="mx-auto text-blue-500 mb-1" />
-            <p className="text-lg font-bold text-foreground">{pagesRead.toLocaleString()}</p>
-            <p className="text-xs text-muted-foreground">{t.profile.pages}</p>
-          </div>
-          <div className="rounded-xl bg-muted/50 p-3 text-center">
-            <Clock size={16} className="mx-auto text-orange-500 mb-1" />
-            <p className="text-lg font-bold text-foreground">
-              {readingTimeHours}h {readingTimeMins}m
-            </p>
-            <p className="text-xs text-muted-foreground">{t.profile.time}</p>
-          </div>
-        </div>
       </div>
 
       {/* Ilova haqida */}

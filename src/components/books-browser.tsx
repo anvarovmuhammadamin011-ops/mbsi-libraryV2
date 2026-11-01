@@ -604,7 +604,7 @@ export function BooksBrowser({ categories, authors, initial }: Props) {
 
       {/* Results */}
       {loading ? (
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
           {Array.from({ length: 12 }).map((_, i) => (
             <div key={i} className="space-y-2">
               <Skeleton className="aspect-[3/4] w-full rounded-2xl" />
@@ -624,7 +624,7 @@ export function BooksBrowser({ categories, authors, initial }: Props) {
           <p className="text-sm text-muted-foreground">
             {t.booksBrowser.resultsCount(data.length)}
           </p>
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
             {data.map((b) => (
               <BookCardView key={b.id} book={b} />
             ))}

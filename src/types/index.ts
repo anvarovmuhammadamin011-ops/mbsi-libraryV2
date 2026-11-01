@@ -187,6 +187,13 @@ export interface ReadingProgress {
   startedAt: string;
   lastReadAt: string;
   completedAt?: string;
+  /** Oxirgi betga yetilganda qaytariladi — tugatish uchun yana qancha
+   * haqiqiy o'qish vaqti kerakligini ko'rsatish uchun. */
+  completion?: {
+    completed: boolean;
+    readSeconds: number;
+    requiredSeconds: number;
+  };
 }
 
 // ─── Reading Session ────────────────────────────────────────
@@ -270,6 +277,8 @@ export interface AuditLog {
 // ─── Statistics ─────────────────────────────────────────────
 export interface UserStatistics {
   totalBooks: number;
+  /** Tugatilgan kitoblar soni (totalBooks — boshlang'anlar bilan birga). */
+  completedBooks?: number;
   totalPages: number;
   readingTime: number; // minutes
   currentStreak: number;
@@ -303,7 +312,7 @@ export interface RankingEntry {
 
 // ─── Admin: battle / gamification ───────────────────────────
 export interface BattleTeamStats {
-  team: "STUDENT" | "TEACHER";
+  team: "STUDENT" | "STAFF";
   score: number;
   booksStarted: number;
   booksCompleted: number;
@@ -332,8 +341,8 @@ export interface BattleLeaderboardEntry {
 
 export interface QuizTeamAgg {
   student: BattleTeamStats;
-  teacher: BattleTeamStats;
-  winner: "STUDENT" | "TEACHER" | "TIE";
+  staff: BattleTeamStats;
+  winner: "STUDENT" | "STAFF" | "TIE";
   leaderboard: BattleLeaderboardEntry[];
 }
 

@@ -27,7 +27,6 @@ import {
 } from "@/components/ui/dialog";
 import {
   Search,
-  UserPlus,
   Eye,
   UserRoundX,
   UserRoundCheck,
@@ -67,13 +66,12 @@ export type ManagedUser = {
   };
 };
 
-type TabKey = "all" | "student" | "teacher" | "staff";
+type TabKey = "all" | "student" | "staff";
 
 const TABS: { key: TabKey; label: string }[] = [
   { key: "all", label: "Barcha" },
   { key: "student", label: "O'quvchilar" },
-  { key: "teacher", label: "O'qituvchilar" },
-  { key: "staff", label: "Boshqa xodimlar" },
+  { key: "staff", label: "Xodimlar" },
 ];
 
 const USER_TYPES = [
@@ -172,10 +170,8 @@ export function AdminUsersView() {
     const q = query.trim().toLowerCase();
     return rows.filter((u) => {
       if (tab === "student" && u.role !== "STUDENT") return false;
-      if (tab === "teacher" && u.role !== "TEACHER") return false;
-      if (tab === "staff") {
-        if (!["ADMIN", "BOOK_MANAGER", "REGISTRAR", "STAFF"].includes(u.role)) return false;
-      }
+      // "Xodimlar" — o'qituvchilar, boshqa xodimlar, menejer, registrator, admin
+      if (tab === "staff" && u.role === "STUDENT") return false;
       if (type !== "all" && userTypeOf(u) !== type) return false;
       if (status === "active" && !u.isActive) return false;
       if (status === "blocked" && u.isActive) return false;
@@ -262,12 +258,6 @@ export function AdminUsersView() {
               <SelectItem value="blocked">Bloklangan</SelectItem>
             </SelectContent>
           </Select>
-          <Link
-            href="/admin/users/add"
-            className={buttonVariants({ size: "default" })}
-          >
-            <UserPlus size={16} /> Yangi foydalanuvchi
-          </Link>
         </div>
       </div>
 

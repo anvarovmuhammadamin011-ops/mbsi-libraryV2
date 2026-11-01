@@ -190,8 +190,12 @@ async function teamComparison(minPages: number, minSeconds: number, monthAgo: Da
         })
       : [];
 
-  const perRole = (role: "STUDENT" | "TEACHER") => {
-    const rel = users.filter((u) => u.role === role);
+  // Ikkita jamoa: O'quvchilar va Xodimlar (o'qituvchilar ham xodimlar
+  // jamoasiga kiradi). Admin kuzatuvchi sifatida hisobga olinmaydi.
+  const perTeam = (team: "STUDENT" | "STAFF") => {
+    const rel = users.filter((u) =>
+      team === "STUDENT" ? u.role === "STUDENT" : u.role !== "STUDENT" && u.role !== "ADMIN"
+    );
     let sessions = 0;
     let pages = 0;
     let seconds = 0;
@@ -225,5 +229,5 @@ async function teamComparison(minPages: number, minSeconds: number, monthAgo: Da
     };
   };
 
-  return { student: perRole("STUDENT"), teacher: perRole("TEACHER") };
+  return { student: perTeam("STUDENT"), staff: perTeam("STAFF") };
 }

@@ -30,6 +30,22 @@ export function withinActiveLimit(activeCount: number): boolean {
   return activeCount < MAX_ACTIVE_BOOKS;
 }
 
+/**
+ * Kitobni "tugatilgan" deb hisoblash uchun kerak bo'lgan minimal
+ * haqiqiy o'qish vaqti (soniya).
+ *
+ * Nega 12 soat emas: qat'iy 12 soatlik chegara tufayli kitobni
+ * oxirigacha o'qigan foydalanuvchi ham "tugatilgan" bo'limiga
+ * o'tmasdi. Endi talab sahifalar soniga bog'liq: har bir bet uchun
+ * kamida 4 soniya haqiqiy sessiya vaqti (300 betli kitob ≈ 20 daqiqa).
+ * Bu shunchaki varaqlash (bir necha soniya) bilan tugatishning oldini
+ * oladi, lekin halol o'qigan foydalanuvchini to'smaydi.
+ */
+export function requiredCompletionSeconds(totalPages: number): number {
+  if (!totalPages || totalPages <= 0) return 180;
+  return Math.min(3600, Math.max(180, Math.round(totalPages * 4)));
+}
+
 function ymd(d: Date): string {
   return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
 }
@@ -124,14 +140,6 @@ export async function getProgress(
   return toApiProgress(row, book ?? undefined);
 }
 
-// Kitobni "tamomlangan" hisoblash uchun eng kam o'qish vaqti (soniya).
-// Default: 12 soat (43200). Sozlash: MIN_READING_SECONDS=<soniya> env orqali.
-// 12 soat odat shunday, chunki o'quvchilar kitobni shoshib yakunlamasin.
-const MIN_READING_SECONDS = Math.max(
-  1,
-  Number(process.env.MIN_READING_SECONDS || 12 * 60 * 60) || 12 * 60 * 60
-);
-
 // Kitob tugatilganda bildirishnoma yozish (FCM push ham yuboriladi).
 // Xato yuz kelsa o'qish jarayoni buzilmasligi uchun `catch` bilan
 // yutiladi.
@@ -163,32 +171,38 @@ export async function upsertProgress(
   if (!book) throw new ApiError(ERROR_CODES.NOT_FOUND, "Kitob topilmadi", 404);
 
   const clamped = Math.max(0, Math.min(page, book.totalPages));
-  const progress = computeProgress(clamped, book.totalPages);
+  const rawProgress = computeProgress(clamped, book.totalPages);
   const reachedEnd = clamped >= book.totalPages;
 
   const existing = await prisma.readingProgress.findUnique({
     where: { userId_bookId: { userId, bookId } },
   });
 
-  // 12 soatlik chegarani tekshirish: faqat yetarli vaqt o'qigan bo'lsa tamomlangan hisoblanadi
+  // Tugatish mezoni: oxirgi betga yetish + shu kitob bo'yicha
+  // HAQIQIY o'qish sessiyalarida yetarli vaqt to'plash.
+  // Muhim: avvalgi `startedAt`dan hisoblash olib tashlandi — u
+  // tufayli kitobni ochib, bir necha soniyada oxiriga varaqlash ham
+  // "tugatilgan" bo'lib qolardi.
+  let readSeconds = 0;
+  let requiredSeconds = 0;
   let meetsTimeRequirement = false;
   if (reachedEnd) {
     const totalSessions = await prisma.readingSession.aggregate({
       where: { userId, bookId },
       _sum: { duration: true },
     });
-    const totalDuration = totalSessions._sum.duration ?? 0;
-    // Agar session yo'q bo'lsa, startedAt dan hisoblaymiz
-    if (totalDuration > 0) {
-      meetsTimeRequirement = totalDuration >= MIN_READING_SECONDS;
-    } else if (existing) {
-      // Session bo'lmasa, startedAt dan endigacha vaqtni tekshirish
-      const elapsed = Math.floor((Date.now() - existing.startedAt.getTime()) / 1000);
-      meetsTimeRequirement = elapsed >= MIN_READING_SECONDS;
-    }
+    readSeconds = totalSessions._sum.duration ?? 0;
+    requiredSeconds = requiredCompletionSeconds(book.totalPages);
+    meetsTimeRequirement = readSeconds >= requiredSeconds;
   }
 
   const completed = reachedEnd && meetsTimeRequirement;
+  const completion = reachedEnd
+    ? { completed, readSeconds, requiredSeconds }
+    : undefined;
+  // Oxirgi betga yetildi, lekin hali "tugatilgan" emas — progress 100%
+  // ko'rinib qolmasin (aks holda kitob tugagan deb o'ylash mumkin).
+  const progress = completed ? rawProgress : Math.min(99, rawProgress);
 
   if (existing) {
     const shouldAward = completed && !existing.completedAt;
@@ -206,7 +220,7 @@ export async function upsertProgress(
       await awardBookRead(userId, bookId);
       await notifyBookCompleted(userId, book.title, book.slug);
     }
-    return toApiProgress(updated, book);
+    return { ...toApiProgress(updated, book), completion };
   }
 
   const active = await getActiveCount(userId);
@@ -231,7 +245,7 @@ export async function upsertProgress(
     await awardBookRead(userId, bookId);
     await notifyBookCompleted(userId, book.title, book.slug);
   }
-  return toApiProgress(created, book);
+  return { ...toApiProgress(created, book), completion };
 }
 
 // ─── Reading sessions (duplicate-page-safe) ─────────────────
@@ -532,30 +546,43 @@ export async function getPersonalStats(
   userId: string,
   role: string
 ): Promise<UserStatistics> {
-  const [agg, completed, active, streakDates, rank] = await Promise.all([
-    prisma.readingSession.aggregate({
-      where: { userId },
-      _sum: { pagesRead: true, duration: true },
-    }),
-    prisma.readingProgress.count({ where: { userId, completedAt: { not: null } } }),
-    prisma.readingProgress.count({ where: { userId, completedAt: null } }),
-    prisma.readingSession.findMany({
-      where: { userId },
-      select: { startedAt: true },
-    }),
-    getUserRank(userId, role),
-  ]);
+  const now = new Date();
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+
+  const [agg, completed, active, streakDates, rank, monthAgg, monthBooks] =
+    await Promise.all([
+      prisma.readingSession.aggregate({
+        where: { userId },
+        _sum: { pagesRead: true, duration: true },
+      }),
+      prisma.readingProgress.count({ where: { userId, completedAt: { not: null } } }),
+      prisma.readingProgress.count({ where: { userId, completedAt: null } }),
+      prisma.readingSession.findMany({
+        where: { userId },
+        select: { startedAt: true },
+      }),
+      getUserRank(userId, role),
+      // Joriy oy — haqiqiy raqamlar (avval 0 ga qattiq kodlangan edi)
+      prisma.readingSession.aggregate({
+        where: { userId, startedAt: { gte: monthStart } },
+        _sum: { pagesRead: true, duration: true },
+      }),
+      prisma.readingProgress.count({
+        where: { userId, completedAt: { gte: monthStart } },
+      }),
+    ]);
 
   const dates = streakDates.map((s) => s.startedAt);
   return {
     totalBooks: completed + active,
+    completedBooks: completed,
     totalPages: agg._sum.pagesRead ?? 0,
     readingTime: Math.round((agg._sum.duration ?? 0) / 60),
     currentStreak: computeStreak(dates),
     ranking: rank,
-    monthlyPages: 0,
-    monthlyBooks: 0,
-    monthlyReadingTime: 0,
+    monthlyPages: monthAgg._sum.pagesRead ?? 0,
+    monthlyBooks: monthBooks,
+    monthlyReadingTime: Math.round((monthAgg._sum.duration ?? 0) / 60),
   };
 }
 

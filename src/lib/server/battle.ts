@@ -7,15 +7,21 @@ import type {
 } from "@/types";
 
 /**
- * CS2 uslubidagi kitob o'qish "battle" — O'quvchilar vs O'qituvchilar.
+ * CS2 uslubidagi kitob o'qish "battle" — O'quvchilar vs Xodimlar.
+ *
+ * Jamoalar:
+ *  - STUDENT  — faqat o'quvchilar
+ *  - STAFF    — o'qituvchilar, boshqa xodimlar, kitob menejeri, registrator
+ *               (admin hisobga olinmaydi — u kuzatuvchi)
+ *
  * Faqat haqiqiy o'qish faoliyati hisoblanadi:
- *  - session pagesRead/duration minimal chegaradan o'tgan bo'lsa "valid" deb hisoblanadi
- *    (kitobni ochib qo'yish bilan ockolash mumkin emas)
- *  - kitob boshlash (start), >=50% o'qish (progress), tugatish (complete) uchun ochko
+ *  - session pagesRead/duration minimal chegaradan o'tgan bo'lsa "valid"
+ *    (kitobni ochib qo'yish bilan ochko olish mumkin emas)
+ *  - kitob boshlash va tugatish uchun ochko
  */
 export async function getBattleData(): Promise<QuizTeamAgg> {
   const settings = await getSystemSettings();
-  const roles = ["STUDENT", "TEACHER"];
+  const roles = ["STUDENT", "TEACHER", "STAFF", "BOOK_MANAGER", "REGISTRAR"];
 
   const [users, sessions, progressRows] = await Promise.all([
     prisma.user.findMany({
@@ -26,6 +32,7 @@ export async function getBattleData(): Promise<QuizTeamAgg> {
         role: true,
         group: true,
         staffPosition: true,
+        teacherSubject: true,
         avatar: true,
       },
     }),
@@ -51,81 +58,79 @@ export async function getBattleData(): Promise<QuizTeamAgg> {
     (s) => s.pagesRead >= minPages && s.duration >= minSeconds
   );
 
-  const validKeys = new Set(
-    validSessions.map((s) => `${s.userId}|${s.bookId}`)
-  );
-  const progressKeys = new Set<string>();
-  const completedKeys = new Set<string>();
-  for (const r of progressRows) {
-    if (r.progress >= 50) progressKeys.add(`${r.userId}|${r.bookId}`);
-    if (r.completedAt) completedKeys.add(`${r.userId}|${r.bookId}`);
-  }
-
-  // Teama bo'yicha yig'indilar
-  const teamInfo: Record<"STUDENT" | "TEACHER", { users: typeof users; ids: Set<string> }> = {
-    STUDENT: { users: [], ids: new Set() },
-    TEACHER: { users: [], ids: new Set() },
+  // ─── Foydalanuvchi kesimida yig'indilar ────────────────────
+  type UserAgg = {
+    started: Set<string>;
+    completed: Set<string>;
+    pagesRead: number;
+    seconds: number;
+    sessions: number;
   };
-  for (const u of users) {
-    const key = u.role === "STUDENT" ? "STUDENT" : "TEACHER";
-    teamInfo[key].users.push(u);
-    teamInfo[key].ids.add(u.id);
+  const perUser = new Map<string, UserAgg>();
+  const aggOf = (userId: string): UserAgg => {
+    let a = perUser.get(userId);
+    if (!a) {
+      a = { started: new Set(), completed: new Set(), pagesRead: 0, seconds: 0, sessions: 0 };
+      perUser.set(userId, a);
+    }
+    return a;
+  };
+
+  for (const s of validSessions) {
+    const a = aggOf(s.userId);
+    a.started.add(s.bookId);
+    a.pagesRead += s.pagesRead;
+    a.seconds += s.duration;
+    a.sessions += 1;
+  }
+  for (const r of progressRows) {
+    if (r.completedAt) aggOf(r.userId).completed.add(r.bookId);
   }
 
-  const perTeam = (team: "STUDENT" | "TEACHER") => {
-    const ids = teamInfo[team].ids;
-    const started = new Set<string>();
-    const progressed = new Set<string>();
-    const completed = new Set<string>();
+  const pointsOf = (userId: string): number => {
+    const a = perUser.get(userId);
+    if (!a) return 0;
+    return (
+      a.started.size * settings.battleStartPoints +
+      a.completed.size * settings.battleCompletePoints
+    );
+  };
+
+  const teamOf = (role: string): "STUDENT" | "STAFF" =>
+    role === "STUDENT" ? "STUDENT" : "STAFF";
+
+  const perTeam = (team: "STUDENT" | "STAFF") => {
+    const members = users.filter((u) => teamOf(u.role) === team);
     let pagesRead = 0;
     let readingSeconds = 0;
     let sessionsCount = 0;
+    let completed = 0;
+    let started = 0;
     const activeUserIds = new Set<string>();
-
-    for (const s of validSessions) {
-      if (!ids.has(s.userId)) continue;
-      const k = `${s.userId}|${s.bookId}`;
-      started.add(k);
-      pagesRead += s.pagesRead;
-      readingSeconds += s.duration;
-      sessionsCount++;
-      activeUserIds.add(s.userId);
-    }
-    for (const k of progressKeys) {
-      const userId = k.split("|")[0];
-      if (ids.has(userId)) progressed.add(k);
-    }
-    for (const k of completedKeys) {
-      const userId = k.split("|")[0];
-      if (ids.has(userId)) completed.add(k);
-    }
-
-    // Per-user ochko
     const points = new Map<string, number>();
-    for (const u of teamInfo[team].users) {
-      let p = 0;
-      for (const bookId of distinctBookIds(Array.from(started), u.id)) {
-        p += settings.battleStartPoints;
-      }
-      for (const bookId of distinctBookIds(Array.from(progressed), u.id)) {
-        p += settings.battleProgressPoints;
-      }
-      for (const bookId of distinctBookIds(Array.from(completed), u.id)) {
-        p += settings.battleCompletePoints;
-      }
+
+    for (const u of members) {
+      const a = perUser.get(u.id);
+      const p = pointsOf(u.id);
       points.set(u.id, p);
+      if (!a) continue;
+      pagesRead += a.pagesRead;
+      readingSeconds += a.seconds;
+      sessionsCount += a.sessions;
+      completed += a.completed.size;
+      started += a.started.size;
+      if (a.sessions > 0) activeUserIds.add(u.id);
     }
 
-    const score = Array.from(points.values()).reduce((a, b) => a + b, 0);
+    const score = Array.from(points.values()).reduce((x, y) => x + y, 0);
 
     return {
       team,
       score,
-      points: new Map(points),
-      teamUsers: teamInfo[team].users,
-      started: started.size,
-      progressed: progressed.size,
-      completed: completed.size,
+      points,
+      teamUsers: members,
+      started,
+      completed,
       activeUsers: activeUserIds.size,
       pagesRead,
       readingSeconds,
@@ -134,15 +139,36 @@ export async function getBattleData(): Promise<QuizTeamAgg> {
   };
 
   const sAgg = perTeam("STUDENT");
-  const tAgg = perTeam("TEACHER");
+  const tAgg = perTeam("STAFF");
 
-  // Umumiy leaderboard (ikkala jamoa, ochko bo'yicha)
+  function buildEntry(
+    u: (typeof users)[number],
+    team: "STUDENT" | "STAFF"
+  ): BattleLeaderboardEntry {
+    const a = perUser.get(u.id);
+    return {
+      rank: 0,
+      userId: u.id,
+      name: u.name,
+      role: u.role as BattleLeaderboardEntry["role"],
+      group: u.group ?? null,
+      position: u.staffPosition ?? u.teacherSubject ?? null,
+      avatar: u.avatar ?? null,
+      booksStarted: a?.started.size ?? 0,
+      booksCompleted: a?.completed.size ?? 0,
+      pagesRead: a?.pagesRead ?? 0,
+      readingSeconds: a?.seconds ?? 0,
+      validSessions: a?.sessions ?? 0,
+      points: pointsOf(u.id),
+    };
+  }
+
   const leaderboard: BattleLeaderboardEntry[] = [
-    ...sAgg.teamUsers.map((u) => buildEntry(u, "STUDENT", sAgg.points)),
-    ...tAgg.teamUsers.map((u) => buildEntry(u, "TEACHER", tAgg.points)),
+    ...sAgg.teamUsers.map((u) => buildEntry(u, "STUDENT")),
+    ...tAgg.teamUsers.map((u) => buildEntry(u, "STAFF")),
   ]
     .filter((e) => e.points > 0)
-    .sort((a, b) => b.points - a.points)
+    .sort((a, b) => b.points - a.points || b.pagesRead - a.pagesRead)
     .slice(0, 30)
     .map((e, i) => ({ ...e, rank: i + 1 }));
 
@@ -151,10 +177,10 @@ export async function getBattleData(): Promise<QuizTeamAgg> {
       ? "TIE"
       : sAgg.score > tAgg.score
         ? "STUDENT"
-        : "TEACHER";
+        : "STAFF";
 
   const mkTeam = (agg: ReturnType<typeof perTeam>): BattleTeamStats => {
-    let top: UserBrief | null = null;
+    let top: BattleTeamStats["topUser"] = null;
     let topPts = -1;
     for (const u of agg.teamUsers) {
       const p = agg.points.get(u.id) ?? 0;
@@ -165,7 +191,7 @@ export async function getBattleData(): Promise<QuizTeamAgg> {
           name: u.name,
           role: u.role,
           group: u.group,
-          staffPosition: u.staffPosition,
+          staffPosition: u.staffPosition ?? u.teacherSubject,
           avatar: u.avatar,
         };
       }
@@ -185,50 +211,10 @@ export async function getBattleData(): Promise<QuizTeamAgg> {
 
   return {
     student: mkTeam(sAgg),
-    teacher: mkTeam(tAgg),
+    staff: mkTeam(tAgg),
     winner,
     leaderboard,
   };
-}
-
-type UserBrief = {
-  id: string;
-  name: string;
-  role: string;
-  group?: string | null;
-  staffPosition?: string | null;
-  avatar?: string | null;
-};
-
-function buildEntry(
-  u: { id: string; name: string; role: string; group: string | null; staffPosition: string | null; avatar: string | null },
-  team: "STUDENT" | "TEACHER",
-  points: Map<string, number>
-): BattleLeaderboardEntry {
-  return {
-    rank: 0,
-    userId: u.id,
-    name: u.name,
-    role: team === "STUDENT" ? "STUDENT" : "TEACHER",
-    group: u.group ?? null,
-    position: u.staffPosition ?? null,
-    avatar: u.avatar ?? null,
-    booksStarted: 0,
-    booksCompleted: 0,
-    pagesRead: 0,
-    readingSeconds: 0,
-    validSessions: 0,
-    points: points.get(u.id) ?? 0,
-  };
-}
-
-function distinctBookIds(keys: string[], userId: string): string[] {
-  const out = new Set<string>();
-  for (const k of keys) {
-    const [u, b] = k.split("|");
-    if (u === userId) out.add(b);
-  }
-  return Array.from(out);
 }
 
 /** Sessiya davomiyligi "12 daq" formatida. */

@@ -9,7 +9,6 @@ import {
   Settings,
   ChevronLeft,
   ChevronRight,
-  UserPlus,
   Flame,
   LogOut,
 } from "lucide-react";
@@ -27,12 +26,11 @@ interface NavItem {
   exact?: boolean;
 }
 
-// Admin navigation â€” butun tizim boshqaruvi:
-// Dashboard, Foydalanuvchilar, Yangi foydalanuvchi, Battle, Tizim boshqaruvi
+// Admin navigation — butun tizim boshqaruvi:
+// Dashboard, Foydalanuvchilar, Battle, Tizim boshqaruvi
 const NAV_ITEMS: NavItem[] = [
   { label: "Boshqaruv paneli", href: "/admin", icon: LayoutDashboard },
   { label: "Foydalanuvchilar", href: "/admin/users", icon: Users, exact: true },
-  { label: "Yangi foydalanuvchi", href: "/admin/users/add", icon: UserPlus, exact: true },
   { label: "Battle", href: "/admin/battle", icon: Flame, exact: true },
   { label: "Tizim boshqaruvi", href: "/admin/system", icon: Settings },
 ];

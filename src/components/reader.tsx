@@ -60,6 +60,9 @@ export function Reader({ bookId, title, totalPages, pdfUrl, initialPage }: Props
   const sessionRef = useRef<string | null>(null);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastSavePageRef = useRef(initialPage);
+  // Oxirgi betga yetilganda "yana qancha o'qish kerak" ogohlantirishini
+  // bir marta ko'rsatish uchun.
+  const completionWarnedRef = useRef(false);
   const touchStartRef = useRef<{ x: number; y: number } | null>(null);
   const pinchRef = useRef<{ dist: number; zoom: number } | null>(null);
 
@@ -254,7 +257,27 @@ export function Reader({ bookId, title, totalPages, pdfUrl, initialPage }: Props
       if (saveTimer.current) clearTimeout(saveTimer.current);
       saveTimer.current = setTimeout(() => {
         api
-          .post("/api/reading/progress", { bookId, page: p })
+          .post<{
+            completion?: {
+              completed: boolean;
+              readSeconds: number;
+              requiredSeconds: number;
+            };
+          }>("/api/reading/progress", { bookId, page: p })
+          .then((res) => {
+            const c = res?.completion;
+            if (!c || c.completed || c.requiredSeconds <= c.readSeconds) return;
+            if (completionWarnedRef.current) return;
+            completionWarnedRef.current = true;
+            const needMin = Math.max(
+              1,
+              Math.ceil((c.requiredSeconds - c.readSeconds) / 60)
+            );
+            toast.info("Kitob hali tugatilganlarga o'tmadi", {
+              description: `Oxirgi betga yetdingiz, lekin halol yakunlash uchun kamida yana ~${needMin} daqiqa o'qish kerak.`,
+              duration: 8000,
+            });
+          })
           .catch((e) => {
             if (e instanceof ApiClientError && e.code === "BOOK_LIMIT_REACHED") {
               toast.error("Progress saqlanmadi — faol kitoblar limiti to'lgan", {

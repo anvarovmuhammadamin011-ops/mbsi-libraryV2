@@ -1,7 +1,7 @@
 "use client";
 
-import Image from "next/image";
 import { BookOpen, Heart, Star } from "lucide-react";
+import { BookCover } from "@/components/book-cover";
 import { cn } from "@/lib/utils";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
@@ -36,19 +36,12 @@ export function BookCard({
     >
       {/* Cover */}
       <div className="relative aspect-[3/4] overflow-hidden bg-muted dark:bg-[#0E1629]">
-        {book.coverUrl ? (
-          <Image
-            src={book.coverUrl}
-            alt={book.title}
-            fill
-            className="object-cover transition-transform duration-500 group-hover:scale-[1.05]"
-            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-          />
-        ) : (
-          <div className="flex h-full items-center justify-center bg-gradient-to-br from-primary/10 via-primary/5 to-transparent dark:from-primary/15 dark:via-primary/8 dark:to-transparent">
-            <BookOpen size={32} className="text-primary/25 dark:text-primary/35" />
-          </div>
-        )}
+        <BookCover
+          title={book.title}
+          author={book.author?.name}
+          coverUrl={book.coverUrl}
+          className="transition-transform duration-500 group-hover:scale-[1.05]"
+        />
 
         {/* Gradient overlay on hover */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100 dark:from-black/70 dark:via-black/20" />
@@ -103,8 +96,8 @@ export function BookCard({
       </div>
 
       {/* Info — fixed-height blocks so every card is the same size */}
-      <div className="flex flex-1 flex-col p-4">
-        <h3 className="line-clamp-2 h-10 text-sm font-bold leading-snug text-foreground">
+      <div className="flex flex-1 flex-col p-3 sm:p-4">
+        <h3 className="line-clamp-2 h-10 text-[13px] font-bold leading-snug text-foreground sm:text-sm">
           {book.title}
         </h3>
         <p className="mt-1 h-5 truncate text-xs text-muted-foreground">
