@@ -1,0 +1,97 @@
+# Firebase App Hosting konfiguratsiyasi
+# ============================================================
+# Bu fayl repo ildizida bo'lishi kerak (root directory = /).
+# Hujjat: https://firebase.google.com/docs/app-hosting/configure
+#
+# Maxfiy qiymatlar (secret:) Cloud Secret Manager'da yaratilishi SHART:
+#   firebase apphosting:secrets:set DATABASE_URL
+#   firebase apphosting:secrets:set APP_SECRET
+# (qiymat so'raladi; so'ngra App Hosting backend'iga ruxsat beriladi)
+
+runConfig:
+  cpu: 1
+  memoryMiB: 1024
+  minInstances: 0
+  maxInstances: 10
+  concurrency: 80
+
+env:
+  # ─── Majburiy (maxfiy) ──────────────────────────────────────
+  # PostgreSQL connection string (Supabase / Neon / Cloud SQL).
+  # Pooled ulanish bo'lsa ham bo'ladi: ?sslmode=require&pgbouncer=true
+  - variable: DATABASE_URL
+    secret: DATABASE_URL
+    availability:
+      - RUNTIME
+
+  # Sessiya/CSRF imzolari uchun, kamida 32 belgi.
+  # Yaratish: openssl rand -base64 48
+  - variable: APP_SECRET
+    secret: APP_SECRET
+    availability:
+      - RUNTIME
+
+  # ─── Fayl saqlash ───────────────────────────────────────────
+  # App Hosting (Cloud Run) diski VAQTINCHALIK — "local" ishlatib bo'lmaydi.
+  #   "db"  → PDF/muqovalar Postgres BYTEA'da saqlanadi (S3 shart emas)
+  #   "s3"  → Cloudflare R2 / AWS S3 (katta hajm uchun tavsiya)
+  # S3'ga o'tsangiz quyidagi 5 ta o'zgaruvchini ham qo'shing (secret).
+  - variable: STORAGE_DRIVER
+    value: db
+    availability:
+      - RUNTIME
+
+  # ─── Firebase Cloud Messaging (push) ────────────────────────
+  # NEXT_PUBLIC_* qiymatlar BUILD paytida kodga joylanadi, shuning uchun
+  # BUILD ham kerak. Bo'sh qoldirilsa push o'chadi, ilova ishlayveradi.
+  # - variable: NEXT_PUBLIC_FIREBASE_API_KEY
+  #   value: ""
+  #   availability: [BUILD, RUNTIME]
+  # - variable: NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
+  #   value: ""
+  #   availability: [BUILD, RUNTIME]
+  # - variable: NEXT_PUBLIC_FIREBASE_PROJECT_ID
+  #   value: ""
+  #   availability: [BUILD, RUNTIME]
+  # - variable: NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
+  #   value: ""
+  #   availability: [BUILD, RUNTIME]
+  # - variable: NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID
+  #   value: ""
+  #   availability: [BUILD, RUNTIME]
+  # - variable: NEXT_PUBLIC_FIREBASE_APP_ID
+  #   value: ""
+  #   availability: [BUILD, RUNTIME]
+  # - variable: NEXT_PUBLIC_FIREBASE_VAPID_KEY
+  #   value: ""
+  #   availability: [BUILD, RUNTIME]
+  # Server tomondan push yuborish (service account JSON, bir qatorda):
+  # - variable: FIREBASE_SERVICE_ACCOUNT_JSON
+  #   secret: FIREBASE_SERVICE_ACCOUNT_JSON
+  #   availability: [RUNTIME]
+
+  # ─── S3 / R2 (STORAGE_DRIVER=s3 bo'lsa) ─────────────────────
+  # - variable: S3_BUCKET
+  #   value: ""
+  #   availability: [RUNTIME]
+  # - variable: S3_REGION
+  #   value: "auto"
+  #   availability: [RUNTIME]
+  # - variable: S3_ENDPOINT
+  #   value: ""
+  #   availability: [RUNTIME]
+  # - variable: S3_ACCESS_KEY_ID
+  #   secret: S3_ACCESS_KEY_ID
+  #   availability: [RUNTIME]
+  # - variable: S3_SECRET_ACCESS_KEY
+  #   secret: S3_SECRET_ACCESS_KEY
+  #   availability: [RUNTIME]
+
+  # ─── Ixtiyoriy ──────────────────────────────────────────────
+  # AI tahlil (bo'sh bo'lsa o'chadi):
+  # - variable: AI_PROVIDER
+  #   value: groq
+  #   availability: [RUNTIME]
+  # - variable: AI_API_KEY
+  #   secret: AI_API_KEY
+  #   availability: [RUNTIME]
