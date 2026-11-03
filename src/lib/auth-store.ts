@@ -4,6 +4,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { User } from "@/types";
 
+// CSRF double-submit: cookie'ni o'qib, mutation so'rovlarida headerga qo'shamiz.
 function getCsrfCookie(): string {
   if (typeof document === "undefined") return "";
   const m = document.cookie.match(/(?:^|;\s*)mbsi_csrf=([^;]*)/);
@@ -27,6 +28,8 @@ export const useAuthStore = create<AuthState>()(
       isAuthenticated: false,
       isLoading: true,
 
+      // Asosiy login: username + parol (server tomonda scrypt tekshiruvi,
+      // HttpOnly session cookie va CSRF cookie o'rnatiladi).
       login: async (username: string, password: string): Promise<boolean> => {
         try {
           const res = await fetch("/api/auth/login", {
@@ -53,6 +56,7 @@ export const useAuthStore = create<AuthState>()(
         set({ user: null, isAuthenticated: false, isLoading: false });
       },
 
+      // Sahifa yangilanganda serverdagi sessiyadan foydalanuvchini tiklaydi.
       loadUser: async () => {
         try {
           const res = await fetch("/api/auth/me", { cache: "no-store" });
@@ -62,7 +66,7 @@ export const useAuthStore = create<AuthState>()(
             return;
           }
         } catch {
-          /* ignore */
+          /* tarmoq xatosi — login sahifasiga qaytamiz */
         }
         set({ user: null, isAuthenticated: false, isLoading: false });
       },

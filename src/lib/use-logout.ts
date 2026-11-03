@@ -8,12 +8,12 @@ import { useAuthStore } from "@/lib/auth-store";
  * Logout + login sahifasiga qaytarish (barcha sidebar/profil uchun yagona).
  */
 export function useLogout() {
-  const logout = useAuthStore((s) => s.logout);
   const router = useRouter();
 
   return useCallback(async () => {
+    const logout = useAuthStore.getState().logout;
     await logout();
     router.replace("/login");
     router.refresh();
-  }, [logout, router]);
+  }, [router]);
 }

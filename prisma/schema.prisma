@@ -10,9 +10,12 @@ generator client {
 }
 
 datasource db {
-  provider   = "postgresql"
-  url        = env("DATABASE_URL")
-  directUrl  = env("DATABASE_URL_UNPOOLED")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  // Neon/Supabase kabi pooler ishlatilsa, migratsiyalar uchun to'g'ridan-to'g'ri
+  // (unpooled) URL kerak bo'ladi. Bunda quyidagi qatorni oching va
+  // DATABASE_URL_UNPOOLED ni .env ga qo'shing:
+  // directUrl = env("DATABASE_URL_UNPOOLED")
 }
 
 // ─── Enums (stored as String for provider portability) ──────

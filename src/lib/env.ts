@@ -2,6 +2,12 @@
 // Safe defaults let the app build without secrets; real values
 // come from `.env`.
 
+// Supabase configuration
+export const supabase = {
+  url: process.env.NEXT_PUBLIC_SUPABASE_URL || "",
+  anonKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "",
+};
+
 function str(name: string, fallback: string): string {
   const v = process.env[name];
   return v && v.length > 0 ? v : fallback;
