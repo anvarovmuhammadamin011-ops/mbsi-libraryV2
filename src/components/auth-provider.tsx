@@ -7,12 +7,14 @@ import { useAuthStore } from "@/lib/auth-store";
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const loadUser = useAuthStore((s) => s.loadUser);
   const isLoading = useAuthStore((s) => s.isLoading);
-  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
 
+  // Har safar to'liq sahifa ochilganda serverdagi sessiyani tekshiramiz.
+  // Persist qilingan eski `isAuthenticated=true` holatiga tayanmaymiz —
+  // aks holda sessiya tugagan bo'lsa ham spinner yoki noto'g'ri holat
+  // saqlanib qolishi mumkin.
   useEffect(() => {
-    if (!isAuthenticated) loadUser();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    loadUser();
+  }, [loadUser]);
 
   if (isLoading) {
     return (

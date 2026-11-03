@@ -42,8 +42,10 @@ export const useAuthStore = create<AuthState>()(
             set({ user: json.data, isAuthenticated: true, isLoading: false });
             return true;
           }
+          set({ isLoading: false });
           return false;
         } catch {
+          set({ isLoading: false });
           return false;
         }
       },
