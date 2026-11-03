@@ -10,7 +10,12 @@ module.exports = {
       name: "mbsi-library",
       script: "node_modules/next/dist/bin/next",
       interpreter: "node",
-      args: "dev",
+      // Production server. Avval `npm run build` bajarilgan bo'lishi shart.
+      // (avval bu yerda "dev" turardi — bu production uchun noto'g'ri)
+      args: "start",
+      env: {
+        NODE_ENV: "production",
+      },
       cwd: __dirname,
       autorestart: true,
       min_uptime: "5s",

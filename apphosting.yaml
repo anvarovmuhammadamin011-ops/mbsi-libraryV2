@@ -19,9 +19,14 @@ env:
   # ─── Majburiy (maxfiy) ──────────────────────────────────────
   # PostgreSQL connection string (Supabase / Neon / Cloud SQL).
   # Pooled ulanish bo'lsa ham bo'ladi: ?sslmode=require&pgbouncer=true
+  #
+  # MUHIM: BUILD ham kerak! `npm run build` ichida `prisma generate`
+  # ishlaydi va u DATABASE_URL mavjud bo'lmasa schema'ni o'qiy olmay
+  # "Environment variable not found: DATABASE_URL" xatosi bilan yiqiladi.
   - variable: DATABASE_URL
     secret: DATABASE_URL
     availability:
+      - BUILD
       - RUNTIME
 
   # Sessiya/CSRF imzolari uchun, kamida 32 belgi.
